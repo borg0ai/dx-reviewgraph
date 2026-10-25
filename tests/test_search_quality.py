@@ -37,14 +37,14 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.migrations import (
+from graph_engine.graph import GraphStore
+from graph_engine.migrations import (
     LATEST_VERSION,
     NODES_FTS_COLUMNS,
     get_schema_version,
 )
-from code_review_graph.parser import NodeInfo
-from code_review_graph.search import (
+from graph_engine.parser import NodeInfo
+from graph_engine.search import (
     _MAX_FTS_TERMS,
     build_fts_queries,
     hybrid_search,

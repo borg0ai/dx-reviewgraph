@@ -7,7 +7,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 - **Every read-only MCP tool is bounded by a timeout**: tools that reach Git, a graph traversal, FTS, an embedding provider or the filesystem run on a worker thread and answer `status: error` naming themselves and the budget when they exceed `CRG_TOOL_TIMEOUT`, instead of leaving the client to time the request out as MCP error -32001. The write tools are deliberately not bounded, because a timeout cancels the wait and not the worker.
 - **Change discovery fails loudly**: the new `CRG_DISCOVERY_TIMEOUT` (5 seconds by default, or `CRG_GIT_TIMEOUT` when you set that explicitly; an explicit `CRG_DISCOVERY_TIMEOUT` is used as given) bounds each Git command that works out what changed, and exhausting it raises rather than returning a false all-clear. `get_minimal_context_tool` previously spent up to ~130 seconds on five Git subprocesses of its own.
 - **Dotted targets in `query_graph`**: targets such as `Details.QueryHandler.Handle` resolve through an indexed `nodes.symbol` column, added by migration v10.
-- **Schema 9 → 13, and a rebuild is worth running**: migrations v10–v13 run on first open; v13 rewrites every node row and rebuilds the FTS5 index, so allow time for it on a large graph. VS Code extension 0.3.0 accepts v13; every earlier build rejects a migrated database, and the extension is published separately, so it has to be repackaged and reinstalled alongside the CLI. The parser fixes in this release only change a file's rows when that file is re-parsed, and `update` skips unchanged files, so run `code-review-graph build` once. See the CHANGELOG's *Upgrade notes*.
+- **Schema 9 → 13, and a rebuild is worth running**: migrations v10–v13 run on first open; v13 rewrites every node row and rebuilds the FTS5 index, so allow time for it on a large graph. VS Code extension 0.3.0 accepts v13; every earlier build rejects a migrated database, and the extension is published separately, so it has to be repackaged and reinstalled alongside the CLI. The parser fixes in this release only change a file's rows when that file is re-parsed, and `update` skips unchanged files, so run `reviewgraph build` once. See the CHANGELOG's *Upgrade notes*.
 - **Seeded `visualize`**: `--seed-symbol`, `--seed-file`, `--seed-changed`, `--seed-flow` and `--path-from`/`--path-to` draw a neighbourhood within `--depth` hops instead of the whole repository, which past 3000 nodes fell back to one bubble per community.
 - **Keyword search that finds things**: multi-word queries were matched as exact phrases and returned nothing; they are now tokenised, ANDed then ORed for recall. Docstrings and camelCase splits are indexed (`nodes.docstring`, `nodes.name_tokens`), raising inner-camel segment recall@20 from 24.7% to 54.7%.
 - **Test gaps reached through a caller are their own class**: a helper the suite exercises only through its public caller carries no `TESTED_BY` edge and was reported flatly untested. It is now marked with `covered_via`/`covered_depth`/`covered_by` and given its own heading in the rendered pull-request comment — as a pointer, never as coverage: the gap set, the gap order and the risk score are unchanged. Bounded by `CRG_CALLER_TEST_ROUTE_DEPTH` (2) and `CRG_CALLER_TEST_ROUTE_MAX_CALLERS` (500).
@@ -127,11 +127,11 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 
 ## v1.4.0
 - **`init` command**: automatic `.mcp.json` setup for Claude Code.
-- **Interactive D3.js visualisation**: `code-review-graph visualize` writes an HTML graph.
+- **Interactive D3.js visualisation**: `reviewgraph visualize` writes an HTML graph.
 
 ## v1.3.0
 - **Python version check with Docker fallback**: detects Python 3.10+ and suggests Docker if unavailable.
-- **`pip install code-review-graph`**: no git clone needed; `code-review-graph` command available after install.
+- **`pip install reviewgraph`**: no git clone needed; `reviewgraph` command available after install.
 
 ## v1.2.0
 - **Structured logging** throughout the codebase.
@@ -139,7 +139,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 - **CI**: GitHub Actions pipeline with test coverage reporting.
 
 ## v1.1.0
-- **Watch mode**: `code-review-graph watch` rebuilds the graph on file changes.
+- **Watch mode**: `reviewgraph watch` rebuilds the graph on file changes.
 - **Vector embeddings**: optional `[embeddings]` extra for semantic code search.
 - **Go, Rust, Java** verified with dedicated tests.
 

@@ -15,7 +15,7 @@ and the constructs the removed names were meant for must still be extracted.
 import pytest
 from tree_sitter_language_pack import get_language
 
-from code_review_graph.parser import (
+from graph_engine.parser import (
     _CALL_TYPES,
     _CLASS_TYPES,
     _FUNCTION_TYPES,

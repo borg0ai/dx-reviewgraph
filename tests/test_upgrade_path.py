@@ -10,7 +10,7 @@ over a *real* repository, and the first thing they run after upgrading is
 This module closes that gap by testing the released artefact, not a
 reconstruction of it:
 
-1. ``uv venv`` + ``uv pip install code-review-graph==<released version>`` into
+1. ``uv venv`` + ``uv pip install reviewgraph==<released version>`` into
    a throwaway environment. Nothing from the working tree is on that
    interpreter's path, and the fixture asserts as much.
 2. That old release builds a graph over this repository's own tree exported at
@@ -63,7 +63,7 @@ from typing import Any, Iterator
 
 import pytest
 
-from code_review_graph.migrations import LATEST_VERSION
+from graph_engine.migrations import LATEST_VERSION
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -186,7 +186,7 @@ def _old_env(crg_home: Path) -> dict[str, str]:
     ``PYTHONPATH`` is dropped and ``PYTHONSAFEPATH`` set, because ``python -c``
     otherwise puts the current directory on ``sys.path`` — and the current
     directory during a test run is this checkout, which contains an importable
-    ``code_review_graph``. Without this the "old" half would import the code
+    ``reviewgraph``. Without this the "old" half would import the code
     under test and the whole module would pass for free.
     """
     env = _base_env(crg_home)
@@ -216,8 +216,8 @@ def _current_cli(args: list[str], env: dict[str, str]) -> subprocess.CompletedPr
     exit code as the installed console script.
     """
     bootstrap = (
-        "import sys; sys.argv[0] = 'code-review-graph'; "
-        "from code_review_graph.cli import main; main()"
+        "import sys; sys.argv[0] = 'reviewgraph'; "
+        "from reviewgraph.cli import main; main()"
     )
     return _run([sys.executable, "-c", bootstrap, *args], env=env)
 
@@ -415,14 +415,14 @@ def _install_release(version: str, venv: Path, env: dict[str, str]) -> tuple[str
         _run([
             "uv", "pip", "install",
             "--python", str(_venv_python(venv)),
-            f"code-review-graph=={version}",
+            f"reviewgraph=={version}",
         ], env=env, timeout=1800),
-        f"uv pip install code-review-graph=={version}",
+        f"uv pip install reviewgraph=={version}",
     )
     probe = (
-        "import json, code_review_graph, importlib.metadata as md; "
-        "print(json.dumps({'file': code_review_graph.__file__, "
-        "'version': md.version('code-review-graph')}))"
+        "import json, reviewgraph, importlib.metadata as md; "
+        "print(json.dumps({'file': graph_engine.__file__, "
+        "'version': md.version('reviewgraph')}))"
     )
     # cwd is the venv, and PYTHONSAFEPATH is set in the old environment, so
     # neither the current directory nor PYTHONPATH can satisfy this import.
@@ -445,20 +445,20 @@ def _call_tools(corpus: Path) -> dict[str, dict[str, Any]]:
     server exposes, so calling them directly is what an agent's tool call does
     minus the transport.
     """
-    from code_review_graph.tools.community_tools import (
+    from graph_engine.tools.community_tools import (
         get_architecture_overview_func,
         list_communities_func,
     )
-    from code_review_graph.tools.context import get_minimal_context
-    from code_review_graph.tools.query import (
+    from graph_engine.tools.context import get_minimal_context
+    from graph_engine.tools.query import (
         get_impact_radius,
         list_graph_stats,
         query_graph,
         semantic_search_nodes,
         traverse_graph_func,
     )
-    from code_review_graph.tools.refactor_tools import refactor_func
-    from code_review_graph.tools.review import (
+    from graph_engine.tools.refactor_tools import refactor_func
+    from graph_engine.tools.review import (
         get_affected_flows_func,
         get_review_context,
     )
@@ -555,7 +555,7 @@ def upgrade_run(request, tmp_path_factory) -> Iterator[UpgradeRun]:
     # check that only works against the newest old release is not a check.
     _check(
         _run(
-            [str(_venv_script(venv, "code-review-graph")), "build", "--repo", str(corpus)],
+            [str(_venv_script(venv, "reviewgraph")), "build", "--repo", str(corpus)],
             cwd=corpus,
             env=old_env,
             timeout=1800,
@@ -565,8 +565,8 @@ def upgrade_run(request, tmp_path_factory) -> Iterator[UpgradeRun]:
     before = _snapshot(corpus)
 
     # --- the current code opens it (this is what runs the migrations) -------
-    from code_review_graph.graph import GraphStore
-    from code_review_graph.incremental import get_db_path
+    from graph_engine.graph import GraphStore
+    from graph_engine.incremental import get_db_path
 
     previous_home = os.environ.get("CRG_HOME")
     previous_data_dir = os.environ.get("CRG_DATA_DIR")
@@ -607,7 +607,7 @@ def upgrade_run(request, tmp_path_factory) -> Iterator[UpgradeRun]:
 
         # --- reverse direction: the old release meets the migrated database --
         reverse: dict[str, Any] = {}
-        old_cli = str(_venv_script(venv, "code-review-graph"))
+        old_cli = str(_venv_script(venv, "reviewgraph"))
         old_status = _run([old_cli, "status", "--repo", str(corpus)], cwd=corpus,
                           env=old_env, timeout=600)
         reverse["status_returncode"] = old_status.returncode

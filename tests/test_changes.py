@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph.changes import (
+from graph_engine.changes import (
     _parse_numstat,
     _parse_unified_diff,
     analyze_changes,
@@ -16,9 +16,9 @@ from code_review_graph.changes import (
     map_changes_to_nodes,
     parse_git_diff_ranges,
 )
-from code_review_graph.flows import store_flows, trace_flows
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
+from graph_engine.flows import store_flows, trace_flows
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
 
 
 class TestChanges:
@@ -492,14 +492,14 @@ class TestChanges:
 
     def test_detect_changes_tool_no_changes(self):
         """detect_changes_func returns clean result when no changes detected."""
-        from code_review_graph.tools import detect_changes_func
+        from graph_engine.tools import detect_changes_func
 
         # Patch _get_store to use our test store, and change discovery to
         # come back empty.
         with (
-            patch("code_review_graph.tools.review._get_store") as mock_get_store,
+            patch("graph_engine.tools.review._get_store") as mock_get_store,
             patch(
-                "code_review_graph.tools.review.discover_review_changes",
+                "graph_engine.tools.review.discover_review_changes",
                 return_value=([], "HEAD~1"),
             ),
             # Prevent the tool from closing our shared store, then restore the
@@ -523,13 +523,13 @@ class TestChanges:
         that could not be run has to be distinguishable from that, or a
         client cannot tell a reviewed pull request from an unreviewed one.
         """
-        from code_review_graph.errors import ChangeDiscoveryError
-        from code_review_graph.tools import detect_changes_func
+        from graph_engine.errors import ChangeDiscoveryError
+        from graph_engine.tools import detect_changes_func
 
         with (
-            patch("code_review_graph.tools.review._get_store") as mock_get_store,
+            patch("graph_engine.tools.review._get_store") as mock_get_store,
             patch(
-                "code_review_graph.tools.review.discover_review_changes",
+                "graph_engine.tools.review.discover_review_changes",
                 side_effect=ChangeDiscoveryError(
                     "could not determine the changes: git could not be run"
                 ),
@@ -553,16 +553,16 @@ class TestChanges:
         through the chain rather than calling raw git helpers that report a
         failure as an empty list.
         """
-        from code_review_graph.tools import detect_changes_func
+        from graph_engine.tools import detect_changes_func
 
         with (
-            patch("code_review_graph.tools.review._get_store") as mock_get_store,
+            patch("graph_engine.tools.review._get_store") as mock_get_store,
             patch(
-                "code_review_graph.tools.review.discover_review_changes",
+                "graph_engine.tools.review.discover_review_changes",
                 return_value=([], "HEAD~1"),
             ) as discover,
             patch(
-                "code_review_graph.tools.review.get_changed_files",
+                "graph_engine.tools.review.get_changed_files",
                 create=True,
             ) as raw_changed,
             patch.object(self.store, "close"),
@@ -591,17 +591,17 @@ class TestChanges:
         """
         import importlib
 
-        from code_review_graph.errors import ChangeDiscoveryError
+        from graph_engine.errors import ChangeDiscoveryError
 
         tools_module = importlib.import_module(
-            f"code_review_graph.tools.{module}"
+            f"graph_engine.tools.{module}"
         )
         func = getattr(tools_module, func_name)
 
         with (
-            patch(f"code_review_graph.tools.{module}._get_store") as mock_get_store,
+            patch(f"graph_engine.tools.{module}._get_store") as mock_get_store,
             patch(
-                f"code_review_graph.tools.{module}.discover_review_changes",
+                f"graph_engine.tools.{module}.discover_review_changes",
                 side_effect=ChangeDiscoveryError(
                     "could not determine the changes: git timed out after 5s."
                 ),
@@ -618,18 +618,18 @@ class TestChanges:
 
     def test_detect_changes_tool_with_changes(self):
         """detect_changes_func returns full analysis for changed files."""
-        from code_review_graph.tools import detect_changes_func
+        from graph_engine.tools import detect_changes_func
 
         self._add_func("my_func", path="/fake/repo/app.py", line_start=1, line_end=10)
 
         with (
-            patch("code_review_graph.tools.review._get_store") as mock_get_store,
+            patch("graph_engine.tools.review._get_store") as mock_get_store,
             patch(
-                "code_review_graph.tools.review.discover_review_changes",
+                "graph_engine.tools.review.discover_review_changes",
                 return_value=(["app.py"], "HEAD~1"),
             ),
             patch(
-                "code_review_graph.tools.review.parse_git_diff_ranges",
+                "graph_engine.tools.review.parse_git_diff_ranges",
                 return_value={"app.py": [(1, 10)]},
             ),
             patch.object(self.store, "close"),
@@ -653,21 +653,21 @@ class TestChanges:
         end of this contract is covered by
         ``test_incremental.TestDiscoverReviewChanges``.
         """
-        from code_review_graph.tools import detect_changes_func
+        from graph_engine.tools import detect_changes_func
 
         self._add_func("my_func", path="/fake/repo/app.py", line_start=1, line_end=10)
 
         with (
-            patch("code_review_graph.tools.review._get_store") as mock_get_store,
+            patch("graph_engine.tools.review._get_store") as mock_get_store,
             patch(
-                "code_review_graph.tools.review.discover_review_changes",
+                "graph_engine.tools.review.discover_review_changes",
                 return_value=(["app.py"], "merge-base-sha"),
             ) as discover,
             patch(
-                "code_review_graph.tools.review.resolve_review_base",
+                "graph_engine.tools.review.resolve_review_base",
             ) as resolve,
             patch(
-                "code_review_graph.tools.review.parse_diff_ranges",
+                "graph_engine.tools.review.parse_diff_ranges",
                 return_value={"app.py": [(1, 10)]},
             ) as parse_ranges,
             patch.object(self.store, "close"),
@@ -773,11 +773,11 @@ class TestAnalyzeChangesInternalParseRemap:
         captured: dict = {}
         with (
             patch(
-                "code_review_graph.changes.parse_diff_ranges",
+                "graph_engine.changes.parse_diff_ranges",
                 return_value={"src/app.py": [(2, 3)]},
             ),
             patch(
-                "code_review_graph.changes.map_changes_to_nodes",
+                "graph_engine.changes.map_changes_to_nodes",
                 side_effect=self._spy_map_changes(captured),
             ),
         ):
@@ -801,11 +801,11 @@ class TestAnalyzeChangesInternalParseRemap:
         captured: dict = {}
         with (
             patch(
-                "code_review_graph.changes.parse_diff_ranges",
+                "graph_engine.changes.parse_diff_ranges",
                 return_value={abs_path: [(2, 3)]},
             ),
             patch(
-                "code_review_graph.changes.map_changes_to_nodes",
+                "graph_engine.changes.map_changes_to_nodes",
                 side_effect=self._spy_map_changes(captured),
             ),
         ):
@@ -830,7 +830,7 @@ class TestAnalyzeChangesInternalParseRemap:
         captured: dict = {}
         with (
             patch(
-                "code_review_graph.changes.map_changes_to_nodes",
+                "graph_engine.changes.map_changes_to_nodes",
                 side_effect=self._spy_map_changes(captured),
             ),
         ):
@@ -903,7 +903,7 @@ class TestFileChurn:
 
     def test_invalid_environment_window_is_fail_soft(self, monkeypatch):
         monkeypatch.setenv("CRG_CHURN_WINDOW_DAYS", "not-an-integer")
-        with patch("code_review_graph.changes.subprocess.run") as run:
+        with patch("graph_engine.changes.subprocess.run") as run:
             assert compute_file_churn("/repo") == {}
         run.assert_not_called()
 
@@ -912,7 +912,7 @@ class TestFileChurn:
             args=[], returncode=0, stdout="1\t0\tapp.py\0", stderr="",
         )
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             return_value=completed,
         ) as run:
             assert compute_file_churn("/repo", window_days=30) == {"app.py": 1}
@@ -976,7 +976,7 @@ class TestRiskScoreChurn:
 
         baseline = analyze_changes(self.store, **kwargs)
         with patch(
-            "code_review_graph.changes.compute_file_churn_with_status",
+            "graph_engine.changes.compute_file_churn_with_status",
             return_value=({"app.py": 10}, "ok"),
         ):
             churned = analyze_changes(self.store, include_churn=True, **kwargs)
@@ -985,7 +985,7 @@ class TestRiskScoreChurn:
 
     def test_analyze_changes_does_not_compute_churn_by_default(self, tmp_path):
         with patch(
-            "code_review_graph.changes.compute_file_churn_with_status",
+            "graph_engine.changes.compute_file_churn_with_status",
         ) as churn:
             analyze_changes(
                 self.store,

@@ -9,15 +9,15 @@ from pathlib import Path, PureWindowsPath
 
 import pytest
 
-import code_review_graph.constants as constants_module
-from code_review_graph.errors import GraphStoreError
-from code_review_graph.graph import (
+import graph_engine.constants as constants_module
+from graph_engine.errors import GraphStoreError
+from graph_engine.graph import (
     CorruptGraphDatabaseError,
     GraphStore,
     discard_corrupt_database,
 )
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import EdgeInfo, NodeInfo
+from graph_engine.incremental import full_build
+from graph_engine.parser import EdgeInfo, NodeInfo
 
 
 class TestGraphStore:
@@ -609,7 +609,7 @@ class TestGraphStore:
         target=test) to the consumer query, so a future parser flip would
         break this test even if every hand-seeded fixture test still passed.
         """
-        from code_review_graph.parser import CodeParser
+        from graph_engine.parser import CodeParser
 
         fixtures = Path(__file__).parent / "fixtures"
         parser = CodeParser()
@@ -661,7 +661,7 @@ class TestGraphStore:
         store = GraphStore.__new__(GraphStore)
         store._conn = conn
 
-        with caplog.at_level(logging.DEBUG, logger="code_review_graph.graph"):
+        with caplog.at_level(logging.DEBUG, logger="graph_engine.graph"):
             result = store.get_all_community_ids()
 
         assert result == {}
@@ -674,7 +674,7 @@ class TestGraphStore:
         store = GraphStore.__new__(GraphStore)
         store._conn = conn
 
-        with caplog.at_level(logging.DEBUG, logger="code_review_graph.graph"):
+        with caplog.at_level(logging.DEBUG, logger="graph_engine.graph"):
             result = store.get_communities_list()
 
         assert result == []
@@ -1543,7 +1543,7 @@ class TestUnusableDatabaseRecovery:
         ``OperationalError`` from the same block as a mis-shaped schema.
         None of them may reach ``discard_corrupt_database``.
         """
-        from code_review_graph.graph import (
+        from graph_engine.graph import (
             _has_incompatible_schema,
             _is_unreadable_database,
         )
@@ -1574,7 +1574,7 @@ class TestUnusableDatabaseRecovery:
         read of ``sqlite_master`` is a corrupt file, and is reported as one
         by the other classifier rather than as a mis-shaped schema.
         """
-        from code_review_graph.graph import _has_incompatible_schema
+        from graph_engine.graph import _has_incompatible_schema
 
         db = tmp_path / "graph.db"
         db.write_bytes(b"this is not a sqlite database")

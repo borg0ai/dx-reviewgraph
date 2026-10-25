@@ -26,14 +26,14 @@ jobs:
           python-version: "3.12"
 
       - name: Install with eval extras
-        run: pip install -e ".[eval]"
+        run: pip install -e ./modules/code-review -e './apps/cli[eval]'
 
       - name: Run benchmarks (2 smallest pinned configs)
         # httpx (~60 files) and flask (~83 files) are the two smallest
         # pinned repos. Report-only: `|| true` keeps regressions and
         # transient clone failures from failing the default branch.
         run: |
-          code-review-graph eval \
+          reviewgraph eval \
             --repo httpx,flask \
             --benchmark token_efficiency,impact_accuracy,agent_baseline \
             --output-dir evaluate/results || true
@@ -51,7 +51,7 @@ jobs:
         if: always()
         run: |
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-          from code_review_graph.eval.reporter import generate_full_report
+          from graph_engine.eval.reporter import generate_full_report
 
           print("# Weekly eval (report-only)")
           print()

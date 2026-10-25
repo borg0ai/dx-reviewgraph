@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import CodeParser
-from code_review_graph.tools.query import query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.parser import CodeParser
+from graph_engine.tools.query import query_graph
 
 SOURCE = """
 import org.springframework.web.bind.annotation.*;

@@ -28,9 +28,9 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.visualization import generate_html
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.visualization import generate_html
 
 pytest.importorskip(
     "playwright",

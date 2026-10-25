@@ -23,8 +23,8 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph import main
-from code_review_graph.tools.query import _QUERY_PATTERNS
+from graph_engine import main
+from graph_engine.tools.query import _QUERY_PATTERNS
 
 try:
     from mcp import ClientSession
@@ -116,7 +116,7 @@ async def _handshake(
     (repo / ".code-review-graph").mkdir(parents=True)
     home = tmp_path / "home"
     home.mkdir()
-    args = ["-m", "code_review_graph", "serve", "--repo", str(repo)]
+    args = ["-m", "reviewgraph", "serve", "--repo", str(repo)]
     if tools_arg is not None:
         args += ["--tools", tools_arg]
     params = StdioServerParameters(
@@ -231,7 +231,7 @@ _BARREL_FILES = {
 @pytest.fixture
 def barrel_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A TypeScript package whose consumer reaches ``lib.ts`` only through a barrel."""
-    from code_review_graph.tools.build import build_or_update_graph
+    from graph_engine.tools.build import build_or_update_graph
 
     monkeypatch.delenv("CRG_DATA_DIR", raising=False)
     monkeypatch.delenv("CRG_REPO_ROOT", raising=False)
@@ -242,7 +242,7 @@ def barrel_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     with patch(
-        "code_review_graph.incremental.get_all_tracked_files",
+        "graph_engine.incremental.get_all_tracked_files",
         return_value=sorted(_BARREL_FILES),
     ):
         result = build_or_update_graph(
@@ -256,7 +256,7 @@ def test_graph_reaches_dependents_through_a_barrel_file(barrel_repo: Path) -> No
     # The instructions promise "dependents reached through re-exports and barrel
     # files that never spell the name". consumer.ts never spells "lib", so a text
     # search for the module misses it; callers_of and the blast radius must not.
-    from code_review_graph.tools.query import get_impact_radius, query_graph
+    from graph_engine.tools.query import get_impact_radius, query_graph
 
     assert "lib" not in _BARREL_FILES["src/consumer.ts"]
     assert "pattern=callers_of" in main.SERVER_INSTRUCTIONS
@@ -284,7 +284,7 @@ def test_graph_reaches_dependents_through_a_barrel_file(barrel_repo: Path) -> No
     ),
 )
 def test_importers_of_includes_a_barrel_that_re_exports_the_file(barrel_repo: Path) -> None:
-    from code_review_graph.tools.query import query_graph
+    from graph_engine.tools.query import query_graph
 
     assert "pattern=importers_of" in main.SERVER_INSTRUCTIONS
     importers = query_graph(

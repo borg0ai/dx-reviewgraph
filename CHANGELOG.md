@@ -854,7 +854,7 @@ out. No breaking changes.
 
 ### Changed — Deterministic eval pipeline
 
-- **Every config under `code_review_graph/eval/configs/*.yaml` now pins an
+- **Every config under `reviewgraph/eval/configs/*.yaml` now pins an
   upstream SHA.** Previously every config used `commit: HEAD`, which made
   benchmarks drift whenever upstream pushed. Pinned SHAs: express
   `b4ab7d65`, fastapi `0227991a`, flask `a29f88ce`, gin `5c00df8a`, httpx
@@ -1037,7 +1037,7 @@ Large additive release accumulated since v2.3.2 — 141 non-merge commits, 8 new
 
 #### `__version__` reporting
 
-- **`code_review_graph.__version__` now matches `pyproject.toml`** (was `2.1.0` since the v2.1.0 release). The User-Agent header that `embeddings.py` sends on cloud HTTP requests is built from this string, so cloud-embedding traffic was being mis-attributed across all releases between v2.1.0 and v2.3.2.
+- **`reviewgraph.__version__` now matches `pyproject.toml`** (was `2.1.0` since the v2.1.0 release). The User-Agent header that `embeddings.py` sends on cloud HTTP requests is built from this string, so cloud-embedding traffic was being mis-attributed across all releases between v2.1.0 and v2.3.2.
 
 #### C++ / Java / PHP parsing
 

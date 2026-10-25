@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from code_review_graph import cli
-from code_review_graph.exports import MissingOptionalDependencyError, export_svg
+from reviewgraph import cli
+from graph_engine.exports import MissingOptionalDependencyError, export_svg
 
 try:
     import tomllib
@@ -19,12 +19,12 @@ ROOT = Path(__file__).parents[1]
 
 SVG_INSTALL_HINT = (
     'Error: SVG export requires matplotlib. '
-    'Run: pip install "code-review-graph[eval]"'
+    'Run: pip install "reviewgraph[eval]"'
 )
 
 
 def _optional_dependencies() -> dict[str, list[str]]:
-    with (ROOT / "pyproject.toml").open("rb") as pyproject:
+    with (ROOT / "modules" / "code-review" / "pyproject.toml").open("rb") as pyproject:
         return tomllib.load(pyproject)["project"]["optional-dependencies"]
 
 
@@ -35,7 +35,7 @@ def test_google_embeddings_extra_installs_current_google_sdk():
 
 def test_all_extra_includes_google_embeddings():
     optional = _optional_dependencies()
-    assert "code-review-graph[google-embeddings]" in optional["all"]
+    assert "code-review-engine[google-embeddings]" in optional["all"]
 
 
 def test_matplotlib_ships_in_the_extra_the_svg_hint_names():
@@ -53,7 +53,7 @@ def test_export_svg_without_matplotlib_raises_missing_optional_dependency(monkey
 
     message = str(raised.value)
     assert "matplotlib" in message
-    assert 'pip install "code-review-graph[eval]"' in message
+    assert 'pip install "reviewgraph[eval]"' in message
 
 
 def test_visualize_svg_without_matplotlib_prints_one_line_and_exits(
@@ -69,7 +69,7 @@ def test_visualize_svg_without_matplotlib_prints_one_line_and_exits(
     db_path.touch()
     store = MagicMock()
     argv = [
-        "code-review-graph",
+        "reviewgraph",
         "visualize",
         "--repo",
         str(tmp_path),
@@ -78,13 +78,13 @@ def test_visualize_svg_without_matplotlib_prints_one_line_and_exits(
     ]
 
     with patch.object(sys, "argv", argv):
-        with patch("code_review_graph.graph.GraphStore", return_value=store):
+        with patch("graph_engine.graph.GraphStore", return_value=store):
             with patch(
-                "code_review_graph.incremental.get_db_path",
+                "graph_engine.incremental.get_db_path",
                 return_value=db_path,
             ):
                 with patch(
-                    "code_review_graph.incremental.get_data_dir",
+                    "graph_engine.incremental.get_data_dir",
                     return_value=data_dir,
                 ):
                     with pytest.raises(SystemExit) as raised:

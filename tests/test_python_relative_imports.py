@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.parser import CodeParser
+from graph_engine.parser import CodeParser
 from tests.import_audit import exists_case_exact, looks_like_a_path
 
 # --------------------------------------------------------------------------

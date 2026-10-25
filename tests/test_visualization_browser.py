@@ -13,7 +13,7 @@ attribute (issue #475). Chromium treats every ``file://`` document as an opaque
 origin, so the same-origin ``<script src="d3.v7.min.js" integrity="...">`` is
 *blocked* ("the resource requires the request to be CORS enabled to check the
 integrity") and the page falls back to the d3js.org CDN — i.e. a ``file://``
-open needs the network. ``code-review-graph visualize --serve`` publishes the
+open needs the network. ``reviewgraph visualize --serve`` publishes the
 same directory over HTTP, where the integrity check passes against the
 same-origin copy and nothing leaves the machine. The local ``http.server``
 below mirrors that supported path, which is also the only way these tests can
@@ -42,9 +42,9 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.visualization import generate_html
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.visualization import generate_html
 
 pytest.importorskip(
     "playwright",

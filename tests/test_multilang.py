@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.parser import CodeParser
+from graph_engine.parser import CodeParser
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -804,8 +804,8 @@ class TestCSharpNamespaceResolution:
         assert "csharp_namespaces" not in file_node.extra
 
     def test_importers_of_resolves_namespace_to_file(self, tmp_path):
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.tools.query import query_graph
+        from graph_engine.graph import GraphStore
+        from graph_engine.tools.query import query_graph
 
         (tmp_path / ".git").mkdir()
         (tmp_path / ".code-review-graph").mkdir()
@@ -837,8 +837,8 @@ class TestCSharpNamespaceResolution:
         assert unrelated.as_posix() not in importers
 
     def test_importers_of_resolves_nested_block_namespace(self, tmp_path):
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.tools.query import query_graph
+        from graph_engine.graph import GraphStore
+        from graph_engine.tools.query import query_graph
 
         (tmp_path / ".git").mkdir()
         (tmp_path / ".code-review-graph").mkdir()
@@ -997,9 +997,9 @@ class TestCSharpReceiverCallResolution:
     def _build(self, tmp_path):
         from unittest.mock import patch
 
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.incremental import full_build
-        from code_review_graph.postprocessing import run_post_processing
+        from graph_engine.graph import GraphStore
+        from graph_engine.incremental import full_build
+        from graph_engine.postprocessing import run_post_processing
 
         (tmp_path / ".git").mkdir()
         (tmp_path / ".code-review-graph").mkdir()
@@ -1014,7 +1014,7 @@ class TestCSharpReceiverCallResolution:
             (tmp_path / name).write_text(content, encoding="utf-8")
         store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=sorted(files),
         ):
             full_build(tmp_path, store)
@@ -1022,7 +1022,7 @@ class TestCSharpReceiverCallResolution:
         store.close()
 
     def _call_targets_of(self, tmp_path, caller_suffix):
-        from code_review_graph.graph import GraphStore
+        from graph_engine.graph import GraphStore
 
         store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
         try:
@@ -1054,7 +1054,7 @@ class TestCSharpReceiverCallResolution:
         assert f"{single}::Widget.Spin" in targets
 
     def test_callers_of_returns_resolved_caller_after_full_build(self, tmp_path):
-        from code_review_graph.tools.query import query_graph
+        from graph_engine.tools.query import query_graph
 
         self._build(tmp_path)
         service = str(tmp_path / "Service.cs")
@@ -1076,7 +1076,7 @@ class TestCSharpReceiverCallResolution:
             ), f"callers_of({method}) still marks Consumer.Run unresolved"
 
     def test_impact_radius_of_service_file_reaches_consumer(self, tmp_path):
-        from code_review_graph.tools.query import get_impact_radius
+        from graph_engine.tools.query import get_impact_radius
 
         self._build(tmp_path)
         result = get_impact_radius(
@@ -1094,7 +1094,7 @@ class TestCSharpReceiverCallResolution:
     def test_impact_radius_of_decoy_file_does_not_reach_consumer(
         self, tmp_path,
     ):
-        from code_review_graph.tools.query import get_impact_radius
+        from graph_engine.tools.query import get_impact_radius
 
         self._build(tmp_path)
         result = get_impact_radius(
@@ -1109,7 +1109,7 @@ class TestCSharpReceiverCallResolution:
     def test_tests_for_finds_test_through_resolved_receiver_call(
         self, tmp_path,
     ):
-        from code_review_graph.tools.query import query_graph
+        from graph_engine.tools.query import query_graph
 
         self._build(tmp_path)
         service = str(tmp_path / "Service.cs")
@@ -1141,7 +1141,7 @@ class TestCSharpNamespaceImpactAndCoverage:
     """
 
     def _build(self, tmp_path):
-        from code_review_graph.graph import GraphStore
+        from graph_engine.graph import GraphStore
 
         (tmp_path / ".git").mkdir()
         (tmp_path / ".code-review-graph").mkdir()
@@ -1234,7 +1234,7 @@ class TestCSharpNamespaceImpactAndCoverage:
     def test_importer_appears_in_both_importers_of_and_impact(self, tmp_path):
         """Owner acceptance for #310: the same importer must appear in both
         ``importers_of`` and the public ``get_impact_radius`` results."""
-        from code_review_graph.tools.query import query_graph
+        from graph_engine.tools.query import query_graph
 
         store, core, app, _tests, _unrelated = self._build(tmp_path)
         try:
@@ -1264,7 +1264,7 @@ class TestCSharpNamespaceImpactAndCoverage:
             store.close()
 
     def test_tests_for_finds_csharp_test_via_edge(self, tmp_path):
-        from code_review_graph.tools.query import query_graph
+        from graph_engine.tools.query import query_graph
 
         store, core, _app, tests, _unrelated = self._build(tmp_path)
         store.close()
@@ -1283,7 +1283,7 @@ class TestCSharpNamespaceImpactAndCoverage:
         assert found[test_qn].get("inferred_by") != "naming_convention"
 
     def test_detect_changes_does_not_report_covered_method_untested(self, tmp_path):
-        from code_review_graph.changes import analyze_changes
+        from graph_engine.changes import analyze_changes
 
         store, core, _app, _tests, _unrelated = self._build(tmp_path)
         try:
@@ -3173,8 +3173,8 @@ class TestRescriptCrossModuleResolver:
     """Integration test for the cross-module resolver post-pass."""
 
     def _build(self, tmp_path):
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.incremental import full_build
+        from graph_engine.graph import GraphStore
+        from graph_engine.incremental import full_build
 
         (tmp_path / ".git").mkdir()
 
@@ -3260,7 +3260,7 @@ class TestRescriptCrossModuleResolver:
         assert stats["imports_resolved"] >= 2
 
     def test_resolver_is_idempotent(self, tmp_path):
-        from code_review_graph.rescript_resolver import (
+        from graph_engine.rescript_resolver import (
             resolve_rescript_cross_module,
         )
         store, _ = self._build(tmp_path)
@@ -3499,9 +3499,9 @@ class TestSpringDIResolver:
             "}\n"
         )
 
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.incremental import full_build
-        from code_review_graph.postprocessing import run_post_processing
+        from graph_engine.graph import GraphStore
+        from graph_engine.incremental import full_build
+        from graph_engine.postprocessing import run_post_processing
 
         store = GraphStore(str(tmp_path / "graph.db"))
         result = full_build(tmp_path, store)
@@ -3637,8 +3637,8 @@ class TestTemporalResolver:
             "}\n"
         )
 
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.incremental import full_build
+        from graph_engine.graph import GraphStore
+        from graph_engine.incremental import full_build
 
         store = GraphStore(str(tmp_path / "graph.db"))
         result = full_build(tmp_path, store)

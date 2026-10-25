@@ -24,17 +24,17 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph.build_state import BUILD_IN_PROGRESS, BUILD_STATE_KEY
-from code_review_graph.embeddings import (
+from graph_engine.build_state import BUILD_IN_PROGRESS, BUILD_STATE_KEY
+from graph_engine.embeddings import (
     REFRESH_SKIPPED_WARNING,
     EmbeddingStore,
     embed_all_nodes,
     has_embeddings,
 )
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import _raise_watch_postprocess_warnings, get_db_path
-from code_review_graph.postprocessing import run_post_processing
-from code_review_graph.tools.build import build_or_update_graph, run_postprocess
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import _raise_watch_postprocess_warnings, get_db_path
+from graph_engine.postprocessing import run_post_processing
+from graph_engine.tools.build import build_or_update_graph, run_postprocess
 
 PAIR = {"embedding_provider": "local", "embedding_model": "test-model"}
 
@@ -96,7 +96,7 @@ def _embed(repo: Path) -> int:
     graph = GraphStore(get_db_path(repo))
     try:
         with patch(
-            "code_review_graph.embeddings.get_provider",
+            "graph_engine.embeddings.get_provider",
             return_value=_StubProvider(),
         ):
             with EmbeddingStore(graph.db_path, provider="local", model="test-model") as store:
@@ -121,7 +121,7 @@ class TestBuildPaths:
         build_or_update_graph(full_rebuild=True, repo_root=str(repo))
         _commit_change(repo)
 
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             result = build_or_update_graph(repo_root=str(repo), **PAIR)
         get_provider.assert_not_called()
         assert result["build_type"] == "incremental"
@@ -132,7 +132,7 @@ class TestBuildPaths:
         self, tmp_path, monkeypatch,
     ):
         repo = _git_repo(tmp_path, monkeypatch)
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             results = [
                 build_or_update_graph(full_rebuild=True, repo_root=str(repo), **PAIR),
                 build_or_update_graph(full_rebuild=True, repo_root=str(repo), **PAIR),
@@ -153,7 +153,7 @@ class TestBuildPaths:
         repo = _git_repo(tmp_path, monkeypatch)
         build_or_update_graph(full_rebuild=True, repo_root=str(repo))
 
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             result = build_or_update_graph(
                 repo_root=str(repo), postprocess=postprocess, **PAIR,
             )
@@ -170,7 +170,7 @@ class TestBuildPaths:
         finally:
             graph.close()
 
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             result = build_or_update_graph(repo_root=str(repo), **PAIR)
         get_provider.assert_not_called()
         assert result["build_type"] == "full"
@@ -182,11 +182,11 @@ class TestBuildPaths:
     ):
         repo = _git_repo(tmp_path, monkeypatch)
         build_or_update_graph(full_rebuild=True, repo_root=str(repo))
-        with patch("code_review_graph.embeddings.get_provider", return_value=None):
+        with patch("graph_engine.embeddings.get_provider", return_value=None):
             EmbeddingStore(get_db_path(repo)).close()
         assert _embeddings_table_exists(repo)
 
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             result = run_postprocess(repo_root=str(repo), **PAIR)
         get_provider.assert_not_called()
         assert result["summary"] == "Post-processing complete."
@@ -196,7 +196,7 @@ class TestBuildPaths:
 class TestFromSkipToRefresh:
     def test_skip_then_embed_then_refresh(self, tmp_path, monkeypatch):
         repo = _git_repo(tmp_path, monkeypatch)
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             first = build_or_update_graph(full_rebuild=True, repo_root=str(repo), **PAIR)
         get_provider.assert_not_called()
         _assert_skip_reported(first)
@@ -205,7 +205,7 @@ class TestFromSkipToRefresh:
 
         _commit_change(repo)
         with patch(
-            "code_review_graph.embeddings.get_provider",
+            "graph_engine.embeddings.get_provider",
             return_value=_StubProvider(),
         ):
             refreshed = build_or_update_graph(repo_root=str(repo), **PAIR)
@@ -237,7 +237,7 @@ class TestHasEmbeddings:
     def test_empty_table_is_false(self, tmp_path):
         graph = self._graph(tmp_path)
         try:
-            with patch("code_review_graph.embeddings.get_provider", return_value=None):
+            with patch("graph_engine.embeddings.get_provider", return_value=None):
                 EmbeddingStore(graph.db_path).close()
             assert has_embeddings(graph) is False
         finally:
@@ -258,7 +258,7 @@ class TestHasEmbeddings:
                 )
                 graph.commit()
             else:
-                with patch("code_review_graph.embeddings.get_provider", return_value=None):
+                with patch("graph_engine.embeddings.get_provider", return_value=None):
                     store = EmbeddingStore(graph.db_path)
                 store._conn.execute(
                     "INSERT INTO embeddings (qualified_name, vector, text_hash, provider) "
@@ -291,7 +291,7 @@ class TestIndexFromAnEarlierRelease:
     def test_legacy_rows_fail_the_refresh_and_still_stop_watch(self, tmp_path):
         graph = self._legacy_graph(tmp_path, rows=True)
         try:
-            with patch("code_review_graph.embeddings.get_provider") as get_provider:
+            with patch("graph_engine.embeddings.get_provider") as get_provider:
                 result = run_post_processing(graph, **PAIR)
             get_provider.assert_not_called()
             assert "embeddings_refresh_skipped" not in result
@@ -305,7 +305,7 @@ class TestIndexFromAnEarlierRelease:
     def test_empty_legacy_table_is_a_skip(self, tmp_path):
         graph = self._legacy_graph(tmp_path, rows=False)
         try:
-            with patch("code_review_graph.embeddings.get_provider") as get_provider:
+            with patch("graph_engine.embeddings.get_provider") as get_provider:
                 result = run_post_processing(graph, **PAIR)
             get_provider.assert_not_called()
             assert result["embeddings_refresh_skipped"] is True
@@ -346,7 +346,7 @@ class TestWatchExemption:
 
 class TestRealEntryPoints:
     def test_mcp_tools_return_the_skip(self, tmp_path, monkeypatch):
-        from code_review_graph import main as crg_main
+        from graph_engine import main as crg_main
 
         build_tool = getattr(
             crg_main.build_or_update_graph_tool, "fn", crg_main.build_or_update_graph_tool,
@@ -355,7 +355,7 @@ class TestRealEntryPoints:
             crg_main.run_postprocess_tool, "fn", crg_main.run_postprocess_tool,
         )
         repo = _git_repo(tmp_path, monkeypatch)
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             built = asyncio.run(build_tool(full_rebuild=True, repo_root=str(repo), **PAIR))
             noop = asyncio.run(build_tool(repo_root=str(repo), **PAIR))
             post = asyncio.run(postprocess_tool(repo_root=str(repo), **PAIR))
@@ -374,12 +374,12 @@ class TestRealEntryPoints:
     def test_cli_exits_cleanly_and_logs_the_notice(
         self, tmp_path, monkeypatch, caplog, command,
     ):
-        from code_review_graph import cli
+        from reviewgraph import cli
 
         repo = _git_repo(tmp_path, monkeypatch)
         build_or_update_graph(full_rebuild=True, repo_root=str(repo))
         argv = [
-            "code-review-graph",
+            "reviewgraph",
             *command,
             "--repo",
             str(repo),
@@ -391,7 +391,7 @@ class TestRealEntryPoints:
         caplog.set_level(logging.WARNING)
         with (
             patch.object(sys, "argv", argv),
-            patch("code_review_graph.embeddings.get_provider") as get_provider,
+            patch("graph_engine.embeddings.get_provider") as get_provider,
         ):
             cli.main()
         get_provider.assert_not_called()
@@ -399,10 +399,10 @@ class TestRealEntryPoints:
         assert len(notices) == 1
 
     def test_notice_names_a_real_command_and_tool(self):
-        from code_review_graph import cli
-        from code_review_graph import main as crg_main
+        from reviewgraph import cli
+        from graph_engine import main as crg_main
 
-        assert "`code-review-graph embed`" in REFRESH_SKIPPED_WARNING
+        assert "`reviewgraph embed`" in REFRESH_SKIPPED_WARNING
         assert "embed_graph_tool" in REFRESH_SKIPPED_WARNING
         assert hasattr(crg_main, "embed_graph_tool")
         args = cli.build_parser().parse_args(["embed"])
@@ -423,16 +423,16 @@ class TestWatchTellsTheUser:
 
         from watchdog.events import FileCreatedEvent
 
-        from code_review_graph.incremental import _create_watch_handler
+        from graph_engine.incremental import _create_watch_handler
 
         repo = tmp_path / "repo"
         repo.mkdir()
         store = GraphStore(tmp_path / "graph.db")
-        # The exact callback ``code-review-graph watch`` builds for the pair.
+        # The exact callback ``reviewgraph watch`` builds for the pair.
         handler = _create_watch_handler(repo, store, partial(run_post_processing, **PAIR))
         caplog.set_level(logging.WARNING)
         try:
-            with patch("code_review_graph.embeddings.get_provider") as get_provider:
+            with patch("graph_engine.embeddings.get_provider") as get_provider:
                 for name in ("first.py", "second.py"):
                     source = repo / name
                     source.write_text(f"def {source.stem}():\n    pass\n")
@@ -449,7 +449,7 @@ class TestWatchTellsTheUser:
     def test_cli_watch_with_the_pair_keeps_running_on_a_never_embedded_graph(
         self, tmp_path, monkeypatch, caplog,
     ):
-        from code_review_graph import cli
+        from reviewgraph import cli
 
         repo = _git_repo(tmp_path, monkeypatch)
         build_or_update_graph(full_rebuild=True, repo_root=str(repo))
@@ -457,13 +457,13 @@ class TestWatchTellsTheUser:
         # hands the store to the CLI's post-processing callback.
         (repo / "app.py").unlink()
         argv = [
-            "code-review-graph", "watch", "--repo", str(repo),
+            "reviewgraph", "watch", "--repo", str(repo),
             "--embedding-provider", "local", "--embedding-model", "test-model",
         ]
         caplog.set_level(logging.WARNING)
         with (
             patch.object(sys, "argv", argv),
-            patch("code_review_graph.embeddings.get_provider") as get_provider,
+            patch("graph_engine.embeddings.get_provider") as get_provider,
             patch("watchdog.observers.Observer") as observer,
             patch("time.sleep", side_effect=KeyboardInterrupt),
         ):
@@ -477,16 +477,16 @@ class TestWatchTellsTheUser:
 class TestNoChangeUpdateEdgeCases:
     def test_an_empty_table_left_by_graph_stats_is_still_a_skip(self, tmp_path, monkeypatch):
         """``list_graph_stats`` opens an EmbeddingStore, which creates an empty table."""
-        from code_review_graph.tools.query import list_graph_stats
+        from graph_engine.tools.query import list_graph_stats
 
         repo = _git_repo(tmp_path, monkeypatch)
         build_or_update_graph(full_rebuild=True, repo_root=str(repo))
-        with patch("code_review_graph.embeddings.get_provider", return_value=None):
+        with patch("graph_engine.embeddings.get_provider", return_value=None):
             stats = list_graph_stats(repo_root=str(repo))
         assert stats["status"] == "ok"
         assert _embeddings_table_exists(repo)
 
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             result = build_or_update_graph(repo_root=str(repo), **PAIR)
         get_provider.assert_not_called()
         assert result["files_updated"] == 0
@@ -507,7 +507,7 @@ class TestNoChangeUpdateEdgeCases:
         if changed:
             _commit_change(repo)
 
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             result = build_or_update_graph(repo_root=str(repo), **half)
         get_provider.assert_not_called()
         assert result["status"] == "ok"
@@ -538,7 +538,7 @@ class TestCliProcess:
         }
         script = (
             "import sys\n"
-            "from code_review_graph.cli import main\n"
+            "from reviewgraph.cli import main\n"
             "try:\n"
             "    main()\n"
             "finally:\n"

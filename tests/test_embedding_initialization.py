@@ -10,8 +10,8 @@ from typing import Any, Callable
 
 import pytest
 
-from code_review_graph import embeddings
-from code_review_graph import main as crg_main
+from graph_engine import embeddings
+from graph_engine import main as crg_main
 
 
 @pytest.fixture(autouse=True)

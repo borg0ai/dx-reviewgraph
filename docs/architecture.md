@@ -2,7 +2,7 @@
 
 ## Overview
 
-`code-review-graph` keeps a persistent, incrementally updated graph of a codebase in SQLite
+`reviewgraph` keeps a persistent, incrementally updated graph of a codebase in SQLite
 and exposes it through a CLI and an MCP server. AI coding tools query the graph for
 structural context (callers, dependents, tests, impact) instead of reading whole files.
 Claude Code is one supported client among several.
@@ -51,7 +51,7 @@ Claude Code is one supported client among several.
 
 ## Modules
 
-All modules live in `code_review_graph/`.
+Reusable library code lives in `modules/code-review/graph_engine/`. CLI commands live in `apps/cli/reviewgraph/`.
 
 | Module | Role |
 |---|---|

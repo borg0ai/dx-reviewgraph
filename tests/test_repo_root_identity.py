@@ -8,9 +8,9 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 
-from code_review_graph import cli
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, incremental_update
+from reviewgraph import cli
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, incremental_update
 
 
 def test_incremental_update_survives_mixed_repo_root_spellings(tmp_path: Path, monkeypatch) -> None:
@@ -99,14 +99,14 @@ def test_build_and_update_cli_pass_a_canonical_root(
         "errors": [],
     }
 
-    with patch.object(cli.sys, "argv", ["code-review-graph", command, "--repo", ".", "--quiet"]):
-        with patch("code_review_graph.graph.GraphStore", return_value=MagicMock()):
+    with patch.object(cli.sys, "argv", ["reviewgraph", command, "--repo", ".", "--quiet"]):
+        with patch("graph_engine.graph.GraphStore", return_value=MagicMock()):
             with patch(
-                "code_review_graph.incremental.get_db_path",
+                "graph_engine.incremental.get_db_path",
                 return_value=MagicMock(),
             ):
                 with patch(
-                    "code_review_graph.tools.build.build_or_update_graph",
+                    "graph_engine.tools.build.build_or_update_graph",
                     return_value=result,
                 ) as build_or_update:
                     cli.main()
@@ -121,13 +121,13 @@ def test_watch_cli_passes_a_canonical_root(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(repo)
     store = MagicMock()
 
-    with patch.object(cli.sys, "argv", ["code-review-graph", "watch", "--repo", "."]):
-        with patch("code_review_graph.graph.GraphStore", return_value=store):
+    with patch.object(cli.sys, "argv", ["reviewgraph", "watch", "--repo", "."]):
+        with patch("graph_engine.graph.GraphStore", return_value=store):
             with patch(
-                "code_review_graph.incremental.get_db_path",
+                "graph_engine.incremental.get_db_path",
                 return_value=MagicMock(),
             ):
-                with patch("code_review_graph.incremental.watch") as watch:
+                with patch("graph_engine.incremental.watch") as watch:
                     cli.main()
 
     watch.assert_called_once_with(repo.resolve(), store, on_files_updated=ANY)

@@ -17,10 +17,10 @@ import time
 
 import pytest
 
-import code_review_graph.incremental as incremental_module
-import code_review_graph.tools.docs as docs_module
-from code_review_graph import main as crg_main
-from code_review_graph.http_origin_guard import LoopbackOriginGuard
+import graph_engine.incremental as incremental_module
+import graph_engine.tools.docs as docs_module
+from graph_engine import main as crg_main
+from graph_engine.http_origin_guard import LoopbackOriginGuard
 
 
 @pytest.fixture(autouse=True)
@@ -70,7 +70,7 @@ def test_docs_wrapper_falls_back_to_packaged_docs_with_resolved_repo(
     tmp_path, monkeypatch,
 ):
     """The server's resolved repo must not hide wheel-packaged docs."""
-    package_dir = tmp_path / "site-packages" / "code_review_graph"
+    package_dir = tmp_path / "site-packages" / "graph_engine"
     tools_dir = package_dir / "tools"
     docs_dir = package_dir / "docs"
     tools_dir.mkdir(parents=True)

@@ -4,7 +4,7 @@
 database.  Virtual rows that are not tied to a real indexed file (for
 example the Spring ``Event`` nodes emitted by the event resolver with the
 synthetic file path ``"event"``) could therefore keep a language alive in
-``code-review-graph status`` long after the last real file of that
+``reviewgraph status`` long after the last real file of that
 language left the graph.  These tests pin the contract: the file count and
 language list printed by ``status`` always match the files actually
 indexed in the graph — after a full build and after an incremental update
@@ -18,9 +18,9 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-from code_review_graph import cli
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, incremental_update
+from reviewgraph import cli
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, incremental_update
 
 
 def _write_spring_event_trio(root: Path) -> Path:
@@ -156,7 +156,7 @@ class TestStatusCli:
         store.close()
 
         argv = [
-            "code-review-graph", "status", "--repo", str(tmp_path), "--json",
+            "reviewgraph", "status", "--repo", str(tmp_path), "--json",
         ]
         with patch.object(sys, "argv", argv):
             cli.main()

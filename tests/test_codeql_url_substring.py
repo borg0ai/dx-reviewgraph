@@ -30,7 +30,7 @@ from typing import Iterator
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-SCAN_ROOTS = ("code_review_graph", "scripts", "tests")
+SCAN_ROOTS = ("reviewgraph", "scripts", "tests")
 
 # Sample sources for the parser tests. They are inputs, not code we run, and
 # several are deliberately malformed.

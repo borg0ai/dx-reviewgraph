@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph import skills, uninstall
+from graph_engine import skills, uninstall
 
 
 def _write(path: Path, content: str) -> None:
@@ -65,7 +65,7 @@ def test_uninstall_removes_mcp_entry_for_every_current_platform_spec(
             config_path,
             "theme = \"dark\"\n\n"
             "[mcp_servers.code-review-graph]\n"
-            "command = \"code-review-graph\"\n\n"
+            "command = \"reviewgraph\"\n\n"
             "[mcp_servers.other]\ncommand = \"other\"\n",
         )
     elif spec["format"] == "yaml":
@@ -73,20 +73,20 @@ def test_uninstall_removes_mcp_entry_for_every_current_platform_spec(
             config_path,
             "theme: dark\n\n"
             f"{spec['key']}:\n"
-            "  code-review-graph:\n"
-            "    command: code-review-graph\n"
+            "  reviewgraph:\n"
+            "    command: reviewgraph\n"
             "  other:\n"
             "    url: https://example.test/mcp\n",
         )
     else:
         if spec["format"] == "array":
             container: object = [
-                {"name": "code-review-graph", "command": "code-review-graph"},
+                {"name": "reviewgraph", "command": "reviewgraph"},
                 {"name": "other", "url": "https://example.test/mcp"},
             ]
         else:
             container = {
-                "code-review-graph": {"command": "code-review-graph"},
+                "reviewgraph": {"command": "reviewgraph"},
                 "other": {"url": "https://example.test/mcp"},
             }
         _write_json(config_path, {spec["key"]: container, "theme": "dark"})
@@ -133,7 +133,7 @@ def test_platform_inventory_is_derived_not_hard_coded(
             "needs_type": False,
         },
     )
-    _write_json(config, {"servers": {"code-review-graph": {}, "mine": {}}})
+    _write_json(config, {"servers": {"reviewgraph": {}, "mine": {}}})
 
     uninstall.run(repo=fake_repo, keep_data=True)
 
@@ -150,11 +150,11 @@ def test_copilot_cli_uninstall_removes_current_and_legacy_entries(
         config,
         {
             "mcpServers": {
-                "code-review-graph": {"type": "local"},
+                "reviewgraph": {"type": "local"},
                 "current-server": {"command": "keep-current"},
             },
             "servers": {
-                "code-review-graph": {},
+                "reviewgraph": {},
                 "legacy-server": {"command": "keep-legacy"},
             },
             "theme": "dark",
@@ -184,7 +184,7 @@ def test_source_pr_legacy_mcp_paths_remain_supported(
     for path in (repo_legacy, user_legacy):
         _write_json(
             path,
-            {"mcpServers": {"code-review-graph": {}, "other": {}}},
+            {"mcpServers": {"reviewgraph": {}, "other": {}}},
         )
 
     uninstall.run(repo=fake_repo, keep_data=True)
@@ -207,7 +207,7 @@ def test_jsonc_comments_trailing_commas_and_https_survive(
         "  // keep top-level comment\n"
         f'  "{spec["key"]}": {{\n'
         "    // remove only the next member\n"
-        '    "code-review-graph": {"command": "code-review-graph"},\n'
+        '    "reviewgraph": {"command": "reviewgraph"},\n'
         "    // keep server comment\n"
         '    "other": {"url": "https://example.test/a//b"},\n'
         "  },\n"
@@ -224,7 +224,7 @@ def test_jsonc_comments_trailing_commas_and_https_survive(
     assert "keep server comment" in raw
     assert "keep trailing comment" in raw
     assert "https://example.test/a//b" in raw
-    assert "code-review-graph" not in raw
+    assert "reviewgraph" not in raw
     assert _read_jsonc(path)[spec["key"]]["other"]["url"].startswith("https://")
 
 
@@ -237,7 +237,7 @@ def test_gemini_shared_settings_removes_mcp_and_owned_hooks(
         settings,
         {
             "mcpServers": {
-                "code-review-graph": {"command": "code-review-graph"},
+                "reviewgraph": {"command": "reviewgraph"},
                 "other": {"command": "other"},
             },
             "hooks": {
@@ -348,13 +348,13 @@ def test_source_pr_legacy_hook_commands_are_removed_exactly(
     repo_arg = json.dumps(fake_repo.resolve().as_posix())
     legacy_repo_command = (
         "git rev-parse --git-dir >/dev/null 2>&1"
-        " && code-review-graph update --skip-flows"
+        " && reviewgraph update --skip-flows"
         f" --repo {repo_arg}"
         " || true"
     )
     legacy_codex_command = (
         "git rev-parse --git-dir >/dev/null 2>&1"
-        " && code-review-graph status"
+        " && reviewgraph status"
         " || echo 'Not a git repo, skipping'"
     )
     _write_json(
@@ -478,8 +478,8 @@ def test_uninstall_cleans_current_and_legacy_copilot_instruction_paths(
         fake_repo
         / ".github"
         / "instructions"
-        / "code-review-graph.instructions.md",
-        fake_repo / ".github" / "code-review-graph.instruction.md",
+        / "graph_engine.instructions.md",
+        fake_repo / ".github" / "graph_engine.instruction.md",
     )
     for path in paths:
         _write(path, "# User notes\n\n" + skills._COPILOT_SECTION)
@@ -650,7 +650,7 @@ def test_only_installer_owned_gitignore_block_is_removed(
     gitignore = fake_repo / ".gitignore"
     _write(
         gitignore,
-        "dist/\n# Added by code-review-graph\n.code-review-graph/\ncoverage/\n",
+        "dist/\n# Added by reviewgraph\n.code-review-graph/\ncoverage/\n",
     )
 
     uninstall.run(repo=fake_repo, keep_data=True)
@@ -668,7 +668,7 @@ def test_dry_run_is_meaningful_and_byte_for_byte_read_only(
     fake_home: Path,
 ) -> None:
     config = fake_repo / ".mcp.json"
-    _write_json(config, {"mcpServers": {"code-review-graph": {}}})
+    _write_json(config, {"mcpServers": {"reviewgraph": {}}})
     data = fake_repo / ".code-review-graph" / "graph.db"
     data.parent.mkdir()
     data.write_bytes(b"graph")
@@ -698,7 +698,7 @@ def test_failed_atomic_config_write_preserves_original_bytes(
     config = fake_repo / ".mcp.json"
     _write_json(
         config,
-        {"mcpServers": {"code-review-graph": {}, "other": {"command": "mine"}}},
+        {"mcpServers": {"reviewgraph": {}, "other": {"command": "mine"}}},
     )
     original = config.read_bytes()
 
@@ -726,7 +726,7 @@ def test_atomic_config_replace_preserves_file_mode(
     fake_home: Path,
 ) -> None:
     config = fake_repo / ".mcp.json"
-    _write_json(config, {"mcpServers": {"code-review-graph": {}, "other": {}}})
+    _write_json(config, {"mcpServers": {"reviewgraph": {}, "other": {}}})
     config.chmod(0o640)
 
     report = uninstall.run(
@@ -748,7 +748,7 @@ def test_non_repository_directory_is_refused_without_deleting_data(
     data = ordinary_directory / ".code-review-graph" / "unrelated.txt"
     config = ordinary_directory / ".mcp.json"
     _write(data, "not owned by CRG")
-    _write_json(config, {"mcpServers": {"code-review-graph": {}}})
+    _write_json(config, {"mcpServers": {"reviewgraph": {}}})
 
     report = uninstall.run(
         repo=ordinary_directory,
@@ -756,7 +756,7 @@ def test_non_repository_directory_is_refused_without_deleting_data(
     )
 
     assert data.read_text(encoding="utf-8") == "not owned by CRG"
-    assert _read_jsonc(config) == {"mcpServers": {"code-review-graph": {}}}
+    assert _read_jsonc(config) == {"mcpServers": {"reviewgraph": {}}}
     assert report.total_actions == 0
     assert any(
         str(ordinary_directory) in item and "Git or SVN repository" in item
@@ -795,7 +795,7 @@ def test_symlink_and_out_of_boundary_paths_are_skipped(
     os.symlink(outside_data, fake_repo / ".code-review-graph", target_is_directory=True)
 
     outside_config = tmp_path / "outside-config.json"
-    _write_json(outside_config, {"servers": {"code-review-graph": {}, "other": {}}})
+    _write_json(outside_config, {"servers": {"reviewgraph": {}, "other": {}}})
     monkeypatch.setitem(
         skills.PLATFORMS,
         "malicious-path",
@@ -814,7 +814,7 @@ def test_symlink_and_out_of_boundary_paths_are_skipped(
     assert (outside_data / "keep.txt").read_text(encoding="utf-8") == "keep"
     assert (fake_repo / ".code-review-graph").is_symlink()
     assert _read_jsonc(outside_config)["servers"] == {
-        "code-review-graph": {},
+        "reviewgraph": {},
         "other": {},
     }
     assert any("boundary" in item or "symlink" in item for item in report.skipped_paths)
@@ -832,7 +832,7 @@ def test_malformed_config_is_unchanged_and_other_cleanup_continues(
         'broken = "unterminated\n[mcp_servers.code-review-graph]\ncommand = "crg"\n',
     )
     valid = fake_repo / ".mcp.json"
-    _write_json(valid, {"mcpServers": {"code-review-graph": {}, "other": {}}})
+    _write_json(valid, {"mcpServers": {"reviewgraph": {}, "other": {}}})
 
     report = uninstall.run(repo=fake_repo, keep_data=True)
 
@@ -873,7 +873,7 @@ def test_second_run_is_idempotent(
     fake_home: Path,
 ) -> None:
     config = fake_repo / ".mcp.json"
-    _write_json(config, {"mcpServers": {"code-review-graph": {}, "other": {}}})
+    _write_json(config, {"mcpServers": {"reviewgraph": {}, "other": {}}})
 
     first = uninstall.run(repo=fake_repo, keep_data=True)
     second = uninstall.run(repo=fake_repo, keep_data=True)
@@ -897,7 +897,7 @@ def test_keep_flags_preserve_data_and_user_configuration(
     user_data.mkdir()
     (user_data / "registry.json").write_text("{}", encoding="utf-8")
     user_config = fake_home / ".qwen" / "settings.json"
-    _write_json(user_config, {"mcpServers": {"code-review-graph": {}}})
+    _write_json(user_config, {"mcpServers": {"reviewgraph": {}}})
 
     uninstall.run(
         repo=fake_repo,
@@ -908,7 +908,7 @@ def test_keep_flags_preserve_data_and_user_configuration(
     assert repo_data.exists()
     assert legacy.exists()
     assert user_data.exists()
-    assert "code-review-graph" in _read_jsonc(user_config)["mcpServers"]
+    assert "reviewgraph" in _read_jsonc(user_config)["mcpServers"]
 
 
 def test_all_repos_reads_registry_before_removing_user_data(
@@ -919,7 +919,7 @@ def test_all_repos_reads_registry_before_removing_user_data(
     registered = tmp_path / "registered"
     (registered / ".git").mkdir(parents=True)
     registered_config = registered / ".mcp.json"
-    _write_json(registered_config, {"mcpServers": {"code-review-graph": {}}})
+    _write_json(registered_config, {"mcpServers": {"reviewgraph": {}}})
     external_data = tmp_path / "external-data"
     external_data.mkdir()
     (external_data / "graph.db").write_bytes(b"keep")
@@ -943,31 +943,31 @@ def test_cli_dry_run_and_confirmation_are_safe(
     fake_home: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    from code_review_graph import cli
+    from reviewgraph import cli
 
     config = fake_repo / ".mcp.json"
-    _write_json(config, {"mcpServers": {"code-review-graph": {}}})
+    _write_json(config, {"mcpServers": {"reviewgraph": {}}})
 
     with patch.object(
         sys,
         "argv",
-        ["code-review-graph", "uninstall", "--repo", str(fake_repo), "--dry-run"],
+        ["reviewgraph", "uninstall", "--repo", str(fake_repo), "--dry-run"],
     ):
         cli.main()
     assert "dry-run" in capsys.readouterr().out.lower()
-    assert "code-review-graph" in config.read_text(encoding="utf-8")
+    assert "reviewgraph" in config.read_text(encoding="utf-8")
 
     with (
         patch.object(
             sys,
             "argv",
-            ["code-review-graph", "uninstall", "--repo", str(fake_repo)],
+            ["reviewgraph", "uninstall", "--repo", str(fake_repo)],
         ),
         patch.object(cli, "_confirm_yes_no", return_value=False),
     ):
         cli.main()
     assert "aborted" in capsys.readouterr().out.lower()
-    assert "code-review-graph" in config.read_text(encoding="utf-8")
+    assert "reviewgraph" in config.read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -990,7 +990,7 @@ def _write_codex_config(path: Path) -> None:
         path,
         'theme = "dark"\n\n'
         "[mcp_servers.code-review-graph]\n"
-        'command = "code-review-graph"\n\n'
+        'command = "reviewgraph"\n\n'
         "[mcp_servers.other]\n"
         'command = "other"\n',
     )
@@ -1002,7 +1002,7 @@ def test_platform_scoped_unbind_removes_only_target_and_keeps_data(
 ) -> None:
     """Unbinding one platform removes its MCP entry but keeps data + siblings."""
     claude_config = fake_repo / ".mcp.json"
-    _write_json(claude_config, {"mcpServers": {"code-review-graph": {}, "other": {}}})
+    _write_json(claude_config, {"mcpServers": {"reviewgraph": {}, "other": {}}})
     codex_config = fake_home / ".codex" / "config.toml"
     _write_codex_config(codex_config)
 
@@ -1026,7 +1026,7 @@ def test_platform_scoped_unbind_targets_user_scope_toml(
 ) -> None:
     """A user-scope platform (Codex/TOML) unbinds without touching repo configs."""
     claude_config = fake_repo / ".mcp.json"
-    _write_json(claude_config, {"mcpServers": {"code-review-graph": {}}})
+    _write_json(claude_config, {"mcpServers": {"reviewgraph": {}}})
     codex_config = fake_home / ".codex" / "config.toml"
     _write_codex_config(codex_config)
 
@@ -1036,7 +1036,7 @@ def test_platform_scoped_unbind_targets_user_scope_toml(
     assert "[mcp_servers.code-review-graph]" not in text
     assert "[mcp_servers.other]" in text
     # Claude was not named, so its repo binding stays put.
-    assert "code-review-graph" in claude_config.read_text(encoding="utf-8")
+    assert "reviewgraph" in claude_config.read_text(encoding="utf-8")
 
 
 def test_cli_uninstall_platform_scopes_to_one_binding(
@@ -1044,10 +1044,10 @@ def test_cli_uninstall_platform_scopes_to_one_binding(
     fake_home: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    from code_review_graph import cli
+    from reviewgraph import cli
 
     claude_config = fake_repo / ".mcp.json"
-    _write_json(claude_config, {"mcpServers": {"code-review-graph": {}, "other": {}}})
+    _write_json(claude_config, {"mcpServers": {"reviewgraph": {}, "other": {}}})
     codex_config = fake_home / ".codex" / "config.toml"
     _write_codex_config(codex_config)
 
@@ -1055,7 +1055,7 @@ def test_cli_uninstall_platform_scopes_to_one_binding(
         sys,
         "argv",
         [
-            "code-review-graph", "uninstall",
+            "reviewgraph", "uninstall",
             "--platform", "claude", "--repo", str(fake_repo), "--yes",
         ],
     ):

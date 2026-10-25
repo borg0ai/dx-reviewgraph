@@ -16,8 +16,8 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph import cli
-from code_review_graph.graph import GraphStore
+from reviewgraph import cli
+from graph_engine.graph import GraphStore
 
 READ_ONLY_COMMANDS = ["status", "detect-changes", "visualize", "wiki", "watch"]
 
@@ -52,14 +52,14 @@ def _make_git_repo(tmp_path: Path) -> Path:
 
 
 def _run_cli(argv: list[str]) -> pytest.ExceptionInfo:
-    with patch.object(sys, "argv", ["code-review-graph", *argv]):
+    with patch.object(sys, "argv", ["reviewgraph", *argv]):
         with pytest.raises(SystemExit) as exc_info:
             cli.main()
     return exc_info
 
 
 def _run_cli_ok(argv: list[str]) -> None:
-    with patch.object(sys, "argv", ["code-review-graph", *argv]):
+    with patch.object(sys, "argv", ["reviewgraph", *argv]):
         cli.main()
 
 

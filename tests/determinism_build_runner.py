@@ -43,7 +43,7 @@ def _apply_order(order: str) -> None:
     if order == "asis":
         return
 
-    from code_review_graph import incremental
+    from graph_engine import incremental
 
     original = incremental.collect_all_files
 
@@ -78,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
 
     _apply_order(args.order)
 
-    from code_review_graph.tools.build import build_or_update_graph
+    from graph_engine.tools.build import build_or_update_graph
 
     result = build_or_update_graph(
         full_rebuild=True,

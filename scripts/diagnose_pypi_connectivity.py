@@ -4,7 +4,7 @@
 If TLS to pypi.org fails (e.g. Errno 9 in some IDE terminals), a user-wide
 install from a git checkout may still work via uv (different downloader):
 
-  uv tool install /path/to/code-review-graph --force
+  uv tool install /path/to/reviewgraph --force
 
 Run: python3 scripts/diagnose_pypi_connectivity.py
 """

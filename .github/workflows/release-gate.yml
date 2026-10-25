@@ -52,7 +52,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ./modules/code-review -e './apps/cli[dev]'
       - name: Run the upgrade-path check
         env:
           CRG_UPGRADE_TEST: "1"
@@ -91,7 +91,7 @@ jobs:
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ./modules/code-review -e './apps/cli[dev]'
       - name: Run the packaging check
         run: >-
           python scripts/release_gate.py run
@@ -119,7 +119,7 @@ jobs:
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ./modules/code-review -e './apps/cli[dev]'
       - name: Run the determinism check
         run: >-
           python scripts/release_gate.py run
@@ -151,7 +151,7 @@ jobs:
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
-        run: pip install -e ".[dev]" pytest-cov
+        run: pip install -e ./modules/code-review -e './apps/cli[dev]'
       # Exclude slow checks by marker. Each runs in its own job above.
       - name: Run the full suite
         run: >-
@@ -161,7 +161,7 @@ jobs:
           --out "gate/suite-${{ matrix.python-version }}.json"
           -- --tb=short -q
           -m "not browser and not upgrade and not packaging and not corpus and not determinism"
-          --cov=code_review_graph --cov-report=term-missing --cov-fail-under=65
+          --cov=graph_engine --cov-report=term-missing --cov-fail-under=65
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -191,7 +191,7 @@ jobs:
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ./modules/code-review -e './apps/cli[dev]'
       - name: Run the end-to-end MCP client tests
         shell: bash
         run: >-
@@ -231,7 +231,7 @@ jobs:
           path: ${{ runner.temp }}/corpus-cache
           key: corpus-clones-${{ hashFiles('tests/corpus_baselines.json') }}
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ./modules/code-review -e './apps/cli[dev]'
       - name: Run the corpus check
         env:
           CRG_CORPUS_CACHE: ${{ runner.temp }}/corpus-cache
@@ -262,7 +262,7 @@ jobs:
           cache: "pip"
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
-        run: pip install -e ".[dev,browser-test]"
+        run: pip install -e ./modules/code-review -e './apps/cli[dev,browser-test]'
       - name: Install Chromium
         run: python -m playwright install --with-deps chromium
       # No coverage flag: a handful of end-to-end page tests would fail the

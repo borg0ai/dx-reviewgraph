@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Render a risk-scored PR comment from ``code-review-graph detect-changes`` JSON.
+"""Render a risk-scored PR comment from ``reviewgraph detect-changes`` JSON.
 
-Reads the JSON document printed by ``code-review-graph detect-changes
+Reads the JSON document printed by ``reviewgraph detect-changes
 --base <ref>`` (the full, non ``--brief`` output) and emits GitHub-flavoured
 markdown suitable for a sticky pull-request comment. Also implements the
 risk gate behind the composite action's ``fail-on-risk`` input.
@@ -84,7 +84,7 @@ def relativize_path(value: Any) -> str:
     repo is checked out under an absolute prefix
     (``/home/runner/work/<repo>/<repo>/...``), which is ugly in a PR comment
     and leaks the runner layout. We strip that prefix so the reader sees
-    ``code_review_graph/embeddings.py`` instead.
+    ``modules/code-review/graph_engine/embeddings.py`` instead.
 
     Handles both bare paths and ``path::symbol`` qualified names (the
     ``::symbol`` suffix is preserved). Already-relative paths and non-path
@@ -464,7 +464,7 @@ def render_not_analyzed(detail: str) -> str:
             "## ReviewGraph review",
             "",
             "**The change analysis did not run, so this pull request has not "
-            "been reviewed by code-review-graph.** This is not an all-clear.",
+            "been reviewed by graph_engine.** This is not an all-clear.",
             "",
             "```",
             md_escape(detail, limit=400) or "(no output)",

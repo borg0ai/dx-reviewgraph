@@ -60,12 +60,12 @@ from typing import Iterable
 
 import pytest
 
-from code_review_graph import cli
+from reviewgraph import cli
 
 pytestmark = pytest.mark.cli_surface
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_DIR = REPO_ROOT / "code_review_graph"
+PACKAGE_DIR = REPO_ROOT / "modules" / "code-review" / "graph_engine"
 
 # One CLI run is ~0.2s; anything blocking (serve, watch) is killed well
 # before this. A generous ceiling keeps a loaded CI box from flaking.
@@ -108,7 +108,7 @@ def _build_real_parser() -> argparse.ArgumentParser:
     original = argparse.ArgumentParser.parse_args
     argparse.ArgumentParser.parse_args = _intercept  # type: ignore[method-assign]
     original_argv = sys.argv
-    sys.argv = ["code-review-graph"]
+    sys.argv = ["reviewgraph"]
     try:
         cli.main()
     except _CapturedError as captured:
@@ -214,7 +214,7 @@ class CliResult:
         return self.returncode is None
 
     def describe(self) -> str:
-        return f"$ code-review-graph {' '.join(self.argv)}\nrc={self.returncode}\n{self.output}"
+        return f"$ reviewgraph {' '.join(self.argv)}\nrc={self.returncode}\n{self.output}"
 
 
 def run_cli(
@@ -229,7 +229,7 @@ def run_cli(
     is about exit codes, tracebacks and import-time failures, none of which
     survive an in-process call faithfully.
     """
-    command = [sys.executable, "-m", "code_review_graph", *argv]
+    command = [sys.executable, "-m", "reviewgraph", *argv]
     process = subprocess.Popen(
         command,
         cwd=str(cwd),
@@ -453,7 +453,7 @@ def test_canary_harness_actually_runs_the_cli(built_repo, cli_env):
     """A runner that silently did nothing would make every assertion pass."""
     result = run_cli("-v", cwd=built_repo, env=cli_env)
     assert result.returncode == 0, result.describe()
-    assert result.output.startswith("code-review-graph "), result.describe()
+    assert result.output.startswith("reviewgraph "), result.describe()
     assert re.search(r"\d+\.\d+", result.output), result.describe()
 
 
@@ -864,7 +864,7 @@ def test_every_kind_of_corrupt_database_is_reported_cleanly(
     if kind == "newer-schema":
         assert "newer" in result.output, result.describe()
     if kind == "foreign-sqlite":
-        assert "not a code-review-graph" in result.output, result.describe()
+        assert "not a reviewgraph" in result.output, result.describe()
 
 
 def test_foreign_repository_database_is_rejected(tmp_path, cli_env):

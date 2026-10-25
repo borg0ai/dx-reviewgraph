@@ -18,7 +18,7 @@ Releases after v2.3.6 are listed in [CHANGELOG.md](../CHANGELOG.md).
 ### v2.3.5
 - Token Savings panel on `detect-changes --brief` and the new `update --brief`, with a per-category breakdown that sums to the graph response size
 - `--verify` flag cross-checks the displayed savings against OpenAI's `cl100k_base` tokenizer; the calibration table in `docs/REPRODUCING.md` puts the estimate within about 1% of real tokens in aggregate
-- `code-review-graph embed` subcommand for explicit embedding generation
+- `reviewgraph embed` subcommand for explicit embedding generation
 - Deterministic eval pipeline: pinned upstream SHAs in every config, full clones with `returncode` checks, fixed-seed Leiden community detection (`CRG_LEIDEN_SEED`)
 - `multi_hop_retrieval` benchmark: 11 curated two-step tool-chain tasks; average score 0.909
 - Richer embedding text and identifier-aware search boost lift multi-hop accuracy from 0.545 to 0.909
@@ -42,10 +42,10 @@ Releases after v2.3.6 are listed in [CHANGELOG.md](../CHANGELOG.md).
 - Community PR sweep and VS Code accessibility improvements
 
 ### v2.2.0
-- Multi-repo watch daemon (`crg-daemon` / `code-review-graph daemon`)
+- Multi-repo watch daemon (`reviewgraph-daemon` / `reviewgraph daemon`)
 - TOML daemon configuration (`~/.code-review-graph/watch.toml`)
-- One `code-review-graph watch` child process per repo, config-file watching with reconciliation, PID file, health checks with restart
-- Standalone `crg-daemon` entry point (7 subcommands) and a `daemon` subcommand group in the main CLI
+- One `reviewgraph watch` child process per repo, config-file watching with reconciliation, PID file, health checks with restart
+- Standalone `reviewgraph-daemon` entry point (7 subcommands) and a `daemon` subcommand group in the main CLI
 
 ### v2.0.0
 - 22 MCP tools (up from 9) and 5 MCP prompts

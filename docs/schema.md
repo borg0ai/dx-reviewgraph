@@ -1,8 +1,8 @@
 # Knowledge Graph Schema
 
 The graph is one SQLite database, `.code-review-graph/graph.db`, opened in WAL mode.
-The base tables and indexes come from `_SCHEMA_SQL` in `code_review_graph/graph.py`.
-Everything else is added by the versioned migrations in `code_review_graph/migrations.py`.
+The base tables and indexes come from `_SCHEMA_SQL` in `modules/code-review/graph_engine/graph.py`.
+Everything else is added by the versioned migrations in `modules/code-review/graph_engine/migrations.py`.
 The current schema version is 13, the highest key in `MIGRATIONS`. A database
 below that is migrated on open, in order, by every migration above its own
 version.
@@ -278,7 +278,7 @@ shape, and a mirror written under an older value forces one rebuild.
 
 ### Embeddings
 
-`EmbeddingStore` in `code_review_graph/embeddings.py` creates this table in the same
+`EmbeddingStore` in `modules/code-review/graph_engine/embeddings.py` creates this table in the same
 `graph.db` when embeddings are first generated. It is not part of the migration chain; a
 missing `provider` column is added when the store opens.
 

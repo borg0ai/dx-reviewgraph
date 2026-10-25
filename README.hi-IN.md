@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/code-review-graph/"><img src="https://img.shields.io/pypi/v/code-review-graph?style=flat-square&color=blue" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/code-review-graph"><img src="https://img.shields.io/pepy/dt/code-review-graph?style=flat-square" alt="Downloads"></a>
+  <a href="https://pypi.org/project/reviewgraph/"><img src="https://img.shields.io/pypi/v/reviewgraph?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/reviewgraph"><img src="https://img.shields.io/pepy/dt/reviewgraph?style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/stargazers"><img src="https://img.shields.io/github/stars/borg0ai/dx-reviewgraph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml"><img src="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
@@ -35,7 +35,7 @@
 
 <br>
 
-एक बदलाव का रिव्यू करने के लिए AI कोडिंग टूल अक्सर कोडबेस का बड़ा हिस्सा दोबारा पढ़ते हैं। `code-review-graph` [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) से कोड का संरचनात्मक नक्शा बनाता है, उसे इंक्रीमेंटल तरीके से अद्यतन रखता है, और [MCP](https://modelcontextprotocol.io/) के ज़रिए छोटा संदर्भ देता है, ताकि असिस्टेंट सिर्फ़ वही फ़ाइलें पढ़े जिन्हें बदलाव छूता है।
+एक बदलाव का रिव्यू करने के लिए AI कोडिंग टूल अक्सर कोडबेस का बड़ा हिस्सा दोबारा पढ़ते हैं। `reviewgraph` [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) से कोड का संरचनात्मक नक्शा बनाता है, उसे इंक्रीमेंटल तरीके से अद्यतन रखता है, और [MCP](https://modelcontextprotocol.io/) के ज़रिए छोटा संदर्भ देता है, ताकि असिस्टेंट सिर्फ़ वही फ़ाइलें पढ़े जिन्हें बदलाव छूता है।
 
 <p align="center">
   <img src="diagrams/diagram1_before_vs_after.png" alt="टोकन की समस्या: flask का पूरा कॉर्पस पढ़ने पर 143,594 टोकन लगते हैं, ग्राफ़ का उत्तर 2,196 टोकन लेता है (65 गुना कम)" width="85%" />
@@ -46,12 +46,12 @@
 ## जल्दी शुरुआत
 
 ```bash
-pip install code-review-graph          # or: pipx install code-review-graph
-code-review-graph install              # detect installed AI coding tools and configure each one
-code-review-graph build                # parse the codebase
+pip install reviewgraph          # or: pipx install reviewgraph
+reviewgraph install              # detect installed AI coding tools and configure each one
+reviewgraph build                # parse the codebase
 ```
 
-`install` यह पहचानता है कि आपके पास कौन-कौन से AI कोडिंग टूल हैं, हर एक के लिए MCP सर्वर प्रविष्टि लिखता है, जहाँ प्लेटफ़ॉर्म समर्थन करता है वहाँ हुक और स्किल लगाता है, और प्लेटफ़ॉर्म की नियम फ़ाइल में ग्राफ़ संबंधी निर्देश जोड़ता है। Poetry या uv प्रोजेक्ट परिवेश में MCP प्रविष्टि `poetry run` या `uv run` का उपयोग करती है, PATH पर `uvx` होने पर `uvx code-review-graph serve` का, और बाकी स्थितियों में मौजूदा Python इंटरप्रेटर का। उसके बाद एडिटर या टूल को फिर से शुरू करें।
+`install` यह पहचानता है कि आपके पास कौन-कौन से AI कोडिंग टूल हैं, हर एक के लिए MCP सर्वर प्रविष्टि लिखता है, जहाँ प्लेटफ़ॉर्म समर्थन करता है वहाँ हुक और स्किल लगाता है, और प्लेटफ़ॉर्म की नियम फ़ाइल में ग्राफ़ संबंधी निर्देश जोड़ता है। Poetry या uv प्रोजेक्ट परिवेश में MCP प्रविष्टि `poetry run` या `uv run` का उपयोग करती है, PATH पर `uvx` होने पर `uvx reviewgraph serve` का, और बाकी स्थितियों में मौजूदा Python इंटरप्रेटर का। उसके बाद एडिटर या टूल को फिर से शुरू करें।
 
 <p align="center">
   <img src="diagrams/diagram8_supported_platforms.png" alt="एक इंस्टॉल, हर प्लेटफ़ॉर्म: Codex, Claude Code, CodeBuddy Code, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen, Qoder, Kiro, GitHub Copilot, GitHub Copilot CLI और Hermes Agent को पहचानता है" width="85%" />
@@ -60,8 +60,8 @@ code-review-graph build                # parse the codebase
 सिर्फ़ एक प्लेटफ़ॉर्म सेट करने के लिए `--platform` के साथ `codex`, `claude-code`, `cursor`, `windsurf`, `zed`, `continue`, `opencode`, `antigravity`, `gemini-cli`, `qwen`, `kiro`, `qoder`, `copilot`, `copilot-cli`, `codebuddy` या `hermes` में से कोई एक दें:
 
 ```bash
-code-review-graph install --platform cursor
-code-review-graph install --platform codebuddy
+reviewgraph install --platform cursor
+reviewgraph install --platform codebuddy
 ```
 
 कॉन्फ़िग फ़ाइलों के स्थान [docs/USAGE.md](docs/USAGE.md#supported-platforms) में सूचीबद्ध हैं। Python 3.10+ चाहिए।
@@ -69,12 +69,12 @@ code-review-graph install --platform codebuddy
 `uninstall` किसी Git या SVN वर्किंग ट्री से CRG की अपनी फ़ाइलें और प्रविष्टियाँ हटाता है और दूसरे MCP सर्वर, हुक, स्किल तथा JSONC टिप्पणियाँ जैसी की तैसी छोड़ देता है। इसे ट्री के भीतर कहीं से भी चलाया जा सकता है। साझा कॉन्फ़िग फ़ाइलें एटॉमिक तरीके से बदली जाती हैं, इसलिए लिखने में विफलता होने पर मूल फ़ाइल सुरक्षित रहती है।
 
 ```bash
-code-review-graph uninstall --dry-run    # preview only
-code-review-graph uninstall              # preview, confirm, apply
-code-review-graph uninstall --yes        # apply without prompting
-code-review-graph uninstall --all-repos  # also clean every registered repository
-code-review-graph uninstall --keep-data  # remove integrations, keep graph databases
-code-review-graph uninstall --keep-user-configs --repo .  # this project only
+reviewgraph uninstall --dry-run    # preview only
+reviewgraph uninstall              # preview, confirm, apply
+reviewgraph uninstall --yes        # apply without prompting
+reviewgraph uninstall --all-repos  # also clean every registered repository
+reviewgraph uninstall --keep-data  # remove integrations, keep graph databases
+reviewgraph uninstall --keep-user-configs --repo .  # this project only
 ```
 
 फिर प्रोजेक्ट खोलें और असिस्टेंट से कहें:
@@ -119,7 +119,7 @@ Build the code review graph for this project
 पूरा कॉर्पस मॉडल को देने के बजाय ग्राफ़ प्रश्न के अनुसार काटा गया हिस्सा लौटाता है। इस रिपॉज़िटरी के `84bde354` पर 2026-08-02 के माप में 208,821 स्रोत टोकन प्रति प्रश्न लगभग 3,190 टोकन बन गए। उस स्नैपशॉट के बाद रिपॉज़िटरी काफ़ी बढ़ी है, इसलिए आज दोनों संख्याएँ बड़ी हैं।
 
 <p align="center">
-  <img src="diagrams/diagram6_monorepo_funnel.png" alt="code-review-graph का 84bde354 स्नैपशॉट: 208,821 स्रोत टोकन सिमटकर लगभग 3,190 टोकन के ग्राफ़ उत्तर बनते हैं, प्रति प्रश्न टोकन लगभग 65 गुना कम" width="80%" />
+  <img src="diagrams/diagram6_monorepo_funnel.png" alt="reviewgraph का 84bde354 स्नैपशॉट: 208,821 स्रोत टोकन सिमटकर लगभग 3,190 टोकन के ग्राफ़ उत्तर बनते हैं, प्रति प्रश्न टोकन लगभग 65 गुना कम" width="80%" />
 </p>
 
 ### भाषा कवरेज और नोटबुक
@@ -155,7 +155,7 @@ call_node_types = ["call"]
 यही विश्लेषण एक composite GitHub Action के रूप में भी चलता है। ग्राफ़ आपके CI रनर पर ही बनता और पूछा जाता है; कोई स्रोत कोड किसी बाहरी सेवा को नहीं भेजा जाता। हर पुल रिक्वेस्ट पर यह ऐक्शन एक स्थायी टिप्पणी डालता है जिसमें जोखिम-स्कोर वाले फ़ंक्शन, प्रभावित निष्पादन प्रवाह और टेस्ट की कमियाँ होती हैं, और हर पुश पर वहीं अपडेट हो जाती है। वैकल्पिक `fail-on-risk` इनपुट इसे मर्ज गेट बना देता है।
 
 ```yaml
-# .github/workflows/code-review-graph.yml
+# .github/workflows/reviewgraph.yml
 on:
   pull_request:
 
@@ -191,22 +191,22 @@ jobs:
 <summary><strong>टोकन दक्षता: प्रति प्रश्न कमी का माध्यिका लगभग 63 गुना (दायरा 35 गुना से 358 गुना; पूरा कॉर्पस बनाम ग्राफ़ क्वेरी)</strong></summary>
 <br>
 
-एक सामान्य एजेंट प्रश्न (`"how does authentication work"`, `"what is the main entry point"` वगैरह) पर ग्राफ़ हर स्रोत फ़ाइल के बजाय लगभग 2,200 से 3,900 टोकन के खोज परिणाम और पड़ोसी एज लौटाता है। तालिका `code_review_graph/token_benchmark.py` में परिभाषित 5 नमूना प्रश्नों का औसत है।
+एक सामान्य एजेंट प्रश्न (`"how does authentication work"`, `"what is the main entry point"` वगैरह) पर ग्राफ़ हर स्रोत फ़ाइल के बजाय लगभग 2,200 से 3,900 टोकन के खोज परिणाम और पड़ोसी एज लौटाता है। तालिका `modules/code-review/graph_engine/token_benchmark.py` में परिभाषित 5 नमूना प्रश्नों का औसत है।
 
 | रिपॉज़िटरी | स्नैपशॉट SHA | naive_corpus_tokens | avg graph_tokens | कमी |
 |------|---|-----------------:|----------------:|----------:|
 | fastapi | `22381558` | 948,793 | 2,653 | **357.6x** |
 | flask | `a29f88ce` | 143,594 | 2,196 | **65.4x** |
-| code-review-graph | `84bde354` | 208,821 | 3,190 | **65.5x** |
+| reviewgraph | `84bde354` | 208,821 | 3,190 | **65.5x** |
 | gin | `5c00df8a` | 166,868 | 2,766 | **60.3x** |
 | httpx | `b55d4635` | 142,356 | 2,661 | **53.5x** |
 | express | `b4ab7d65` | 136,052 | 3,936 | **34.6x** |
 
 > 2026-08-02 को पिन किए गए SHA पर साफ़ क्लोन से लिया गया (crg 2.3.7, स्थानीय `all-MiniLM-L6-v2` एम्बेडिंग)। ये संख्याएँ उस 2026-05-25 के माप से कम हैं जिसकी ये जगह लेती हैं: नोड एम्बेडिंग टेक्स्ट अधिक समृद्ध हो गया, इसलिए हर रिपॉज़िटरी में `avg graph_tokens` बढ़ा। fastapi को हटाए गए `0227991a` के बजाय उसके मौजूदा पिन `22381558` पर मापा गया है।
 >
-> कमी वाला स्तंभ `naive_corpus_tokens / avg graph_tokens` है, इसलिए वह बगल के दो स्तंभों से भाग देकर निकल आता है। बेंचमार्क का अपना `average_reduction_ratio` इसके बजाय प्रति प्रश्न अनुपातों का औसत लेता है, जो हमेशा बड़ा निकलता है; प्रति प्रश्न आँकड़े [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-code_review_graphtoken_benchmarkpy) में हैं।
+> कमी वाला स्तंभ `naive_corpus_tokens / avg graph_tokens` है, इसलिए वह बगल के दो स्तंभों से भाग देकर निकल आता है। बेंचमार्क का अपना `average_reduction_ratio` इसके बजाय प्रति प्रश्न अनुपातों का औसत लेता है, जो हमेशा बड़ा निकलता है; प्रति प्रश्न आँकड़े [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-reviewgraphtoken_benchmarkpy) में हैं।
 >
-> `code-review-graph` वाली पंक्ति एक स्नैपशॉट है, आज का माप नहीं। `84bde354` के बाद रिपॉज़िटरी बढ़ी है, इसलिए उसका कॉर्पस और ग्राफ़ दोनों आज कहीं बड़े हैं।
+> `reviewgraph` वाली पंक्ति एक स्नैपशॉट है, आज का माप नहीं। `84bde354` के बाद रिपॉज़िटरी बढ़ी है, इसलिए उसका कॉर्पस और ग्राफ़ दोनों आज कहीं बड़े हैं।
 
 पूरे कॉर्पस वाली आधाररेखा एक ऊपरी सीमा है जो कोई असली एजेंट नहीं चुकाता; एजेंट पहचानकर्ताओं को grep करता है और सबसे मेल खाती फ़ाइलें पढ़ता है। `agent_baseline` मूल्यांकन बेंचमार्क उसी स्थिति को मापता है (शुद्ध Python से कॉर्पस पर grep, मिलान संख्या के हिसाब से शीर्ष 3 फ़ाइलें, और ग्राफ़ क्वेरी की लागत से टोकन तुलना)। यह `evaluate/results/<repo>_agent_baseline_<date>.csv` लिखता है; अभी तक कोई आधिकारिक माप प्रकाशित नहीं हुआ है।
 
@@ -225,7 +225,7 @@ jobs:
 | रिपॉज़िटरी | कमिट | औसत F1 | औसत प्रिसिज़न | रिकॉल (ग्राफ़ से निकली ऊपरी सीमा) |
 |------|--------:|-------:|--------------:|-------:|
 | httpx | 2 | 0.863 | 0.785 | 1.0 |
-| code-review-graph | 2 | 0.734 | 0.584 | 1.0 |
+| reviewgraph | 2 | 0.734 | 0.584 | 1.0 |
 | fastapi | 2 | 0.697 | 0.539 | 1.0 |
 | express | 2 | 0.667 | 0.500 | 1.0 |
 | flask | 2 | 0.633 | 0.485 | 1.0 |
@@ -240,14 +240,14 @@ jobs:
 <summary><strong>बिल्ड आँकड़े</strong></summary>
 <br>
 
-ऊपर दिए पिन किए गए SHA पर उसी 2026-08-02 के साफ़ बिल्ड से। एम्बेडिंग की संख्या नोड की संख्या से कम है क्योंकि File नोड एम्बेड नहीं किए जाते। `code-review-graph` वाली पंक्ति वही स्नैपशॉट है, आज की रिपॉज़िटरी नहीं।
+ऊपर दिए पिन किए गए SHA पर उसी 2026-08-02 के साफ़ बिल्ड से। एम्बेडिंग की संख्या नोड की संख्या से कम है क्योंकि File नोड एम्बेड नहीं किए जाते। `reviewgraph` वाली पंक्ति वही स्नैपशॉट है, आज की रिपॉज़िटरी नहीं।
 
 | रिपॉज़िटरी | नोड | एज | एम्बेडिंग |
 |------|------:|------:|-----------:|
 | fastapi | 6,287 | 32,036 | 5,159 |
 | express | 1,990 | 19,492 | 1,849 |
 | gin | 1,589 | 17,237 | 1,491 |
-| code-review-graph | 1,446 | 9,094 | 1,354 |
+| reviewgraph | 1,446 | 9,094 | 1,354 |
 | flask | 1,415 | 8,259 | 1,329 |
 | httpx | 1,263 | 8,236 | 1,193 |
 
@@ -282,7 +282,7 @@ jobs:
 | **एज विश्वास स्तर** | दो-स्तरीय विश्वास (EXTRACTED/INFERRED) और एज पर फ़्लोट स्कोर |
 | **ग्राफ़ ट्रैवर्सल** | किसी भी नोड से BFS/DFS, गहराई और टोकन बजट सेट किए जा सकते हैं |
 | **निर्यात प्रारूप** | GraphML (Gephi/yEd), Neo4j Cypher, Obsidian वॉल्ट, JSON, और SVG (SVG के लिए `eval` एक्स्ट्रा का matplotlib चाहिए) |
-| **टोकन बेंचमार्किंग** | `code_review_graph/token_benchmark.py` प्रति प्रश्न पूरे कॉर्पस के टोकन और ग्राफ़ क्वेरी के टोकन मापता है |
+| **टोकन बेंचमार्किंग** | `modules/code-review/graph_engine/token_benchmark.py` प्रति प्रश्न पूरे कॉर्पस के टोकन और ग्राफ़ क्वेरी के टोकन मापता है |
 | **अनुमानित संदर्भ बचत** | रिव्यू, प्रभाव, detect-changes और आर्किटेक्चर उत्तरों पर `context_savings` मेटाडेटा (`estimated`, `saved_tokens`, `saved_percent`) |
 | **कम्युनिटी स्वतः विभाजन** | ग्राफ़ के 25% से बड़ी कम्युनिटी को Leiden से पुनरावर्ती रूप से बाँटा जाता है |
 | **निष्पादन प्रवाह** | प्रवेश बिंदुओं से कॉल श्रृंखलाएँ, भारित महत्ता के क्रम में |
@@ -294,7 +294,7 @@ jobs:
 | **रीफ़ैक्टरिंग टूल** | नाम बदलने का पूर्वावलोकन, फ़्रेमवर्क-सचेत डेड कोड पहचान, कम्युनिटी आधारित सुझाव |
 | **विकी निर्माण** | कम्युनिटी संरचना से Markdown विकी |
 | **बहु-रिपॉज़िटरी रजिस्ट्री** | कई रिपॉज़िटरी दर्ज करें और उन सब में खोजें |
-| **बहु-रिपॉज़िटरी डीमन** | `crg-daemon` कई रिपॉज़िटरी को चाइल्ड प्रोसेस के रूप में देखता है, हेल्थ चेक और पुनः आरंभ के साथ |
+| **बहु-रिपॉज़िटरी डीमन** | `reviewgraph-daemon` कई रिपॉज़िटरी को चाइल्ड प्रोसेस के रूप में देखता है, हेल्थ चेक और पुनः आरंभ के साथ |
 | **MCP प्रॉम्प्ट** | 5 वर्कफ़्लो टेम्पलेट: रिव्यू, आर्किटेक्चर, डिबग, ऑनबोर्ड, मर्ज-पूर्व जाँच |
 | **पूर्ण-पाठ खोज** | कीवर्ड और वेक्टर समानता को जोड़ने वाली FTS5 हाइब्रिड खोज |
 | **स्थानीय भंडारण** | `.code-review-graph/` में एक SQLite फ़ाइल; कोई बाहरी डेटाबेस या क्लाउड सेवा नहीं |
@@ -325,42 +325,42 @@ Qoder को इस रिपॉज़िटरी की `skills/` डायर
 <br>
 
 ```bash
-code-review-graph install          # Detect and configure all platforms
-code-review-graph install --platform <name>  # One platform
-code-review-graph uninstall --dry-run  # Preview removal of installed artifacts
-code-review-graph build            # Parse the whole codebase
-code-review-graph update           # Incremental update (changed files only)
-code-review-graph status           # Graph statistics
-code-review-graph watch            # Update on file changes
-code-review-graph forget <path>    # Drop already-parsed files from the graph
-code-review-graph dead-code        # Functions and classes with no callers or tests
-code-review-graph visualize        # Interactive HTML graph
-code-review-graph visualize --format json      # Export graph data as JSON
-code-review-graph visualize --format graphml   # Export as GraphML
-code-review-graph visualize --format svg       # Export as SVG (needs matplotlib)
-code-review-graph visualize --format obsidian  # Export as Obsidian vault
-code-review-graph visualize --format cypher    # Export as Neo4j Cypher
-code-review-graph wiki             # Markdown wiki from communities
-code-review-graph detect-changes --brief         # Risk panel + token savings (read-only)
-code-review-graph detect-changes --brief --base main  # Against the merge base of main and HEAD
-code-review-graph update --brief                 # Refresh graph + same panel
-code-review-graph detect-changes --brief --verify  # Cross-check against tiktoken
-code-review-graph register <path>  # Register repo in the multi-repo registry
-code-review-graph unregister <path|alias>  # Remove repo from the registry
-code-review-graph repos            # List registered repositories
-code-review-graph daemon start     # Start the multi-repo watch daemon
-code-review-graph daemon stop      # Stop the daemon
-code-review-graph daemon status    # Daemon status and repos
-code-review-graph eval             # Run evaluation benchmarks
-code-review-graph serve            # Start the MCP server (stdio)
-code-review-graph serve --http     # MCP over Streamable HTTP on localhost:5555
+reviewgraph install          # Detect and configure all platforms
+reviewgraph install --platform <name>  # One platform
+reviewgraph uninstall --dry-run  # Preview removal of installed artifacts
+reviewgraph build            # Parse the whole codebase
+reviewgraph update           # Incremental update (changed files only)
+reviewgraph status           # Graph statistics
+reviewgraph watch            # Update on file changes
+reviewgraph forget <path>    # Drop already-parsed files from the graph
+reviewgraph dead-code        # Functions and classes with no callers or tests
+reviewgraph visualize        # Interactive HTML graph
+reviewgraph visualize --format json      # Export graph data as JSON
+reviewgraph visualize --format graphml   # Export as GraphML
+reviewgraph visualize --format svg       # Export as SVG (needs matplotlib)
+reviewgraph visualize --format obsidian  # Export as Obsidian vault
+reviewgraph visualize --format cypher    # Export as Neo4j Cypher
+reviewgraph wiki             # Markdown wiki from communities
+reviewgraph detect-changes --brief         # Risk panel + token savings (read-only)
+reviewgraph detect-changes --brief --base main  # Against the merge base of main and HEAD
+reviewgraph update --brief                 # Refresh graph + same panel
+reviewgraph detect-changes --brief --verify  # Cross-check against tiktoken
+reviewgraph register <path>  # Register repo in the multi-repo registry
+reviewgraph unregister <path|alias>  # Remove repo from the registry
+reviewgraph repos            # List registered repositories
+reviewgraph daemon start     # Start the multi-repo watch daemon
+reviewgraph daemon stop      # Stop the daemon
+reviewgraph daemon status    # Daemon status and repos
+reviewgraph eval             # Run evaluation benchmarks
+reviewgraph serve            # Start the MCP server (stdio)
+reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 ```
 
-यह एक चुनी हुई सूची है। `code-review-graph --help` हर कमांड दिखाता है, और [docs/COMMANDS.md](docs/COMMANDS.md) उनके फ़्लैग बताता है।
+यह एक चुनी हुई सूची है। `reviewgraph --help` हर कमांड दिखाता है, और [docs/COMMANDS.md](docs/COMMANDS.md) उनके फ़्लैग बताता है।
 
 जब `detect-changes --base` किसी ब्रांच का नाम देता है, तो diff उस ब्रांच और HEAD के मर्ज बेस के मुकाबले चलता है। कमिट हैश और अन्य रिवीज़न जैसे दिए जाते हैं वैसे ही इस्तेमाल होते हैं।
 
-`visualize --format svg` के लिए matplotlib चाहिए, जो `eval` एक्स्ट्रा में आता है (`pip install "code-review-graph[eval]"`)। बाकी निर्यात प्रारूपों के लिए कोई अतिरिक्त इंस्टॉल नहीं चाहिए।
+`visualize --format svg` के लिए matplotlib चाहिए, जो `eval` एक्स्ट्रा में आता है (`pip install "reviewgraph[eval]"`)। बाकी निर्यात प्रारूपों के लिए कोई अतिरिक्त इंस्टॉल नहीं चाहिए।
 
 JSON निर्यात स्थानीय ग्राफ़ डेटा डायरेक्टरी में लिखे जाते हैं, जिसे Git डिफ़ॉल्ट रूप से अनदेखा करता है। इनमें निरपेक्ष पथ और कोड संरचना का मेटाडेटा हो सकता है, इसलिए प्रकाशित करने से पहले निर्यात की जाँच करें।
 
@@ -383,7 +383,7 @@ JSON निर्यात स्थानीय ग्राफ़ डेटा
 
 | कमांड | यह क्या करता है | कब इस्तेमाल करें |
 |---|---|---|
-| `detect-changes --brief` | केवल पढ़ता है। मौजूदा बदलावों के लिए मौजूदा ग्राफ़ से पूछता है और पैनल छापता है। | ज़्यादातर मौकों पर; हुक या `crg-daemon` ग्राफ़ को ताज़ा रखते हैं। |
+| `detect-changes --brief` | केवल पढ़ता है। मौजूदा बदलावों के लिए मौजूदा ग्राफ़ से पूछता है और पैनल छापता है। | ज़्यादातर मौकों पर; हुक या `reviewgraph-daemon` ग्राफ़ को ताज़ा रखते हैं। |
 | `update --brief` | पहले बदली हुई फ़ाइलों को ग्राफ़ में दोबारा पार्स करता है, फिर वही पैनल छापता है। | रीबेस के बाद, बड़े बदलाव समूह पर, या जब ग्राफ़ पुराना हो सकता हो। |
 
 किसी भी कमांड में `--verify` जोड़कर आँकड़ों की तुलना OpenAI के `cl100k_base` टोकनाइज़र से करें (`pip install tiktoken` चाहिए)। कुल मिलाकर अनुमान असली टोकन से लगभग 1% के भीतर रहता है; देखें [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)।
@@ -396,25 +396,25 @@ JSON निर्यात स्थानीय ग्राफ़ डेटा
 <summary><strong>बहु-रिपॉज़िटरी डीमन</strong></summary>
 <br>
 
-अगर आपका एडिटर हुक का समर्थन नहीं करता (जैसे Cursor या OpenCode), या आप एडिटर एकीकरण के बिना ग्राफ़ ताज़ा रखना चाहते हैं, तो डीमन आपकी रिपॉज़िटरी देखता है और उनके ग्राफ़ अद्यतन करता है। यह `code-review-graph` के साथ आता है; अलग से इंस्टॉल नहीं करना पड़ता।
+अगर आपका एडिटर हुक का समर्थन नहीं करता (जैसे Cursor या OpenCode), या आप एडिटर एकीकरण के बिना ग्राफ़ ताज़ा रखना चाहते हैं, तो डीमन आपकी रिपॉज़िटरी देखता है और उनके ग्राफ़ अद्यतन करता है। यह `reviewgraph` के साथ आता है; अलग से इंस्टॉल नहीं करना पड़ता।
 
 ```bash
 # 1. Register the repos to watch
-crg-daemon add ~/project-a --alias proj-a
-crg-daemon add ~/project-b
+reviewgraph-daemon add ~/project-a --alias proj-a
+reviewgraph-daemon add ~/project-b
 
 # 2. Start the daemon (runs in the background)
-crg-daemon start
+reviewgraph-daemon start
 
 # 3. Check on it
-crg-daemon status                 # daemon and per-repo watcher status
-crg-daemon logs --repo proj-a -f  # tail logs for one repo
-crg-daemon stop                   # stop the daemon and all watchers
+reviewgraph-daemon status                 # daemon and per-repo watcher status
+reviewgraph-daemon logs --repo proj-a -f  # tail logs for one repo
+reviewgraph-daemon stop                   # stop the daemon and all watchers
 ```
 
-इसे `code-review-graph daemon start|stop|status|...` के रूप में भी चलाया जा सकता है।
+इसे `reviewgraph daemon start|stop|status|...` के रूप में भी चलाया जा सकता है।
 
-`crg-daemon add` `~/.code-review-graph/watch.toml` में लिखता है, जिसे आप सीधे भी संपादित कर सकते हैं:
+`reviewgraph-daemon add` `~/.code-review-graph/watch.toml` में लिखता है, जिसे आप सीधे भी संपादित कर सकते हैं:
 
 ```toml
 [[repos]]
@@ -428,7 +428,7 @@ alias = "project-b"
 
 डीमन इस फ़ाइल को देखता रहता है और रिपॉज़िटरी जुड़ने या हटने पर वॉचर प्रोसेस शुरू या बंद करता है। हर 30 सेकंड की हेल्थ जाँच मरे हुए वॉचर फिर से चालू कर देती है।
 
-पूरा कॉन्फ़िग संदर्भ [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-crg-daemon) में देखें।
+पूरा कॉन्फ़िग संदर्भ [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-reviewgraph-daemon) में देखें।
 
 </details>
 
@@ -494,13 +494,13 @@ git रिपॉज़िटरी में सिर्फ़ ट्रैक 
 वैकल्पिक निर्भरता समूह:
 
 ```bash
-pip install "code-review-graph[embeddings]"          # Local vector embeddings (sentence-transformers)
-pip install "code-review-graph[google-embeddings]"   # Google Gemini embeddings
-pip install "code-review-graph[communities]"         # Community detection (igraph)
-pip install "code-review-graph[enrichment]"          # Python call-resolution enrichment (Jedi)
-pip install "code-review-graph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
-pip install "code-review-graph[wiki]"                # ollama client (not used by the current wiki generator)
-pip install "code-review-graph[all]"                 # All optional dependencies
+pip install "reviewgraph[embeddings]"          # Local vector embeddings (sentence-transformers)
+pip install "reviewgraph[google-embeddings]"   # Google Gemini embeddings
+pip install "reviewgraph[communities]"         # Community detection (igraph)
+pip install "reviewgraph[enrichment]"          # Python call-resolution enrichment (Jedi)
+pip install "reviewgraph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
+pip install "reviewgraph[wiki]"                # ollama client (not used by the current wiki generator)
+pip install "reviewgraph[all]"                 # All optional dependencies
 ```
 
 ### पर्यावरण चर
@@ -562,12 +562,12 @@ Voyage एम्बेडिंग के लिए भी अतिरिक्
 ```bash
 export VOYAGE_API_KEY=pa-...
 export CRG_ACCEPT_CLOUD_EMBEDDINGS=1
-code-review-graph embed --provider voyage --model voyage-code-3
+reviewgraph embed --provider voyage --model voyage-code-3
 ```
 
 > **मॉडल चुनना।** जिस इंडेक्स को लंबे समय तक रखना हो, उसके लिए `-preview`, `-beta` या `-exp` वाले मॉडल ID से बचें; प्रीव्यू मॉडल के वेट बदल सकते हैं (डाइमेंशन बदलने पर पूरा दोबारा एम्बेड करना पड़ता है) या उन्हें हटाया जा सकता है। `text-embedding-3-small` / `text-embedding-3-large` (OpenAI), `Qwen/Qwen3-Embedding-8B` (स्व-होस्टेड vLLM या LocalAI), या `gemini-embedding-001` (नेटिव Gemini प्रोवाइडर, जिसे `GOOGLE_API_KEY` चाहिए) जैसे GA रिलीज़ चुनें।
 >
-> एम्बेडिंग टेक्स्ट में पहचानकर्ता, हस्ताक्षर, संरचनात्मक संदर्भ, और पहले अनुच्छेद के docstring या डॉक-टिप्पणी का सीमित सारांश होता है। फ़ंक्शन के बॉडी नहीं भेजे जाते। दस्तावेज़ निकालने की सुविधा आने से पहले बने ग्राफ़ को दोबारा एम्बेड करने से पहले एक पूरा `code-review-graph build` चाहिए। सामान्य बिल्ड एम्बेडिंग कभी ताज़ा नहीं करते; बिल्ड के बाद ताज़ा करने के लिए `--embedding-provider` और `--embedding-model` दोनों दें। क्लाउड प्रोवाइडर को यह स्रोत-आधारित टेक्स्ट मिलता है और वे उसका शुल्क ले सकते हैं।
+> एम्बेडिंग टेक्स्ट में पहचानकर्ता, हस्ताक्षर, संरचनात्मक संदर्भ, और पहले अनुच्छेद के docstring या डॉक-टिप्पणी का सीमित सारांश होता है। फ़ंक्शन के बॉडी नहीं भेजे जाते। दस्तावेज़ निकालने की सुविधा आने से पहले बने ग्राफ़ को दोबारा एम्बेड करने से पहले एक पूरा `reviewgraph build` चाहिए। सामान्य बिल्ड एम्बेडिंग कभी ताज़ा नहीं करते; बिल्ड के बाद ताज़ा करने के लिए `--embedding-provider` और `--embedding-model` दोनों दें। क्लाउड प्रोवाइडर को यह स्रोत-आधारित टेक्स्ट मिलता है और वे उसका शुल्क ले सकते हैं।
 
 #### टूल फ़िल्टरिंग
 
@@ -575,10 +575,10 @@ CRG डिफ़ॉल्ट रूप से 30 MCP टूल दिखात�
 
 ```bash
 # CLI flag
-code-review-graph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
+reviewgraph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
 
 # Environment variable
-CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
+CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ```
 
 फ़्लैग चर से पहले आता है। जब कोई भी सेट न हो, तब सारे टूल उपलब्ध रहते हैं। MCP क्लाइंट कॉन्फ़िग में:
@@ -586,8 +586,8 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
 ```json
 {
   "mcpServers": {
-    "code-review-graph": {
-      "command": "code-review-graph",
+    "reviewgraph": {
+      "command": "reviewgraph",
       "args": ["serve", "--tools", "query_graph_tool,semantic_search_nodes_tool,detect_changes_tool,get_review_context_tool"]
     }
   }
@@ -622,11 +622,11 @@ Windows/WSL सहित और भी मामले [docs/TROUBLESHOOTING.md]
 2. [uv](https://docs.astral.sh/uv/) से चेकआउट से इंस्टॉल करें, जो अलग डाउनलोड तंत्र इस्तेमाल करता है:
 
    ```bash
-   cd /path/to/code-review-graph
+   cd /path/to/reviewgraph
    uv tool install . --force
    ```
 
-3. क्लोन में विकास के लिए `uv sync` और `uv run code-review-graph ...` का उपयोग करें।
+3. क्लोन में विकास के लिए `uv sync` और `uv run reviewgraph ...` का उपयोग करें।
 
 जाँच के लिए: `python3 scripts/diagnose_pypi_connectivity.py`। अगर यह `FAILED` छापे, तो समस्या नेटवर्क परिवेश की है, पैकेज के नाम की नहीं।
 
@@ -635,8 +635,8 @@ Windows/WSL सहित और भी मामले [docs/TROUBLESHOOTING.md]
 Claude Code कॉन्फ़िग में `cmd /c` रैपर का उपयोग न करें। `~/.claude.json` को सीधे `.exe` की ओर इंगित करें और UTF-8 कॉन्फ़िग से सेट करें:
 
 ```json
-"code-review-graph": {
-  "command": "C:\\path\\to\\your\\venv\\Scripts\\code-review-graph.exe",
+"reviewgraph": {
+  "command": "C:\\path\\to\\your\\venv\\Scripts\\reviewgraph.exe",
   "args": ["serve", "--repo", "C:\\path\\to\\your\\project"],
   "env": { "PYTHONUTF8": "1" }
 }
@@ -648,14 +648,14 @@ Claude Code कॉन्फ़िग में `cmd /c` रैपर का उ�
 git clone https://github.com/borg0ai/dx-reviewgraph.git
 cd dx-reviewgraph
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --group dev
 pytest
 ```
 
 फ़ीचर और फ़िक्स पुल रिक्वेस्ट सीधे `main` पर भेजें। रिलीज़ `main` से टैग होती हैं। पूरा प्रवाह
 [CONTRIBUTING.md](CONTRIBUTING.md#branching) में देखें।
 
-अंतर्निहित भाषा जोड़ने के लिए `code_review_graph/parser.py` संपादित करें: एक्सटेंशन को `EXTENSION_TO_LANGUAGE` में और नोड प्रकार मैपिंग को `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` तथा `_CALL_TYPES` में जोड़ें। एक टेस्ट फ़िक्स्चर साथ दें और PR खोलें। अगर भाषा सिर्फ़ एक ही रिपॉज़िटरी में चाहिए, तो उसके बजाय [`languages.toml`](docs/CUSTOM_LANGUAGES.md) का उपयोग करें।
+अंतर्निहित भाषा जोड़ने के लिए `modules/code-review/graph_engine/parser.py` संपादित करें: एक्सटेंशन को `EXTENSION_TO_LANGUAGE` में और नोड प्रकार मैपिंग को `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` तथा `_CALL_TYPES` में जोड़ें। एक टेस्ट फ़िक्स्चर साथ दें और PR खोलें। अगर भाषा सिर्फ़ एक ही रिपॉज़िटरी में चाहिए, तो उसके बजाय [`languages.toml`](docs/CUSTOM_LANGUAGES.md) का उपयोग करें।
 
 ## लाइसेंस
 
@@ -663,5 +663,5 @@ MIT। देखें [LICENSE](LICENSE)।
 
 <p align="center">
 <br>
-<code>pip install code-review-graph && code-review-graph install</code>
+<code>pip install reviewgraph && reviewgraph install</code>
 </p>

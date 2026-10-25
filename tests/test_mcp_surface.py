@@ -232,7 +232,7 @@ def _make_fixture_repo(root: Path) -> tuple[Path, list[str]]:
 def _server_env(home: Path, crg_home: Path, extra: dict[str, str] | None = None) -> dict[str, str]:
     """Environment for the spawned server: isolated user state, no real HOME."""
     env = os.environ.copy()
-    # Everything code-review-graph writes per-user resolves from CRG_HOME;
+    # Everything reviewgraph writes per-user resolves from CRG_HOME;
     # the editor installers in skills.py resolve from HOME. Point both at
     # temp directories so a run cannot touch the developer's machine.
     env["HOME"] = str(home)
@@ -284,7 +284,7 @@ class Fixture:
 
     def cli(self, *args: str, extra: dict[str, str] | None = None) -> str:
         completed = subprocess.run(
-            [sys.executable, "-m", "code_review_graph", *args],
+            [sys.executable, "-m", "reviewgraph", *args],
             cwd=str(self.repo),
             env=self.env(extra),
             capture_output=True,
@@ -379,7 +379,7 @@ def _stub_embedding_endpoint():
 def _server_params(fixture: Fixture, extra_env: dict[str, str] | None = None) -> Any:
     return StdioServerParameters(
         command=sys.executable,
-        args=["-m", "code_review_graph", "serve", "--repo", str(fixture.repo)],
+        args=["-m", "reviewgraph", "serve", "--repo", str(fixture.repo)],
         env=fixture.env(extra_env),
         cwd=str(fixture.repo),
     )
@@ -655,7 +655,7 @@ async def test_every_registered_tool_returns_real_content(unbuilt: Fixture) -> N
             docs = await _call(session, "get_docs_section_tool", {"section_name": "usage"})
             assert docs["status"] == "ok", docs
             assert docs["section"] == "usage"
-            assert "code-review-graph" in docs["content"], docs["content"][:200]
+            assert "reviewgraph" in docs["content"], docs["content"][:200]
             walk.verify("get_docs_section_tool", ["status", "section", "content"])
 
             # --- 11. large functions --------------------------------------
@@ -1311,7 +1311,7 @@ def _c0_controls(text: str) -> set[str]:
 
 
 # Fields that reach the client carrying an unsanitised, uncapped node name.
-# code_review_graph/analysis.py sanitises the ``name`` of every record it
+# modules/code-review/graph_engine/analysis.py sanitises the ``name`` of every record it
 # builds but passes ``qualified_name`` / ``source_qualified`` / ``target``
 # through verbatim, unlike graph.node_to_dict which sanitises both. A NUL or
 # an ESC planted in a node name therefore reaches an MCP client through these
@@ -1498,7 +1498,7 @@ class RawStdioServer:
 
     def __init__(self, fixture: Fixture) -> None:
         self._proc = subprocess.Popen(  # noqa: S603 - list args, no shell
-            [sys.executable, "-m", "code_review_graph", "serve"],
+            [sys.executable, "-m", "reviewgraph", "serve"],
             cwd=str(fixture.repo),
             env=fixture.env(),
             stdin=subprocess.PIPE,
@@ -1592,7 +1592,7 @@ def test_spec_conformance_requirements_from_issue_919(built: Fixture) -> None:
         )
         assert init is not None and "result" in init, init
         result = init["result"]
-        assert result["serverInfo"]["name"] == "code-review-graph"
+        assert result["serverInfo"]["name"] == "reviewgraph"
         assert result["protocolVersion"], result
         assert set(result["capabilities"]) >= {"tools", "prompts", "resources"}, result
         server.send({"jsonrpc": "2.0", "method": "notifications/initialized"})
@@ -1640,8 +1640,8 @@ def test_external_mcp_spec_checker(built: Fixture, tmp_path: Path) -> None:
     launcher.write_text(
         "import os, runpy, sys\n"
         f"os.chdir({str(built.repo)!r})\n"
-        "sys.argv = ['code-review-graph', 'serve']\n"
-        "runpy.run_module('code_review_graph', run_name='__main__')\n",
+        "sys.argv = ['reviewgraph', 'serve']\n"
+        "runpy.run_module('reviewgraph', run_name='__main__')\n",
         encoding="utf-8",
     )
     command = f"{sys.executable} {launcher}"

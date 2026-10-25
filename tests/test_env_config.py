@@ -19,7 +19,7 @@ import logging
 
 import pytest
 
-from code_review_graph import constants
+from graph_engine import constants
 
 
 @pytest.fixture(autouse=True)

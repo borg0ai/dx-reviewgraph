@@ -70,7 +70,7 @@ def test_stdio_server_parallel_build_then_eof_exits_cleanly(tmp_path):
         [
             sys.executable,
             "-m",
-            "code_review_graph",
+            "reviewgraph",
             "serve",
             "--repo",
             str(tmp_path),

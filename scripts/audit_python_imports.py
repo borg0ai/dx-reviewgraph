@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit the Python import edges in a built code-review-graph database.
+"""Audit the Python import edges in a built reviewgraph database.
 
 Ground truth comes from CPython's own ``ast`` module, never from the graph:
 every ``from ... import ...`` statement is re-resolved here with the import
@@ -21,8 +21,8 @@ Sections
 Usage
 -----
     uv run --python 3.13 python scripts/audit_python_imports.py \
-        --repo . --package code_review_graph \
-        --calls-module code_review_graph/changes.py \
+        --repo . --package reviewgraph \
+        --calls-module modules/code-review/graph_engine/changes.py \
         --build-log build.log --json audit.json
 """
 
@@ -997,13 +997,13 @@ def _pct(part: int, whole: int) -> float:
 # ---------------------------------------------------------------------------
 
 DEFAULT_CALLS_MODULES = [
-    "code_review_graph/changes.py",
-    "code_review_graph/flows.py",
-    "code_review_graph/hints.py",
-    "code_review_graph/refactor.py",
-    "code_review_graph/search.py",
-    "code_review_graph/communities.py",
-    "code_review_graph/wiki.py",
+    "modules/code-review/graph_engine/changes.py",
+    "modules/code-review/graph_engine/flows.py",
+    "modules/code-review/graph_engine/hints.py",
+    "modules/code-review/graph_engine/refactor.py",
+    "modules/code-review/graph_engine/search.py",
+    "modules/code-review/graph_engine/communities.py",
+    "modules/code-review/graph_engine/wiki.py",
 ]
 
 

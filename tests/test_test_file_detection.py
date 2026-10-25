@@ -15,9 +15,9 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.changes import analyze_changes
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import CodeParser, NodeInfo, is_test_file
+from graph_engine.changes import analyze_changes
+from graph_engine.graph import GraphStore
+from graph_engine.parser import CodeParser, NodeInfo, is_test_file
 
 # ---------------------------------------------------------------------------
 # is_test_file: per-language conventions
@@ -61,7 +61,7 @@ TEST_PATHS = [
 ]
 
 PRODUCTION_PATHS = [
-    "/repo/code_review_graph/changes.py",
+    "/repo/modules/code-review/graph_engine/changes.py",
     "/repo/src/button.ts",
     "/repo/src/latest/index.ts",
     "/repo/pkg/server.go",
@@ -115,7 +115,7 @@ def test_repo_relative_paths_need_no_root(path):
 
 @pytest.mark.parametrize("workspace", ["test", "tests", "spec", "specs"])
 @pytest.mark.parametrize("path", PRODUCTION_PATHS + [
-    "/code_review_graph/parser.py",
+    "/modules/code-review/graph_engine/parser.py",
     "/src/index.ts",
 ])
 def test_checkout_under_a_test_named_directory_stays_production(workspace, path):
@@ -382,20 +382,20 @@ class TestGapsExcludeTestFiles:
         assert result["test_gaps"] == []
 
     def test_production_gaps_are_still_reported(self):
-        self._add("Function", "analyze_changes", "code_review_graph/changes.py",
+        self._add("Function", "analyze_changes", "modules/code-review/graph_engine/changes.py",
                   line_start=1, line_end=10)
-        self._add("Class", "GraphStore", "code_review_graph/graph.py",
+        self._add("Class", "GraphStore", "modules/code-review/graph_engine/graph.py",
                   line_start=1, line_end=10)
 
         result = analyze_changes(
             self.store,
             changed_files=[
-                "code_review_graph/changes.py",
-                "code_review_graph/graph.py",
+                "modules/code-review/graph_engine/changes.py",
+                "modules/code-review/graph_engine/graph.py",
             ],
             changed_ranges={
-                "code_review_graph/changes.py": [(1, 10)],
-                "code_review_graph/graph.py": [(1, 10)],
+                "modules/code-review/graph_engine/changes.py": [(1, 10)],
+                "modules/code-review/graph_engine/graph.py": [(1, 10)],
             },
         )
         names = {g["name"] for g in result["test_gaps"]}
@@ -403,7 +403,7 @@ class TestGapsExcludeTestFiles:
 
     def test_mixed_diff_keeps_production_and_drops_test_files(self):
         self._add("Function", "compute_risk_score",
-                  "code_review_graph/changes.py", line_start=1, line_end=10)
+                  "modules/code-review/graph_engine/changes.py", line_start=1, line_end=10)
         self._add("Class", "TestChanges", "tests/test_changes.py",
                   line_start=1, line_end=10)
         self._add("Function", "_add_func", "tests/test_changes.py",
@@ -412,11 +412,11 @@ class TestGapsExcludeTestFiles:
         result = analyze_changes(
             self.store,
             changed_files=[
-                "code_review_graph/changes.py",
+                "modules/code-review/graph_engine/changes.py",
                 "tests/test_changes.py",
             ],
             changed_ranges={
-                "code_review_graph/changes.py": [(1, 10)],
+                "modules/code-review/graph_engine/changes.py": [(1, 10)],
                 "tests/test_changes.py": [(1, 20)],
             },
         )
@@ -430,7 +430,7 @@ class TestGapsExcludeTestFiles:
 
 
 def _graph_node(node_id, kind, name, qualified_name, file_path, is_test=False):
-    from code_review_graph.graph import GraphNode
+    from graph_engine.graph import GraphNode
 
     return GraphNode(
         id=node_id,
@@ -452,7 +452,7 @@ def _graph_node(node_id, kind, name, qualified_name, file_path, is_test=False):
 
 def test_review_guidance_ignores_test_file_helpers():
     """Review guidance must not ask for tests for the tests (#1014)."""
-    from code_review_graph.tools.review import _generate_review_guidance
+    from graph_engine.tools.review import _generate_review_guidance
 
     impact = {
         "changed_nodes": [
@@ -460,8 +460,8 @@ def test_review_guidance_ignores_test_file_helpers():
                         "tests/test_upgrade_path.py::_check",
                         "tests/test_upgrade_path.py"),
             _graph_node(2, "Function", "analyze_changes",
-                        "code_review_graph/changes.py::analyze_changes",
-                        "code_review_graph/changes.py"),
+                        "modules/code-review/graph_engine/changes.py::analyze_changes",
+                        "modules/code-review/graph_engine/changes.py"),
         ],
         "edges": [],
         "impacted_nodes": [],
@@ -475,7 +475,7 @@ def test_review_guidance_ignores_test_file_helpers():
 
 def test_review_guidance_under_a_test_named_checkout_still_warns():
     """The coverage warning must survive a checkout under a "test" directory."""
-    from code_review_graph.tools.review import _generate_review_guidance
+    from graph_engine.tools.review import _generate_review_guidance
 
     root = "/ci/test/checkout"
     impact = {
@@ -484,15 +484,15 @@ def test_review_guidance_under_a_test_named_checkout_still_warns():
                         f"{root}/tests/test_upgrade_path.py::_check",
                         f"{root}/tests/test_upgrade_path.py"),
             _graph_node(2, "Function", "analyze_changes",
-                        f"{root}/code_review_graph/changes.py::analyze_changes",
-                        f"{root}/code_review_graph/changes.py"),
+                        f"{root}/modules/code-review/graph_engine/changes.py::analyze_changes",
+                        f"{root}/modules/code-review/graph_engine/changes.py"),
         ],
         "edges": [],
         "impacted_nodes": [],
         "impacted_files": [],
     }
     guidance = _generate_review_guidance(
-        impact, [f"{root}/code_review_graph/changes.py"], root,
+        impact, [f"{root}/modules/code-review/graph_engine/changes.py"], root,
     )
     assert "_check" not in guidance
     assert "1 changed function(s) have no direct test: analyze_changes" in guidance
@@ -547,11 +547,11 @@ class TestCheckoutUnderATestDirectory:
         assert self.store.get_repo_root() == str(self.root)
 
     def test_production_gaps_survive(self):
-        self._add("Function", "analyze_changes", "code_review_graph/changes.py")
+        self._add("Function", "analyze_changes", "modules/code-review/graph_engine/changes.py")
         self._add("Function", "_check", "tests/test_upgrade_path.py")
         result = analyze_changes(
             self.store,
-            changed_files=["code_review_graph/changes.py",
+            changed_files=["modules/code-review/graph_engine/changes.py",
                            "tests/test_upgrade_path.py"],
             repo_root=str(self.root),
         )
@@ -559,25 +559,25 @@ class TestCheckoutUnderATestDirectory:
 
     def test_production_gaps_survive_without_an_explicit_repo_root(self):
         """MCP callers pass absolute paths and no root; the graph knows it."""
-        self._add("Function", "analyze_changes", "code_review_graph/changes.py")
+        self._add("Function", "analyze_changes", "modules/code-review/graph_engine/changes.py")
         result = analyze_changes(
             self.store,
-            changed_files=[str(self.root / "code_review_graph/changes.py")],
+            changed_files=[str(self.root / "modules/code-review/graph_engine/changes.py")],
         )
         assert {g["name"] for g in result["test_gaps"]} == {"analyze_changes"}
 
     def test_entry_points_survive(self):
-        from code_review_graph.flows import detect_entry_points
+        from graph_engine.flows import detect_entry_points
 
-        self._add("Function", "main", "code_review_graph/cli.py")
+        self._add("Function", "main", "apps/cli/reviewgraph/cli.py")
         self._add("Function", "helper", "tests/support.py")
         names = {n.name for n in detect_entry_points(self.store)}
         assert names == {"main"}
 
     def test_dead_code_candidates_survive(self):
-        from code_review_graph.refactor import find_dead_code
+        from graph_engine.refactor import find_dead_code
 
-        self._add("Function", "orphaned_helper", "code_review_graph/util.py")
+        self._add("Function", "orphaned_helper", "modules/code-review/graph_engine/util.py")
         self._add("Function", "test_only_helper", "tests/support.py")
         names = {d["name"] for d in find_dead_code(self.store)}
         assert names == {"orphaned_helper"}
@@ -591,8 +591,8 @@ class TestCheckoutUnderATestDirectory:
         and matches any import mentioning it, so the candidate disappears in
         one checkout and not in another.
         """
-        from code_review_graph.graph import EdgeInfo
-        from code_review_graph.refactor import find_dead_code
+        from graph_engine.graph import EdgeInfo
+        from graph_engine.refactor import find_dead_code
 
         self._add("Function", "orphaned_helper", "packages/core/util.ts")
         # A second definition, so the bare-name CALLS edge below is ambiguous

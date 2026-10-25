@@ -32,10 +32,10 @@ from typing import Any
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.tools import review as review_mod
-from code_review_graph.tools.review import get_review_context
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.tools import review as review_mod
+from graph_engine.tools.review import get_review_context
 
 _NUMBERED_LINE = re.compile(r"^\d+: ")
 

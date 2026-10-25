@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, incremental_update
-from code_review_graph.parser import CodeParser
-from code_review_graph.tools.query import query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, incremental_update
+from graph_engine.parser import CodeParser
+from graph_engine.tools.query import query_graph
 
 
 def _parse_java(path: Path, source: str):

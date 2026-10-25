@@ -6,7 +6,7 @@ ReviewGraph is a local-first knowledge graph for code review. It parses a reposi
 
 ## Graph Tool Usage (Token-Efficient)
 
-When using code-review-graph MCP tools:
+When using reviewgraph MCP tools:
 
 1. Call `get_minimal_context_tool(task="<description>")` first. It costs about 100 tokens and gives the overview.
 2. Use `detail_level="minimal"` on every later call unless that is not enough.
@@ -18,12 +18,12 @@ All registered tool names end in `_tool`. The 30 tools are defined in `main.py`.
 
 ## Architecture
 
-Core package `code_review_graph/` (Python 3.10+):
+Core module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cli/reviewgraph/`.
 
 - `main.py`: FastMCP server entry point. Registers 30 tools and 5 prompts.
 - `tools/`: tool implementations by domain: `build.py`, `query.py`, `review.py`, `context.py`, `flows_tools.py`, `community_tools.py`, `refactor_tools.py`, `docs.py`, `registry_tools.py`, `analysis_tools.py`; shared helpers in `_common.py`.
 - `prompts.py`: 5 MCP prompts (review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check).
-- `cli.py`: the `code-review-graph` command. `daemon.py` and `daemon_cli.py`: the `crg-daemon` multi-repo watch daemon.
+- `apps/cli/reviewgraph/cli.py` owns the `reviewgraph` command. `daemon.py` is core; `apps/cli/reviewgraph/daemon_cli.py` owns the `reviewgraph-daemon` command.
 - `parser.py`: Tree-sitter multi-language parser with fallbacks for notebooks and other formats. `custom_languages.py`: languages defined in `.code-review-graph/languages.toml` (see docs/CUSTOM_LANGUAGES.md).
 - `graph.py`: SQLite graph store (nodes, edges, impact analysis). `migrations.py`: schema migrations; current schema version is 13.
 - `incremental.py`: full build, Git/SVN change detection, incremental update, stale-file reconciliation, watch mode. `postprocessing.py`: shared post-build pipeline (signatures, flows, communities, FTS).
@@ -33,7 +33,7 @@ Core package `code_review_graph/` (Python 3.10+):
 - `changes.py`: risk-scored change analysis. `refactor.py`: rename preview, dead code, suggestions. `hints.py`: `next_tool_suggestions`. `uncertainty.py`: `confidence` notes on empty results. `context_savings.py`: estimated context-savings metadata.
 - `visualization.py`: D3.js HTML graph (D3 is bundled in `assets/`). `exports.py`: JSON, GraphML, Neo4j Cypher, Obsidian, SVG. `wiki.py`: Markdown wiki. `graph_diff.py`: snapshot diffing. `memory.py`: stored Q&A feedback.
 - `skills.py`: `install` (platform MCP configs, hooks, skills, instruction blocks). `_legacy_instructions.py`: instruction blocks shipped by earlier releases. `jsonc.py`: comment-preserving JSONC tokenising and splices, shared by install and uninstall so neither flattens a commented config. `uninstall.py`: reverses `install`. `enrich.py`: PreToolUse hook enrichment. `forget.py`: drops files from the graph. `registry.py`: multi-repo registry. `http_origin_guard.py`: Host/Origin checks for `serve --http`. `token_benchmark.py` and `eval/`: benchmarks. `constants.py`: shared constants.
-- `docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.
+- `modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.
 
 Database: `.code-review-graph/graph.db` (SQLite, WAL mode).
 
@@ -42,20 +42,20 @@ Database: `.code-review-graph/graph.db` (SQLite, WAL mode).
 ```bash
 # Development
 uv run pytest tests/ --tb=short -q
-uv run ruff check code_review_graph/
-uv run mypy code_review_graph/ --ignore-missing-imports --no-strict-optional
+uv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/
+uv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional
 
 # Graph
-uv run code-review-graph build              # full build
-uv run code-review-graph update             # incremental update
-uv run code-review-graph status             # graph statistics
-uv run code-review-graph detect-changes     # risk-scored change analysis (read-only)
-uv run code-review-graph forget PATH        # drop files from the graph
-uv run code-review-graph serve              # MCP server (stdio; --http for localhost)
-uv run code-review-graph wiki               # Markdown wiki
-uv run code-review-graph register <path>    # add a repo to the multi-repo registry
-uv run code-review-graph eval               # benchmarks
-uv run code-review-graph --help             # full command list
+uv run reviewgraph build              # full build
+uv run reviewgraph update             # incremental update
+uv run reviewgraph status             # graph statistics
+uv run reviewgraph detect-changes     # risk-scored change analysis (read-only)
+uv run reviewgraph forget PATH        # drop files from the graph
+uv run reviewgraph serve              # MCP server (stdio; --http for localhost)
+uv run reviewgraph wiki               # Markdown wiki
+uv run reviewgraph register <path>    # add a repo to the multi-repo registry
+uv run reviewgraph eval               # benchmarks
+uv run reviewgraph --help             # full command list
 ```
 
 ## Code Conventions
@@ -158,10 +158,10 @@ run manually before a release.
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
 
-<!-- code-review-graph MCP tools -->
-## MCP Tools: code-review-graph
+<!-- reviewgraph MCP tools -->
+## MCP Tools: reviewgraph
 
-**This project has a knowledge graph. Start with the code-review-graph
+**This project has a knowledge graph. Start with the reviewgraph
 MCP tools to narrow scope, then read the source.** The graph is cheaper than scanning files and
 gives you structural context (callers, dependents, test coverage) that file search cannot.
 
@@ -202,4 +202,4 @@ gives you structural context (callers, dependents, test coverage) that file sear
 2. Use `detect_changes_tool` for code review.
 3. Use `get_affected_flows_tool` to understand impact.
 4. Use `query_graph_tool` pattern="tests_for" to check coverage.
-<!-- /code-review-graph MCP tools -->
+<!-- /reviewgraph MCP tools -->

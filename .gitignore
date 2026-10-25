@@ -36,7 +36,6 @@ Thumbs.db
 node_modules/
 
 # VS Code extension build artifacts
-code-review-graph-vscode/dist/
 *.vsix
 
 # Claude Code

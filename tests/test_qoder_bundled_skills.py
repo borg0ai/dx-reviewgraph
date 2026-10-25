@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from code_review_graph.skills import install_qoder_skills
+from graph_engine.skills import install_qoder_skills
 
 SHIPPED_SKILLS = {
     "build-graph",
@@ -21,7 +21,7 @@ def test_qoder_install_without_repository_skills(tmp_path):
     destination = install_qoder_skills(root)
     assert destination == root / ".qoder" / "skills"
     assert {p.parent.name for p in destination.glob("*/SKILL.md")} == SHIPPED_SKILLS
-    bundled = Path(__file__).resolve().parents[1] / "skills"
+    bundled = Path(__file__).resolve().parents[1] / "modules" / "code-review" / "skills"
     for name in SHIPPED_SKILLS:
         assert (destination / name / "SKILL.md").read_bytes() == (
             bundled / name / "SKILL.md"
@@ -31,7 +31,7 @@ def test_qoder_install_without_repository_skills(tmp_path):
 def test_qoder_installs_shipped_workflows_instead_of_unrelated_project_skills(tmp_path):
     unrelated = tmp_path / "skills" / "business-workflow" / "SKILL.md"
     unrelated.parent.mkdir(parents=True)
-    unrelated.write_text("Private project workflow; not a code-review-graph skill.\n")
+    unrelated.write_text("Private project workflow; not a reviewgraph skill.\n")
     destination = install_qoder_skills(tmp_path)
     assert destination == tmp_path / ".qoder" / "skills"
     assert {p.parent.name for p in destination.glob("*/SKILL.md")} == SHIPPED_SKILLS

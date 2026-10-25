@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import CodeParser
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.parser import CodeParser
 
 
 def _parse(source: str):

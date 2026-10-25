@@ -13,7 +13,7 @@ What protects cross-process access today, verified rather than assumed:
   each file in a ``BEGIN IMMEDIATE`` transaction. That is the *whole* of it.
 * ``threading.Lock`` in ``GraphStore`` guards the in-memory NetworkX cache
   only. It is a thread lock; it does nothing across processes.
-* Nothing serialises two ``code-review-graph`` processes against the graph
+* Nothing serialises two ``reviewgraph`` processes against the graph
   itself: no lock file next to ``graph.db``, no advisory lock on it, and no
   handshake that tells a second process a first is already writing.
 
@@ -57,10 +57,10 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph import daemon as daemon_mod
-from code_review_graph import migrations as migrations_mod
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import _WatchSupervisor
+from graph_engine import daemon as daemon_mod
+from graph_engine import migrations as migrations_mod
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import _WatchSupervisor
 
 pytestmark = pytest.mark.concurrency
 
@@ -170,7 +170,7 @@ def _isolated_env(home: Path, *, serial: bool = False, **extra: str) -> dict[str
 def _crg(*args: str, env: dict[str, str], **kwargs) -> subprocess.CompletedProcess:
     """Run the CLI the way a user does, as its own process."""
     return subprocess.run(
-        [sys.executable, "-m", "code_review_graph", *args],
+        [sys.executable, "-m", "reviewgraph", *args],
         capture_output=True,
         text=True,
         env=env,
@@ -182,7 +182,7 @@ def _crg(*args: str, env: dict[str, str], **kwargs) -> subprocess.CompletedProce
 
 def _daemon_cli(*args: str, env: dict[str, str]) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, "-m", "code_review_graph.daemon_cli", *args],
+        [sys.executable, "-m", "reviewgraph.daemon_cli", *args],
         capture_output=True,
         text=True,
         env=env,
@@ -605,7 +605,7 @@ class TestConcurrentAccess:
 
         procs = [
             subprocess.Popen(
-                [sys.executable, "-m", "code_review_graph", "build", "--repo", str(repo), "-q"],
+                [sys.executable, "-m", "reviewgraph", "build", "--repo", str(repo), "-q"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -677,7 +677,7 @@ class TestConcurrentAccess:
         ``GraphStore`` opens with ``isolation_level=None``, so without a read
         transaction each of ``get_stats``' six statements would get its own
         snapshot, and a writer committing between two of them — exactly what a
-        watcher does while ``code-review-graph status`` runs — would make
+        watcher does while ``reviewgraph status`` runs — would make
         ``total_nodes`` disagree with the per-kind breakdown that is supposed
         to sum to it.
 
@@ -836,7 +836,7 @@ class TestConcurrentAccess:
     def test_watcher_and_hook_updates_converge(self, tmp_path: Path) -> None:
         """The shipped hook (``update``) firing while the watcher is mid-update.
 
-        ``hooks/hooks.json`` runs ``code-review-graph update --skip-flows`` on
+        ``hooks/hooks.json`` runs ``reviewgraph update --skip-flows`` on
         every Write/Edit/Bash. With a daemon running that is a second writer on
         the same database, for the same files, at the same moment — and a
         hand-run ``build`` makes a third.
@@ -847,7 +847,7 @@ class TestConcurrentAccess:
         assert _crg("build", "--repo", str(repo), "-q", env=env).returncode == 0
 
         watcher = subprocess.Popen(
-            [sys.executable, "-m", "code_review_graph", "watch", "--repo", str(repo)],
+            [sys.executable, "-m", "reviewgraph", "watch", "--repo", str(repo)],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -892,7 +892,7 @@ class TestConcurrentAccess:
 
 
 def _node(file_path: str, kind: str, name: str):
-    from code_review_graph.parser import NodeInfo
+    from graph_engine.parser import NodeInfo
 
     return NodeInfo(
         kind=kind,
@@ -945,9 +945,9 @@ point, repo = sys.argv[1], sys.argv[2]
 def die():
     os.kill(os.getpid(), signal.SIGKILL)
 
-import code_review_graph.incremental as inc
-import code_review_graph.graph as graph_mod
-import code_review_graph.search as search_mod
+import graph_engine.incremental as inc
+import graph_engine.graph as graph_mod
+import graph_engine.search as search_mod
 
 if point == "parse":
     original = inc.CodeParser.parse_bytes
@@ -1018,7 +1018,7 @@ elif point == "fts":
 else:
     raise SystemExit("unknown kill point: " + point)
 
-from code_review_graph.tools.build import build_or_update_graph
+from graph_engine.tools.build import build_or_update_graph
 build_or_update_graph(full_rebuild=True, repo_root=repo)
 print("NOT KILLED")
 '''
@@ -1223,7 +1223,7 @@ class TestInterruption:
 
         Killed after the last file was stored, the graph's contents are whole
         and only the derived data is missing. That is the one state
-        ``code-review-graph postprocess`` exists to repair. Clearing the
+        ``reviewgraph postprocess`` exists to repair. Clearing the
         marker afterwards is not a courtesy: leaving it set would promote
         every later update to a full rebuild of a graph that is already right.
         """
@@ -1596,7 +1596,7 @@ class TestWatcherUnderStress:
 
     def _start_watcher(self, repo: Path, env: dict[str, str]):
         proc = subprocess.Popen(
-            [sys.executable, "-m", "code_review_graph", "watch", "--repo", str(repo)],
+            [sys.executable, "-m", "reviewgraph", "watch", "--repo", str(repo)],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -1764,7 +1764,7 @@ class TestWatcherUnderStress:
         It used to log a warning and return, recording no watch and leaving
         ``degraded`` False, so the supervisor watched nothing while
         ``report_health`` published ``observer_alive: true, degraded: false``
-        and ``crg-daemon status`` printed ``ok``. The refused directories are
+        and ``reviewgraph-daemon status`` printed ``ok``. The refused directories are
         now tracked, which is what the health file and ``watcher_status``
         read.
 
@@ -1861,8 +1861,8 @@ class TestWatcherUnderStress:
 # Python 3.10 relies on for every classification.
 _POISONED_BUILD = """
 import json, sqlite3, sys
-from code_review_graph.graph import GraphStore
-from code_review_graph.tools.build import build_or_update_graph
+from graph_engine.graph import GraphStore
+from graph_engine.tools.build import build_or_update_graph
 
 repo, message = sys.argv[1], sys.argv[2]
 
@@ -1880,8 +1880,8 @@ print("RESULT " + json.dumps(build_or_update_graph(
 # The same poison, but through the hand-repair entry point.
 _POISONED_POSTPROCESS = """
 import json, sqlite3, sys
-from code_review_graph.graph import GraphStore
-from code_review_graph.tools.build import run_postprocess
+from graph_engine.graph import GraphStore
+from graph_engine.tools.build import run_postprocess
 
 repo, message = sys.argv[1], sys.argv[2]
 
@@ -1929,7 +1929,7 @@ class TestErrorClassification:
         exercises ``sqlite_errorcode``; the message fallback that 3.10 needs is
         covered by the poisoned builds below.
         """
-        from code_review_graph.tools.build import is_lock_contention
+        from graph_engine.tools.build import is_lock_contention
 
         db = tmp_path / "probe.db"
         holder = sqlite3.connect(str(db), timeout=0.1, isolation_level=None)
@@ -2040,11 +2040,11 @@ class TestErrorClassification:
 
 
 # Holds the daemon lock without writing a PID file: exactly the window a second
-# ``crg-daemon start`` used to slip through, between one daemon forking and
+# ``reviewgraph-daemon start`` used to slip through, between one daemon forking and
 # that daemon labelling its lock.
 _LOCK_SQUATTER = """
 import sys, time
-from code_review_graph.daemon import acquire_daemon_lock
+from graph_engine.daemon import acquire_daemon_lock
 assert acquire_daemon_lock(), "squatter could not take the lock"
 print("HELD", flush=True)
 time.sleep(float(sys.argv[1]))
@@ -2054,7 +2054,7 @@ time.sleep(float(sys.argv[1]))
 _PID_HOLDER = """
 import sys, time
 from pathlib import Path
-from code_review_graph.daemon import write_pid
+from graph_engine.daemon import write_pid
 write_pid(path=Path(sys.argv[1]))
 print("HELD", flush=True)
 time.sleep(float(sys.argv[2]))
@@ -2126,7 +2126,7 @@ class TestDaemonExclusion:
     def test_second_start_is_refused_while_the_lock_is_held(
         self, tmp_path: Path, daemon_env
     ) -> None:
-        """Two ``crg-daemon start`` calls at once: one daemon, not two.
+        """Two ``reviewgraph-daemon start`` calls at once: one daemon, not two.
 
         ``is_daemon_running`` is a read of the PID file, and a daemon that has
         forked but not yet written that file is invisible to it — the same
@@ -2207,7 +2207,7 @@ class TestUnwatchedRecord:
         from growing the health payload without limit. The newest refusals are
         the ones kept, because they are the ones that still describe the tree.
         """
-        from code_review_graph.incremental import _MAX_UNWATCHED_TRACKED
+        from graph_engine.incremental import _MAX_UNWATCHED_TRACKED
 
         repo = _make_repo(tmp_path / "repo", 6)
         supervisor = _WatchSupervisor(_WorkingObserver(), repo, [], max_schedules=8)

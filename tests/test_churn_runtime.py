@@ -19,15 +19,15 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph import changes as changes_mod
-from code_review_graph.changes import (
+from graph_engine import changes as changes_mod
+from graph_engine.changes import (
     clear_churn_cache,
     compute_file_churn,
     compute_file_churn_with_status,
 )
-from code_review_graph.graph import GraphStore, NodeInfo
-from code_review_graph.tools.context import get_minimal_context
-from code_review_graph.tools.review import detect_changes_func
+from graph_engine.graph import GraphStore, NodeInfo
+from graph_engine.tools.context import get_minimal_context
+from graph_engine.tools.review import detect_changes_func
 
 
 @pytest.fixture(autouse=True)
@@ -88,7 +88,7 @@ class TestChurnCache:
         assert first == {"app.py": 2}
 
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             wraps=subprocess.run,
         ) as run:
             second = compute_file_churn(str(repo))
@@ -116,12 +116,12 @@ class TestChurnCache:
             return real_run(cmd, *args, **kwargs)
 
         with patch(
-            "code_review_graph.changes.subprocess.run", side_effect=slow_log,
+            "graph_engine.changes.subprocess.run", side_effect=slow_log,
         ):
             assert compute_file_churn(str(repo)) == {}
 
         with patch(
-            "code_review_graph.changes.subprocess.run", wraps=real_run,
+            "graph_engine.changes.subprocess.run", wraps=real_run,
         ) as run:
             assert compute_file_churn(str(repo)) == {}
         assert [c for c in run.call_args_list if "log" in c.args[0]] == []
@@ -144,7 +144,7 @@ class TestChurnCache:
             raise subprocess.TimeoutExpired(cmd, 5)
 
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=everything_is_slow,
         ):
             for _ in range(5):
@@ -159,7 +159,7 @@ class TestChurnCache:
     def test_the_failure_cache_is_cleared_with_the_result_cache(self, tmp_path):
         repo = _repo_with_commits(tmp_path / "repo")
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             assert compute_file_churn(str(repo)) == {}
@@ -174,7 +174,7 @@ class TestChurnCache:
 
         assert compute_file_churn(str(repo)) == {}
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             wraps=subprocess.run,
         ) as run:
             assert compute_file_churn(str(repo)) == {}
@@ -195,7 +195,7 @@ class TestChurnDegradationIsVisible:
 
         clear_churn_cache()
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             assert compute_file_churn_with_status(str(repo)) == (
@@ -216,7 +216,7 @@ class TestChurnDegradationIsVisible:
         repo = _repo_with_commits(tmp_path / "repo")
         _seeded_graph(repo)
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             result = detect_changes_func(
@@ -230,7 +230,7 @@ class TestChurnDegradationIsVisible:
         repo = _repo_with_commits(tmp_path / "repo")
         _seeded_graph(repo)
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             result = detect_changes_func(
@@ -243,7 +243,7 @@ class TestChurnDegradationIsVisible:
         repo = _repo_with_commits(tmp_path / "repo")
         _seeded_graph(repo)
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             result = get_minimal_context(
@@ -259,7 +259,7 @@ class TestChurnDegradesGracefully:
     def test_timeout_returns_empty_instead_of_raising(self, tmp_path):
         repo = _repo_with_commits(tmp_path / "repo")
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             assert compute_file_churn(str(repo)) == {}
@@ -267,7 +267,7 @@ class TestChurnDegradesGracefully:
     def test_history_walk_is_bounded(self, tmp_path):
         repo = _repo_with_commits(tmp_path / "repo", commits=1)
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             wraps=subprocess.run,
         ) as run:
             compute_file_churn(str(repo))
@@ -279,7 +279,7 @@ class TestChurnDegradesGracefully:
     def test_churn_uses_its_own_short_timeout(self, tmp_path):
         repo = _repo_with_commits(tmp_path / "repo", commits=1)
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             wraps=subprocess.run,
         ) as run:
             compute_file_churn(str(repo))
@@ -293,7 +293,7 @@ class TestMcpCallersEnableChurn:
         repo = _repo_with_commits(tmp_path / "repo")
         _seeded_graph(repo)
         with patch(
-            "code_review_graph.tools.review.analyze_changes",
+            "graph_engine.tools.review.analyze_changes",
             return_value={
                 "summary": "", "risk_score": 0.0, "changed_functions": [],
                 "affected_flows": [], "test_gaps": [], "review_priorities": [],
@@ -309,7 +309,7 @@ class TestMcpCallersEnableChurn:
         repo = _repo_with_commits(tmp_path / "repo")
         _seeded_graph(repo)
         with patch(
-            "code_review_graph.changes.analyze_changes",
+            "graph_engine.changes.analyze_changes",
             return_value={
                 "risk_score": 0.0, "changed_functions": [], "test_gaps": [],
             },
@@ -326,7 +326,7 @@ class TestMcpCallersEnableChurn:
         repo = _repo_with_commits(tmp_path / "repo")
         _seeded_graph(repo)
         with patch(
-            "code_review_graph.changes.subprocess.run",
+            "graph_engine.changes.subprocess.run",
             side_effect=subprocess.TimeoutExpired(["git"], 5),
         ):
             result = detect_changes_func(

@@ -28,7 +28,7 @@ inputs:
     required: false
     default: "none"
   python-version:
-    description: "Python version used to run code-review-graph."
+    description: "Python version used to run reviewgraph."
     required: false
     default: "3.12"
 
@@ -47,12 +47,12 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
-    - name: Install code-review-graph
+    - name: Install reviewgraph
       shell: bash
-      run: python -m pip install --quiet code-review-graph
+      run: python -m pip install --quiet reviewgraph
 
     # Cache the SQLite knowledge graph between runs. The "schema13" segment
-    # tracks LATEST_VERSION in code_review_graph/migrations.py — bump it when
+    # tracks LATEST_VERSION in reviewgraph/migrations.py — bump it when
     # the database schema changes so stale caches are not restored.
     - name: Cache knowledge graph
       uses: actions/cache@v6
@@ -85,9 +85,9 @@ runs:
           # A corrupt, foreign or newer-schema cache now says so in one line
           # and exits 1, which is exactly what this `||` is here to recover
           # from; a full build then replaces it.
-          code-review-graph update --base "${CRG_BASE}" || code-review-graph build
+          reviewgraph update --base "${CRG_BASE}" || reviewgraph build
         else
-          code-review-graph build
+          reviewgraph build
         fi
 
     # No `|| true` here, on purpose. detect-changes exits non-zero when it
@@ -97,7 +97,7 @@ runs:
     - name: Run risk-scored change analysis
       shell: bash
       run: |
-        code-review-graph detect-changes --base "${CRG_BASE}" \
+        reviewgraph detect-changes --base "${CRG_BASE}" \
           > "${RUNNER_TEMP}/crg-report.json"
 
     # Renders on exit 0 (an analysis, or a genuinely unchanged tree) and on
@@ -173,7 +173,7 @@ runs:
       shell: bash
       run: |
         if [ "${RENDER_STATUS:-0}" -eq 4 ]; then
-          echo "::error::code-review-graph could not determine the changes;" \
+          echo "::error::reviewgraph could not determine the changes;" \
             "this pull request has NOT been analyzed."
           exit 1
         fi

@@ -16,6 +16,13 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform != 'win32'",
 ]
 
+[manifest]
+members = [
+    "reviewgraph",
+    "code-review-engine",
+    "reviewgraph-workspace",
+]
+
 [[package]]
 name = "aiofile"
 version = "3.9.0"
@@ -432,121 +439,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz", hash = "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6", size = 338000, upload-time = "2026-06-24T17:45:15.148Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fb/e2/79c688af8b210d232694e31e59da9f6ec747bae31c3f5946e4e9b98860d5/click-8.4.2-py3-none-any.whl", hash = "sha256:e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76", size = 119243, upload-time = "2026-06-24T17:45:13.73Z" },
-]
-
-[[package]]
-name = "code-review-graph"
-version = "2.3.9"
-source = { editable = "." }
-dependencies = [
-    { name = "anyio" },
-    { name = "fastmcp" },
-    { name = "mcp" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "pyyaml" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
-    { name = "tree-sitter" },
-    { name = "tree-sitter-language-pack" },
-    { name = "watchdog" },
-]
-
-[package.optional-dependencies]
-all = [
-    { name = "google-genai" },
-    { name = "igraph" },
-    { name = "jedi" },
-    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "ollama" },
-    { name = "pyyaml" },
-    { name = "sentence-transformers" },
-]
-browser-test = [
-    { name = "playwright" },
-    { name = "pytest-playwright" },
-]
-communities = [
-    { name = "igraph" },
-]
-dev = [
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
-]
-embeddings = [
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "sentence-transformers" },
-]
-enrichment = [
-    { name = "jedi" },
-]
-eval = [
-    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "pyyaml" },
-]
-google-embeddings = [
-    { name = "google-genai" },
-]
-wiki = [
-    { name = "ollama" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "anyio", specifier = ">=4.0,<5" },
-    { name = "code-review-graph", extras = ["communities"], marker = "extra == 'all'" },
-    { name = "code-review-graph", extras = ["embeddings"], marker = "extra == 'all'" },
-    { name = "code-review-graph", extras = ["enrichment"], marker = "extra == 'all'" },
-    { name = "code-review-graph", extras = ["eval"], marker = "extra == 'all'" },
-    { name = "code-review-graph", extras = ["google-embeddings"], marker = "extra == 'all'" },
-    { name = "code-review-graph", extras = ["wiki"], marker = "extra == 'all'" },
-    { name = "fastmcp", specifier = ">=3.2.4,<4" },
-    { name = "google-genai", marker = "extra == 'google-embeddings'", specifier = ">=1.0.0,<3" },
-    { name = "igraph", marker = "extra == 'communities'", specifier = ">=0.11.0" },
-    { name = "jedi", marker = "extra == 'enrichment'", specifier = ">=0.19.2" },
-    { name = "matplotlib", marker = "extra == 'eval'", specifier = ">=3.7.0" },
-    { name = "mcp", specifier = ">=1.0.0,<3" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10,<3" },
-    { name = "networkx", specifier = ">=3.2,<4" },
-    { name = "numpy", marker = "extra == 'embeddings'", specifier = ">=1.26,<3" },
-    { name = "ollama", marker = "extra == 'wiki'", specifier = ">=0.1.0" },
-    { name = "playwright", marker = "extra == 'browser-test'", specifier = ">=1.45,<2" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0,<9" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23,<2" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0,<8" },
-    { name = "pytest-playwright", marker = "extra == 'browser-test'", specifier = ">=0.5,<1" },
-    { name = "pyyaml", specifier = ">=6.0,<7" },
-    { name = "pyyaml", marker = "extra == 'eval'", specifier = ">=6.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.3.0,<1" },
-    { name = "sentence-transformers", marker = "extra == 'embeddings'", specifier = ">=3.0.0,<7" },
-    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.0.0,<3" },
-    { name = "tomli", marker = "python_full_version < '3.11' and extra == 'dev'", specifier = ">=2.0" },
-    { name = "tree-sitter", specifier = ">=0.23.0,<1" },
-    { name = "tree-sitter-language-pack", specifier = ">=0.3.0,<1" },
-    { name = "watchdog", specifier = ">=4.0.0,<7" },
-]
-provides-extras = ["embeddings", "google-embeddings", "communities", "eval", "wiki", "all", "enrichment", "dev", "browser-test"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=8.4.2" },
-    { name = "pytest-asyncio", specifier = ">=0.23,<2" },
 ]
 
 [[package]]
@@ -3438,6 +3330,204 @@ wheels = [
 ]
 
 [[package]]
+name = "reviewgraph"
+version = "2.3.9"
+source = { editable = "apps/cli" }
+dependencies = [
+    { name = "code-review-engine" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "code-review-engine", extra = ["all"] },
+]
+browser-test = [
+    { name = "playwright" },
+    { name = "pytest-playwright" },
+]
+communities = [
+    { name = "code-review-engine", extra = ["communities"] },
+]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "types-networkx" },
+]
+embeddings = [
+    { name = "code-review-engine", extra = ["embeddings"] },
+]
+enrichment = [
+    { name = "code-review-engine", extra = ["enrichment"] },
+]
+eval = [
+    { name = "code-review-engine", extra = ["eval"] },
+]
+google-embeddings = [
+    { name = "code-review-engine", extra = ["google-embeddings"] },
+]
+wiki = [
+    { name = "code-review-engine", extra = ["wiki"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10,<3" },
+    { name = "playwright", marker = "extra == 'browser-test'", specifier = ">=1.45,<2" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0,<9" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23,<2" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0,<8" },
+    { name = "pytest-playwright", marker = "extra == 'browser-test'", specifier = ">=0.5,<1" },
+    { name = "code-review-engine", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["all"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["communities"], marker = "extra == 'communities'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["embeddings"], marker = "extra == 'embeddings'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["enrichment"], marker = "extra == 'enrichment'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["eval"], marker = "extra == 'eval'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["google-embeddings"], marker = "extra == 'google-embeddings'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["wiki"], marker = "extra == 'wiki'", editable = "modules/code-review" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.3.0,<1" },
+    { name = "types-networkx", marker = "extra == 'dev'" },
+]
+provides-extras = ["all", "eval", "google-embeddings", "embeddings", "communities", "enrichment", "wiki", "browser-test", "dev"]
+
+[[package]]
+name = "code-review-engine"
+version = "2.3.9"
+source = { editable = "modules/code-review" }
+dependencies = [
+    { name = "anyio" },
+    { name = "fastmcp" },
+    { name = "mcp" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyyaml" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tree-sitter" },
+    { name = "tree-sitter-language-pack" },
+    { name = "watchdog" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "google-genai" },
+    { name = "igraph" },
+    { name = "jedi" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "ollama" },
+    { name = "pyyaml" },
+    { name = "sentence-transformers" },
+]
+communities = [
+    { name = "igraph" },
+]
+embeddings = [
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "sentence-transformers" },
+]
+enrichment = [
+    { name = "jedi" },
+]
+eval = [
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyyaml" },
+]
+google-embeddings = [
+    { name = "google-genai" },
+]
+wiki = [
+    { name = "ollama" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "anyio", specifier = ">=4.0,<5" },
+    { name = "fastmcp", specifier = ">=3.2.4,<4" },
+    { name = "google-genai", marker = "extra == 'google-embeddings'", specifier = ">=1.0.0,<3" },
+    { name = "igraph", marker = "extra == 'communities'", specifier = ">=0.11.0" },
+    { name = "jedi", marker = "extra == 'enrichment'", specifier = ">=0.19.2" },
+    { name = "matplotlib", marker = "extra == 'eval'", specifier = ">=3.7.0" },
+    { name = "mcp", specifier = ">=1.0.0,<3" },
+    { name = "networkx", specifier = ">=3.2,<4" },
+    { name = "numpy", marker = "extra == 'embeddings'", specifier = ">=1.26,<3" },
+    { name = "ollama", marker = "extra == 'wiki'", specifier = ">=0.1.0" },
+    { name = "pyyaml", specifier = ">=6.0,<7" },
+    { name = "pyyaml", marker = "extra == 'eval'", specifier = ">=6.0" },
+    { name = "code-review-engine", extras = ["communities"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["embeddings"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["enrichment"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["eval"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["google-embeddings"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "code-review-engine", extras = ["wiki"], marker = "extra == 'all'", editable = "modules/code-review" },
+    { name = "sentence-transformers", marker = "extra == 'embeddings'", specifier = ">=3.0.0,<7" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.0.0,<3" },
+    { name = "tree-sitter", specifier = ">=0.23.0,<1" },
+    { name = "tree-sitter-language-pack", specifier = ">=0.3.0,<1" },
+    { name = "watchdog", specifier = ">=4.0.0,<7" },
+]
+provides-extras = ["embeddings", "google-embeddings", "communities", "eval", "wiki", "all", "enrichment"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8.4.2" },
+    { name = "pytest-asyncio", specifier = ">=0.23,<2" },
+]
+
+[[package]]
+name = "reviewgraph-workspace"
+version = "2.3.9"
+source = { virtual = "." }
+dependencies = [
+    { name = "reviewgraph" },
+]
+
+[package.dev-dependencies]
+browser-test = [
+    { name = "playwright" },
+    { name = "pytest-playwright" },
+]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "types-networkx" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "reviewgraph", editable = "apps/cli" }]
+
+[package.metadata.requires-dev]
+browser-test = [
+    { name = "playwright", specifier = ">=1.45,<2" },
+    { name = "pytest-playwright", specifier = ">=0.5,<1" },
+]
+dev = [
+    { name = "mypy", specifier = ">=1.10,<3" },
+    { name = "pytest", specifier = ">=8.0,<9" },
+    { name = "pytest-asyncio", specifier = ">=0.23,<2" },
+    { name = "pytest-cov", specifier = ">=4.0,<8" },
+    { name = "ruff", specifier = ">=0.3.0,<1" },
+    { name = "types-networkx" },
+]
+
+[[package]]
 name = "rich"
 version = "15.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4536,6 +4626,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/37/78/fda3361b56efc27944f24225f6ecd13d96d6fcfe37bd0eb34e2f4c63f9fc/typer-0.27.0.tar.gz", hash = "sha256:629bd12ea5d13a17148125d9a264f949eb171fb3f120f9b04d85873cab054fa5", size = 203430, upload-time = "2026-07-15T19:21:07.007Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/40/03/26a383c9e58c213199d1aad1c3d353cfc22d4444ec6d2c0bf8ad02523843/typer-0.27.0-py3-none-any.whl", hash = "sha256:6f4b27631e47f077871b7dc30e933ec0131c1390fbe0e387ea5574b5bac9ccf1", size = 122716, upload-time = "2026-07-15T19:21:05.553Z" },
+]
+
+[[package]]
+name = "types-networkx"
+version = "3.6.1.20261024"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/6a/f6ff53269f24a2cb2480b768e8bcf31a7d74f5446811fb088c5e35782684/types_networkx-3.6.1.20261024.tar.gz", hash = "sha256:8dc85c36358819e9c6683604b404949f41e5e3ae9bb57a98c695f38a827e402d", size = 76912, upload-time = "2026-10-24T06:36:32.942Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/20/eeeae3baadd8ca9b2d795063eab50b9c32b01899e5437b02011cae53a5d7/types_networkx-3.6.1.20261024-py3-none-any.whl", hash = "sha256:b193b28155eed511acee02d61e66a06f5a6b4194a0dc0f4d0215c859c9c23319", size = 167427, upload-time = "2026-10-24T06:36:31.393Z" },
 ]
 
 [[package]]

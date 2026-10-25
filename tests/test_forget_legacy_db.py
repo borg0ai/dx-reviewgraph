@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import sys
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
 
 
 def test_forget_migrates_legacy_database_instead_of_reporting_missing(
     tmp_path, monkeypatch, capsys
 ):
-    from code_review_graph import cli
+    from reviewgraph import cli
 
     monkeypatch.setenv("CRG_SERIAL_PARSE", "1")
     repo = tmp_path / "repo"
@@ -23,7 +23,7 @@ def test_forget_migrates_legacy_database_instead_of_reporting_missing(
         full_build(repo, store)
     assert legacy.exists()
 
-    monkeypatch.setattr(sys, "argv", ["code-review-graph", "forget", "--repo", str(repo), "a.py"])
+    monkeypatch.setattr(sys, "argv", ["reviewgraph", "forget", "--repo", str(repo), "a.py"])
     exit_code = 0
     try:
         cli.main()

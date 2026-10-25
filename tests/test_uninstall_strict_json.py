@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph import skills, uninstall
+from graph_engine import skills, uninstall
 
 _USER_PERMISSIONS = {"allow": ["Bash(npm test)"], "deny": ["Bash(git push:*)"]}
 _USER_PRE_TOOL = [{
@@ -153,8 +153,8 @@ def test_continue_duplicate_registrations_at_the_end_leave_strict_json(
         "models": [{"title": "mine"}],
         "mcpServers": [
             other,
-            {"name": "code-review-graph", "command": "code-review-graph"},
-            {"name": "code-review-graph", "command": "uvx"},
+            {"name": "reviewgraph", "command": "reviewgraph"},
+            {"name": "reviewgraph", "command": "uvx"},
         ],
     })
 
@@ -170,7 +170,7 @@ def test_object_mcp_entry_registered_last_leaves_strict_json(
     config = fake_repo / ".mcp.json"
     _write_json(config, {"mcpServers": {
         "other": {"command": "other"},
-        "code-review-graph": {"command": "code-review-graph"},
+        "reviewgraph": {"command": "reviewgraph"},
     }})
 
     uninstall.run(repo=fake_repo, keep_data=True)
@@ -257,7 +257,7 @@ def test_dry_run_leaves_the_installed_settings_byte_for_byte(
 def test_cli_install_then_uninstall_reproduction_from_issue_1068(
     fake_repo: Path, fake_home: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    from code_review_graph import cli
+    from reviewgraph import cli
 
     settings = fake_repo / ".claude" / "settings.json"
     settings.parent.mkdir(parents=True)
@@ -270,13 +270,13 @@ def test_cli_install_then_uninstall_reproduction_from_issue_1068(
     )
     original = _strict(settings)
 
-    argv = ["code-review-graph", "install", "--repo", str(fake_repo), "-y",
+    argv = ["reviewgraph", "install", "--repo", str(fake_repo), "-y",
             "--platform", "claude-code"]
     with patch.object(sys, "argv", argv):
         cli.main()
     assert {"PostToolUse", "SessionStart"} <= set(_strict(settings)["hooks"])
 
-    argv = ["code-review-graph", "uninstall", "--repo", str(fake_repo), "-y"]
+    argv = ["reviewgraph", "uninstall", "--repo", str(fake_repo), "-y"]
     with patch.object(sys, "argv", argv):
         cli.main()
     capsys.readouterr()
@@ -298,7 +298,7 @@ _GEMINI_USER_SETTINGS = {
 
 def _comment_free(text: str) -> str:
     """Drop comments but keep every comma, as Gemini CLI's settings loader does."""
-    from code_review_graph import jsonc
+    from graph_engine import jsonc
 
     return " ".join(text[token.start:token.end] for token in jsonc.tokenize(text))
 
@@ -307,20 +307,20 @@ def test_cli_gemini_install_then_uninstall_keeps_shared_settings_strict(
     fake_repo: Path, fake_home: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """Gemini keeps the MCP entry and the hooks in one file; both edits must stay strict."""
-    from code_review_graph import cli
+    from reviewgraph import cli
 
     settings = fake_repo / ".gemini" / "settings.json"
     _write_json(settings, _GEMINI_USER_SETTINGS)
 
-    argv = ["code-review-graph", "install", "--repo", str(fake_repo), "-y",
+    argv = ["reviewgraph", "install", "--repo", str(fake_repo), "-y",
             "--platform", "gemini-cli"]
     with patch.object(sys, "argv", argv):
         cli.main()
     installed = _strict(settings)
-    assert "code-review-graph" in installed["mcpServers"]
+    assert "reviewgraph" in installed["mcpServers"]
     assert {"SessionStart", "AfterTool"} <= set(installed["hooks"])
 
-    argv = ["code-review-graph", "uninstall", "--repo", str(fake_repo), "-y"]
+    argv = ["reviewgraph", "uninstall", "--repo", str(fake_repo), "-y"]
     with patch.object(sys, "argv", argv):
         cli.main()
     capsys.readouterr()

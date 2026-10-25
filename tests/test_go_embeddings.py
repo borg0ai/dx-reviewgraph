@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import CodeParser
-from code_review_graph.tools import query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.parser import CodeParser
+from graph_engine.tools import query_graph
 
 
 @pytest.mark.parametrize(
@@ -96,8 +96,8 @@ def test_go_embedding_does_not_change_java_implementation_resolution(
     framework,
     has_java_implementation,
 ):
-    from code_review_graph.spring_resolver import resolve_spring_di_calls
-    from code_review_graph.temporal_resolver import resolve_temporal_calls
+    from graph_engine.spring_resolver import resolve_spring_di_calls
+    from graph_engine.temporal_resolver import resolve_temporal_calls
 
     java_source = "@ActivityInterface interface WorkActivity { void work(); }\n"
     if has_java_implementation:

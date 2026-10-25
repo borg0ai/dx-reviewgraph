@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.tools.query import get_impact_radius, query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.tools.query import get_impact_radius, query_graph
 
 
 def _build(tmp_path: Path, files: dict[str, str]) -> GraphStore:

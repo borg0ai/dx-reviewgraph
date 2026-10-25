@@ -26,10 +26,10 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph import parser as parser_module
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, incremental_update
-from code_review_graph.parser import (
+from graph_engine import parser as parser_module
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, incremental_update
+from graph_engine.parser import (
     CodeParser,
     _is_in_static_dead_guard,
     _is_statically_false_condition,

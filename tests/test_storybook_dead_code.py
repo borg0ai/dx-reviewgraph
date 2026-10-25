@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.changes import analyze_changes
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, incremental_update
-from code_review_graph.parser import CodeParser, EdgeInfo, NodeInfo, is_test_file
-from code_review_graph.refactor import find_dead_code
+from graph_engine.changes import analyze_changes
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, incremental_update
+from graph_engine.parser import CodeParser, EdgeInfo, NodeInfo, is_test_file
+from graph_engine.refactor import find_dead_code
 
 
 @pytest.mark.parametrize('extension', ['js', 'jsx', 'ts', 'tsx'])

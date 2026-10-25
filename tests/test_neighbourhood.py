@@ -7,7 +7,7 @@ the k-hop neighbourhood of a seed, and nothing else.
 
 The hop assertions here deliberately recompute the expected node set with a
 breadth-first search written inside the test, over the *exported* edge list,
-rather than reusing anything from ``code_review_graph.neighbourhood``.  A test
+rather than reusing anything from ``graph_engine.neighbourhood``.  A test
 that called the implementation to compute its own expectation would pass for
 any implementation.
 """
@@ -18,8 +18,8 @@ import json
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
 
 # ---------------------------------------------------------------------------
 # Fixture graph
@@ -164,7 +164,7 @@ def _reference_parent_files(edges: list[dict], members: set[str]) -> set[str]:
 
 @pytest.mark.parametrize("depth", [0, 1, 2, 3])
 def test_neighbourhood_contains_exactly_the_nodes_within_k_hops(chain_store, depth):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     full = export_graph_data(chain_store)
     seed = "src/a.py::f_a"
@@ -181,7 +181,7 @@ def test_neighbourhood_contains_exactly_the_nodes_within_k_hops(chain_store, dep
 
 
 def test_hop_labels_match_an_independent_bfs(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     full = export_graph_data(chain_store)
     seed = "src/a.py::f_a"
@@ -196,7 +196,7 @@ def test_hop_labels_match_an_independent_bfs(chain_store):
 
 def test_contains_edges_are_not_a_hop_shortcut(chain_store):
     """f_b2 shares a file with f_b but is 2 CALLS hops from the seed."""
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, seed_symbols=["src/a.py::f_a"], depth=1
@@ -209,7 +209,7 @@ def test_contains_edges_are_not_a_hop_shortcut(chain_store):
 
 
 def test_rest_of_the_graph_is_absent_from_the_payload(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, seed_symbols=["src/a.py::f_a"], depth=2
@@ -222,7 +222,7 @@ def test_rest_of_the_graph_is_absent_from_the_payload(chain_store):
 
 
 def test_every_payload_edge_has_both_endpoints_in_the_payload(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, seed_symbols=["src/a.py::f_a"], depth=2
@@ -234,7 +234,7 @@ def test_every_payload_edge_has_both_endpoints_in_the_payload(chain_store):
 
 
 def test_unseeded_export_is_unchanged(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     data = export_graph_data(chain_store)
 
@@ -249,7 +249,7 @@ def test_unseeded_export_is_unchanged(chain_store):
 
 
 def test_seed_accepts_a_bare_symbol_name(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(chain_store, seed_symbols=["f_a"], depth=1)
 
@@ -257,8 +257,8 @@ def test_seed_accepts_a_bare_symbol_name(chain_store):
 
 
 def test_unresolvable_seed_raises(chain_store):
-    from code_review_graph.neighbourhood import SeedResolutionError
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.neighbourhood import SeedResolutionError
+    from graph_engine.visualization import export_graph_data
 
     with pytest.raises(SeedResolutionError) as excinfo:
         export_graph_data(chain_store, seed_symbols=["no_such_symbol"])
@@ -267,7 +267,7 @@ def test_unresolvable_seed_raises(chain_store):
 
 
 def test_seed_from_changed_files_includes_the_files_symbols(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(chain_store, seed_files=["src/b.py"], depth=0)
     names = {node["qualified_name"] for node in view["nodes"]}
@@ -277,7 +277,7 @@ def test_seed_from_changed_files_includes_the_files_symbols(chain_store):
 
 
 def test_seed_file_matching_tolerates_a_repo_relative_prefix(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(chain_store, seed_files=["./src/b.py"], depth=0)
     names = {node["qualified_name"] for node in view["nodes"]}
@@ -286,8 +286,8 @@ def test_seed_file_matching_tolerates_a_repo_relative_prefix(chain_store):
 
 
 def test_seed_from_flow(chain_store):
-    from code_review_graph.flows import store_flows
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.flows import store_flows
+    from graph_engine.visualization import export_graph_data
 
     path_qns = ["src/a.py::f_a", "src/b.py::f_b", "src/c.py::f_c"]
     ids = [chain_store.get_node(qn).id for qn in path_qns]
@@ -319,7 +319,7 @@ def test_seed_from_flow(chain_store):
 
 
 def test_max_nodes_trims_the_outermost_hop_first(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, seed_symbols=["src/a.py::f_a"], depth=3, max_nodes=4
@@ -338,7 +338,7 @@ def test_max_nodes_trims_the_outermost_hop_first(chain_store):
 
 
 def test_path_between_two_symbols_follows_calls(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, path_from="f_a", path_to="f_e", depth=0
@@ -357,7 +357,7 @@ def test_path_between_two_symbols_follows_calls(chain_store):
 
 
 def test_path_can_traverse_inherits_and_imports(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, path_from="C_child", path_to="C_base", depth=0
@@ -371,8 +371,8 @@ def test_path_can_traverse_inherits_and_imports(chain_store):
 
 def test_path_ignores_contains_edges(chain_store):
     """f_b and f_b2 share a file; the only legal link is the CALLS edge."""
-    from code_review_graph.neighbourhood import PATH_EDGE_KINDS
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.neighbourhood import PATH_EDGE_KINDS
+    from graph_engine.visualization import export_graph_data
 
     assert "CONTAINS" not in PATH_EDGE_KINDS
 
@@ -389,7 +389,7 @@ def test_path_ignores_contains_edges(chain_store):
 
 
 def test_path_with_no_connection_reports_it(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, path_from="f_a", path_to="f_z", depth=0
@@ -400,7 +400,7 @@ def test_path_with_no_connection_reports_it(chain_store):
 
 
 def test_path_nodes_are_seeds_so_context_expands_around_them(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, path_from="f_a", path_to="f_c", depth=1
@@ -417,7 +417,7 @@ def test_path_nodes_are_seeds_so_context_expands_around_them(chain_store):
 
 
 def test_generate_html_neighbourhood_stays_one_file(chain_store, tmp_path):
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     out = tmp_path / "graph.html"
     generate_html(chain_store, out, seed_symbols=["f_a"], depth=2)
@@ -430,7 +430,7 @@ def test_generate_html_neighbourhood_stays_one_file(chain_store, tmp_path):
 
 
 def test_generate_html_sidecar_is_opt_in(chain_store, tmp_path):
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     out = tmp_path / "graph.html"
     generate_html(chain_store, out, seed_symbols=["f_a"], depth=2, sidecar=True)
@@ -448,7 +448,7 @@ def test_generate_html_sidecar_is_opt_in(chain_store, tmp_path):
 
 def test_neighbourhood_never_falls_back_to_bubble_aggregation(chain_store, tmp_path):
     """A seeded view is small by construction; auto must not aggregate it."""
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     out = tmp_path / "graph.html"
     generate_html(
@@ -469,7 +469,7 @@ def test_neighbourhood_never_falls_back_to_bubble_aggregation(chain_store, tmp_p
 def test_neighbourhood_page_keeps_the_existing_interaction_surface(
     chain_store, tmp_path
 ):
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     out = tmp_path / "graph.html"
     generate_html(chain_store, out, seed_symbols=["f_a"], depth=2)
@@ -488,7 +488,7 @@ def test_neighbourhood_page_keeps_the_existing_interaction_surface(
 
 
 def test_neighbourhood_page_has_expand_on_click(chain_store, tmp_path):
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     out = tmp_path / "graph.html"
     generate_html(chain_store, out, seed_symbols=["f_a"], depth=2)
@@ -499,7 +499,7 @@ def test_neighbourhood_page_has_expand_on_click(chain_store, tmp_path):
 
 
 def test_render_depth_defaults_below_the_payload_depth(chain_store, tmp_path):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(chain_store, seed_symbols=["f_a"], depth=3)
 
@@ -508,7 +508,7 @@ def test_render_depth_defaults_below_the_payload_depth(chain_store, tmp_path):
 
 
 def test_payload_reports_the_whole_graph_size_for_comparison(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     full = export_graph_data(chain_store)
     view = export_graph_data(chain_store, seed_symbols=["f_a"], depth=1)
@@ -523,7 +523,7 @@ def test_payload_reports_the_whole_graph_size_for_comparison(chain_store):
 
 
 def test_cli_exposes_the_neighbourhood_flags():
-    from code_review_graph.cli import build_parser
+    from reviewgraph.cli import build_parser
 
     parser = build_parser()
     args = parser.parse_args(
@@ -549,7 +549,7 @@ def test_cli_exposes_the_neighbourhood_flags():
 
 
 def test_cli_exposes_file_flow_and_path_seeds():
-    from code_review_graph.cli import build_parser
+    from reviewgraph.cli import build_parser
 
     parser = build_parser()
     args = parser.parse_args(
@@ -577,7 +577,7 @@ def test_cli_exposes_file_flow_and_path_seeds():
 
 
 def test_cli_path_flags_must_come_in_pairs():
-    from code_review_graph.neighbourhood import NeighbourhoodSpec
+    from graph_engine.neighbourhood import NeighbourhoodSpec
 
     with pytest.raises(ValueError):
         NeighbourhoodSpec(path_from="f_a").validate()
@@ -587,7 +587,7 @@ def test_cli_path_flags_must_come_in_pairs():
 
 
 def test_negative_depth_is_rejected():
-    from code_review_graph.neighbourhood import NeighbourhoodSpec
+    from graph_engine.neighbourhood import NeighbourhoodSpec
 
     with pytest.raises(ValueError):
         NeighbourhoodSpec(symbols=("f_a",), depth=-1).validate()
@@ -600,7 +600,7 @@ def test_payload_carries_one_record_per_qualified_name(chain_store):
     the ``_sanitize_name``-truncated one, so two real nodes whose paths differ
     only past 256 characters arrive here sharing a key.
     """
-    from code_review_graph.neighbourhood import NeighbourhoodSpec, extract
+    from graph_engine.neighbourhood import NeighbourhoodSpec, extract
 
     duplicate = {
         "id": 99,
@@ -624,7 +624,7 @@ def test_payload_carries_one_record_per_qualified_name(chain_store):
 
 
 def test_truncated_payload_never_exceeds_max_nodes(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     for cap in (1, 2, 3, 5, 8):
         view = export_graph_data(
@@ -643,7 +643,7 @@ def test_any_non_containment_edge_kind_counts_as_a_hop(chain_store):
     graph after CALLS and TESTED_BY. An allow-list that forgot it would drop
     a fifth of the reachable nodes without any test noticing.
     """
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     chain_store.upsert_edge(
         _edge("REFERENCES", "src/a.py::f_a", "src/z.py::f_z", "src/a.py")
@@ -709,7 +709,7 @@ def test_max_nodes_caps_a_seed_set_larger_than_the_cap(wide_store):
     ``--seed-changed`` is the command the flag exists for, and there the seed
     set *is* the large thing.
     """
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         wide_store, seed_files=_seed_every_file(), depth=2, max_nodes=50
@@ -725,7 +725,7 @@ def test_max_nodes_caps_a_seed_set_larger_than_the_cap(wide_store):
 
 @pytest.mark.parametrize("cap", [1, 7, 33, 50, 199, 200, 201, 400])
 def test_no_cap_is_ever_exceeded_by_a_large_seed_set(wide_store, cap):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         wide_store, seed_files=_seed_every_file(), depth=2, max_nodes=cap
@@ -741,7 +741,7 @@ def test_no_cap_is_ever_exceeded_by_a_large_seed_set(wide_store, cap):
 
 def test_dropped_seeds_are_the_least_connected_ones(wide_store):
     """Ranking, not arbitrary truncation: the busiest seeds survive."""
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         wide_store, seed_files=_seed_every_file(), depth=0, max_nodes=10
@@ -756,7 +756,7 @@ def test_dropped_seeds_are_the_least_connected_ones(wide_store):
 
 
 def test_seed_drop_is_deterministic(wide_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     first, second = (
         export_graph_data(
@@ -769,7 +769,7 @@ def test_seed_drop_is_deterministic(wide_store):
 
 
 def test_an_uncapped_seed_set_drops_nothing(wide_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         wide_store, seed_files=_seed_every_file(), depth=2, max_nodes=10_000
@@ -783,7 +783,7 @@ def test_an_uncapped_seed_set_drops_nothing(wide_store):
 
 def test_a_symbol_beats_its_containing_file_for_the_last_slot(chain_store):
     """The File is a rendering nicety; the symbol is the answer."""
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store, seed_symbols=["src/a.py::f_a"], depth=0, max_nodes=1
@@ -794,7 +794,7 @@ def test_a_symbol_beats_its_containing_file_for_the_last_slot(chain_store):
 
 
 def test_path_nodes_outrank_other_seeds_under_a_tight_budget(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(
         chain_store,
@@ -811,7 +811,7 @@ def test_path_nodes_outrank_other_seeds_under_a_tight_budget(chain_store):
 
 
 def test_max_nodes_below_the_path_length_is_rejected(chain_store):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     with pytest.raises(ValueError) as excinfo:
         export_graph_data(
@@ -823,7 +823,7 @@ def test_max_nodes_below_the_path_length_is_rejected(chain_store):
 
 
 def test_generate_html_reports_the_seed_budget(wide_store, tmp_path):
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     report: dict = {}
     generate_html(
@@ -848,7 +848,7 @@ def test_generate_html_reports_the_seed_budget(wide_store, tmp_path):
 
 def test_page_does_not_paint_every_seed(wide_store, tmp_path):
     """A --seed-changed run must not spray 40 paths across the graph."""
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     out = tmp_path / "graph.html"
     generate_html(wide_store, out, seed_files=_seed_every_file(), depth=1)
@@ -864,7 +864,7 @@ def test_page_does_not_paint_every_seed(wide_store, tmp_path):
 
 
 def test_payload_still_carries_every_seed_for_the_disclosure(wide_store, tmp_path):
-    from code_review_graph.visualization import export_graph_data
+    from graph_engine.visualization import export_graph_data
 
     view = export_graph_data(wide_store, seed_files=_seed_every_file(), depth=1)
 
@@ -877,7 +877,7 @@ def test_payload_still_carries_every_seed_for_the_disclosure(wide_store, tmp_pat
 
 
 def test_render_depth_above_depth_is_rejected():
-    from code_review_graph.neighbourhood import NeighbourhoodSpec
+    from graph_engine.neighbourhood import NeighbourhoodSpec
 
     with pytest.raises(ValueError) as excinfo:
         NeighbourhoodSpec(symbols=("f_a",), depth=2, render_depth=3).validate()
@@ -887,7 +887,7 @@ def test_render_depth_above_depth_is_rejected():
 
 
 def test_aggregating_mode_with_a_seed_is_rejected(chain_store, tmp_path):
-    from code_review_graph.visualization import generate_html
+    from graph_engine.visualization import generate_html
 
     for mode in ("community", "file"):
         with pytest.raises(ValueError) as excinfo:
@@ -920,7 +920,7 @@ def test_aggregating_mode_with_a_seed_is_rejected(chain_store, tmp_path):
     ],
 )
 def test_meaningless_flag_combinations_are_rejected(argv, message, capsys):
-    from code_review_graph.cli import _check_visualize_flags, build_parser
+    from reviewgraph.cli import _check_visualize_flags, build_parser
 
     args = build_parser().parse_args(argv)
     fmt = getattr(args, "format", "html") or "html"
@@ -945,14 +945,14 @@ def test_meaningless_flag_combinations_are_rejected(argv, message, capsys):
     ],
 )
 def test_meaningful_flag_combinations_are_accepted(argv):
-    from code_review_graph.cli import _check_visualize_flags, build_parser
+    from reviewgraph.cli import _check_visualize_flags, build_parser
 
     args = build_parser().parse_args(argv)
     _check_visualize_flags(args, getattr(args, "format", "html") or "html")
 
 
 def test_tuning_flags_default_to_none_so_a_no_op_is_detectable():
-    from code_review_graph.cli import build_parser
+    from reviewgraph.cli import build_parser
 
     args = build_parser().parse_args(["visualize"])
 
@@ -963,7 +963,7 @@ def test_tuning_flags_default_to_none_so_a_no_op_is_detectable():
 
 
 def test_the_command_says_how_many_seeds_it_dropped(capsys):
-    from code_review_graph.cli import _print_seed_budget
+    from reviewgraph.cli import _print_seed_budget
 
     _print_seed_budget({
         "seeds": 50,
@@ -980,7 +980,7 @@ def test_the_command_says_how_many_seeds_it_dropped(capsys):
 
 
 def test_an_untrimmed_run_says_nothing_about_the_budget(capsys):
-    from code_review_graph.cli import _print_seed_budget
+    from reviewgraph.cli import _print_seed_budget
 
     _print_seed_budget({
         "seeds": 12,

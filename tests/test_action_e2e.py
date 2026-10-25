@@ -47,7 +47,7 @@ from typing import Any, Iterator
 import pytest
 import yaml
 
-from code_review_graph.migrations import LATEST_VERSION
+from graph_engine.migrations import LATEST_VERSION
 from tests.test_action_render import report_rendering_to_exactly
 
 pytestmark = [
@@ -363,7 +363,7 @@ def _write_shim(shim_dir: Path, name: str, target: str) -> None:
 def _make_shims(shim_dir: Path) -> None:
     """Shim every binary the Action's steps invoke.
 
-    ``code-review-graph`` and ``python`` are pointed at this checkout so the
+    ``reviewgraph`` and ``python`` are pointed at this checkout so the
     test can never accidentally exercise a PyPI-installed copy. ``git`` and
     ``gh`` delegate to the real binary when one exists; ``gh`` is
     deliberately left as a recording stub that fails loudly, because a test
@@ -371,7 +371,7 @@ def _make_shims(shim_dir: Path) -> None:
     """
     shim_dir.mkdir(parents=True, exist_ok=True)
     quoted = f'"{sys.executable}"'
-    _write_shim(shim_dir, "code-review-graph", f"{quoted} -m code_review_graph")
+    _write_shim(shim_dir, "reviewgraph", f"{quoted} -m reviewgraph")
     _write_shim(shim_dir, "python", quoted)
     _write_shim(shim_dir, "python3", quoted)
     git = shutil.which("git") or "/usr/bin/git"
@@ -794,7 +794,7 @@ def test_canary_action_steps_are_the_real_ones():
     names = list(action_steps())
     assert names == [
         "Set up Python",
-        "Install code-review-graph",
+        "Install reviewgraph",
         "Cache knowledge graph",
         STEP_RESOLVE_BASE,
         STEP_BUILD,
@@ -805,8 +805,8 @@ def test_canary_action_steps_are_the_real_ones():
         STEP_GATE,
     ], f"action.yml step list changed: {names}"
     build = action_steps()[STEP_BUILD]["run"]
-    assert "code-review-graph update --base" in build
-    assert "code-review-graph build" in build
+    assert "reviewgraph update --base" in build
+    assert "reviewgraph build" in build
 
 
 def test_canary_every_step_actually_executed(happy: ActionRun):
@@ -817,7 +817,7 @@ def test_canary_every_step_actually_executed(happy: ActionRun):
     assert STEP_ANALYZE in executed
     assert STEP_RENDER in executed
 
-    crg_calls = happy.runner.calls_to("code-review-graph")
+    crg_calls = happy.runner.calls_to("reviewgraph")
     subcommands = [argv[1] for argv in crg_calls if len(argv) > 1]
     assert "build" in subcommands, f"no build was run: {crg_calls}"
     assert "detect-changes" in subcommands, f"no analysis was run: {crg_calls}"
@@ -972,7 +972,7 @@ def _savings_line(body: str) -> str | None:
 
 def test_token_savings_panel_is_internally_honest(happy: ActionRun, diff_files):
     """The claim must be reproducible from the same inputs, and conservative."""
-    from code_review_graph.context_savings import estimate_file_tokens, estimate_tokens
+    from graph_engine.context_savings import estimate_file_tokens, estimate_tokens
 
     report = happy.report
     assert report is not None
@@ -1043,7 +1043,7 @@ def test_no_source_code_leaves_the_runner(happy: ActionRun):
 def test_action_makes_no_third_party_network_calls(happy: ActionRun):
     """Only git (origin) and the local CLI ran; nothing else was invoked."""
     invoked = {Path(argv[0]).name for argv in happy.runner.calls()}
-    assert invoked <= {"git", "code-review-graph", "python", "python3", "gh"}, invoked
+    assert invoked <= {"git", "reviewgraph", "python", "python3", "gh"}, invoked
     for name, script in all_run_scripts(ACTION_YML):
         for banned in ("curl", "wget", "nc ", "openssl s_client"):
             assert banned not in script, f"{name} shells out to {banned!r}"
@@ -1391,7 +1391,7 @@ def test_docs_cache_key_matches_action_yml():
 
 def test_action_yml_comment_points_at_migrations():
     text = ACTION_YML.read_text(encoding="utf-8")
-    assert "LATEST_VERSION in code_review_graph/migrations.py" in text
+    assert "LATEST_VERSION in modules/code-review/graph_engine/migrations.py" in text
     assert f"schema{LATEST_VERSION}" in text
 
 
@@ -1466,7 +1466,7 @@ def test_pull_request_with_no_changed_files_degrades_cleanly(
 
 def test_first_run_with_no_cache_builds_from_scratch(happy: ActionRun):
     """The happy-path fixture starts with no ``.code-review-graph`` at all."""
-    crg_calls = happy.runner.calls_to("code-review-graph")
+    crg_calls = happy.runner.calls_to("reviewgraph")
     subcommands = [argv[1] for argv in crg_calls if len(argv) > 1]
     assert subcommands[0] == "build", subcommands
     assert "update" not in subcommands, "a cold run must not take the update path"
@@ -1482,7 +1482,7 @@ def test_warm_cache_takes_the_update_path(tmp_path_factory: pytest.TempPathFacto
     runner.steps_run.clear()
     execute(runner)
     subcommands = [
-        argv[1] for argv in runner.calls_to("code-review-graph") if len(argv) > 1
+        argv[1] for argv in runner.calls_to("reviewgraph") if len(argv) > 1
     ]
     assert subcommands[0] == "update", subcommands
 

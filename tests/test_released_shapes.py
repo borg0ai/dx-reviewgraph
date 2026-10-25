@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph import skills, uninstall
+from graph_engine import skills, uninstall
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_PATH = "code_review_graph/skills.py"
@@ -240,7 +240,7 @@ def _released_hook_bodies() -> dict[str, set[str]]:
             if not isinstance(value, ast.Constant) or not isinstance(value.value, str):
                 continue
             text = value.value
-            if skills._GIT_HOOK_NOTE not in text:
+            if "# Installed by code-review-graph." not in text:
                 continue
             body = text.removeprefix("#!/bin/sh\n")
             found.setdefault(body, set()).add(tag)

@@ -12,7 +12,7 @@ Four shapes were skipped, and each one is a common way to write Python:
     the target is a pattern, not a name, so the binding was dropped whole —
     even though ``_get_store`` is annotated ``-> tuple[GraphStore, Path]``
     and position 0 of that annotation is a ``GraphStore``.
-``code_review_graph.graph.GraphStore(...)``
+``graph_engine.graph.GraphStore(...)``
     a constructor reached through a dotted module path, which the reader
     only recognised when the class was spelled as a bare name.
 ``CodeParser().parse_file(...)``
@@ -34,11 +34,11 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import CodeParser
-from code_review_graph.postprocessing import run_post_processing
-from code_review_graph.tools import query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.parser import CodeParser
+from graph_engine.postprocessing import run_post_processing
+from graph_engine.tools import query_graph
 
 _LIB = '''\
 from pathlib import Path

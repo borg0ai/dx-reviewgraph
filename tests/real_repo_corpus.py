@@ -10,7 +10,7 @@ compares the result against numbers recorded in ``corpus_baselines.json``.
 
 Design notes:
 
-* The pins for repositories that ``code_review_graph/eval/configs`` already
+* The pins for repositories that ``modules/code-review/graph_engine/eval/configs`` already
   tracks are *derived from* those configs rather than copied. ``repo_specs()``
   reads the YAML and fails loudly when the two disagree, so the project keeps a
   single source of truth for "which commit of fastapi do we measure".
@@ -44,7 +44,7 @@ from typing import Iterable, Optional
 TESTS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = TESTS_DIR.parent
 BASELINE_PATH = TESTS_DIR / "corpus_baselines.json"
-EVAL_CONFIGS_DIR = REPO_ROOT / "code_review_graph" / "eval" / "configs"
+EVAL_CONFIGS_DIR = REPO_ROOT / "modules" / "code-review" / "graph_engine" / "eval" / "configs"
 
 #: Wall-clock ceiling for one clone. A stalled fetch must fail the check rather
 #: than hang a CI job forever.
@@ -64,7 +64,7 @@ class RepoSpec:
     language: str
     url: str
     commit: str
-    #: Name of the ``code_review_graph/eval/configs/<name>.yaml`` this pin is
+    #: Name of the ``modules/code-review/graph_engine/eval/configs/<name>.yaml`` this pin is
     #: taken from, when the evaluation corpus already tracks the repository.
     eval_config: Optional[str] = None
 
@@ -376,8 +376,8 @@ def _has_control_character(text: str) -> bool:
 
 def measure(spec: RepoSpec, repo_path: Path, db_path: Path) -> Measurement:
     """Build the graph for *repo_path* and return the measured properties."""
-    from code_review_graph.graph import GraphStore
-    from code_review_graph.incremental import full_build
+    from graph_engine.graph import GraphStore
+    from graph_engine.incremental import full_build
 
     # ``full_build`` canonicalises the root before anchoring every stored
     # ``file_path`` to it; resolve here too so the inventory comparison below
@@ -472,7 +472,7 @@ def _parsed_relative_paths(repo_path: Path) -> list[str]:
     ``collect_all_files`` is pure (``git ls-files`` plus the ignore rules) and
     the checkout does not change between the two calls.
     """
-    from code_review_graph.incremental import collect_all_files
+    from graph_engine.incremental import collect_all_files
 
     return collect_all_files(repo_path)
 
