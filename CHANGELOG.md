@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Branching guidance now uses short-lived feature branches and pull requests directly to
+  `main`.
 - The MCP server instructions now route by question type instead of introducing
   the server as a code-review tool. With deferred tool loading an agent sees
   only the tool names and these instructions, so "for code reviews" kept it on

@@ -50,7 +50,7 @@ CI also runs `bandit -r modules/code-review/graph_engine/ -c pyproject.toml`.
 
 ## Branching
 
-Create short-lived feature branches from `origin/main` and send every feature or fix
+Create a short-lived feature branch from `origin/main` and send every change
 through a pull request directly to `main`:
 
 ```bash
@@ -59,8 +59,7 @@ git switch -c feature/your-change origin/main
 ```
 
 Run the checks listed in Development Setup, then open a PR against `main`. CI and the
-ReviewGraph PR review workflow run on the PR. Merge through GitHub; do not use long-lived
-`staging`, `testing` or `develop` branches. Releases are tagged from `main`.
+ReviewGraph PR review workflow run on the PR. Merge through GitHub. Tag releases from `main`.
 
 The optional release gate is separate from routine PR CI. Run
 `.github/workflows/release-gate.yml` manually before a release when slow upgrade,
