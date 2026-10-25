@@ -521,7 +521,6 @@ _FORBIDDEN_TOP_LEVEL = {
     "evaluate",
     "diagrams",
     "scripts",
-    "code-review-graph-vscode",
     ".beads",
     ".github",
     ".claude",
@@ -849,11 +848,6 @@ _CORPUS_PY = (
     "code_review_graph/postprocessing.py",
     "scripts/render_pr_comment.py",
 )
-_CORPUS_TS = (
-    "code-review-graph-vscode/src/backend/cli.ts",
-    "code-review-graph-vscode/src/backend/watcher.ts",
-)
-
 _MCP_PROBE = '''
 import asyncio, json, os, sys
 from mcp import ClientSession
@@ -921,7 +915,7 @@ def _make_sample_repo(dest: Path) -> Path:
     project = dest / "sample_project"
     project.mkdir(parents=True)
     copied = 0
-    for rel in _CORPUS_PY + _CORPUS_TS:
+    for rel in _CORPUS_PY:
         source = REPO_ROOT / rel
         if not source.is_file():
             continue

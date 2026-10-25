@@ -880,10 +880,9 @@ def analyze_changes(
 
     # Build summary.
     # "no direct test", not "no test in reach": the graph sees TESTED_BY edges
-    # and CALLS paths, not the suite. On the very delta of #1047 two symbols in
-    # the unreached group (auto_promote.py::cmd_verify and
-    # ::ForeignPullRequestError) are exercised by tests that load the script
-    # through importlib, so no edge records it. The weaker claim is true; the
+    # and CALLS paths, not the suite. In the original #1047 analysis two helper
+    # symbols in the unreached group were exercised by tests that load a script
+    # through importlib, so no edge records them. The weaker claim is true; the
     # stronger one is not ours to make.
     gap_line = f"  - {len(test_gaps)} test gap(s)"
     if indirect_count:

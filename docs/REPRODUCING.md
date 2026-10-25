@@ -73,8 +73,8 @@ The sample list and raw counts behind this table are not stored in the repositor
 ## Step 1: install with the eval and embeddings extras
 
 ```bash
-git clone https://github.com/tirth8205/code-review-graph
-cd code-review-graph
+git clone https://github.com/borg0ai/dx-reviewgraph
+cd dx-reviewgraph
 uv sync --extra eval --extra embeddings     # or: pip install -e ".[eval,embeddings]"
 ```
 

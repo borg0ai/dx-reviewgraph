@@ -535,7 +535,7 @@ def export_svg(store: GraphStore, output_path: Path) -> Path:
                 font_size=6
             )
 
-        ax.set_title("Code Review Graph", fontsize=14)
+        ax.set_title("ReviewGraph", fontsize=14)
         ax.axis("off")
 
         fig.savefig(

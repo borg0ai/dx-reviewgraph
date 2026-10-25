@@ -37,9 +37,9 @@ from typing import Any
 logger = logging.getLogger("render_pr_comment")
 
 MARKER = "<!-- code-review-graph-report -->"
-REPO_URL = "https://github.com/tirth8205/code-review-graph"
+REPO_URL = "https://github.com/borg0ai/dx-reviewgraph"
 FOOTER = (
-    f"*Powered by [code-review-graph]({REPO_URL}) — "
+    f"*Powered by [ReviewGraph]({REPO_URL}) — "
     "local-first analysis; no code leaves the CI runner.*"
 )
 
@@ -352,7 +352,7 @@ def render_markdown(
         gaps_total = uncovered_total + indirect_total
     truncated = gaps_total > len(gaps)
 
-    lines: list[str] = [MARKER, "", "## code-review-graph review", ""]
+    lines: list[str] = [MARKER, "", "## ReviewGraph review", ""]
     gap_text = f"{gaps_total} test gap(s)"
     if indirect_total:
         gap_text += (
@@ -444,7 +444,7 @@ def render_no_changes() -> str:
         [
             MARKER,
             "",
-            "## code-review-graph review",
+            "## ReviewGraph review",
             "",
             "No analyzable code changes detected against the base branch.",
             "",
@@ -461,7 +461,7 @@ def render_not_analyzed(detail: str) -> str:
         [
             MARKER,
             "",
-            "## code-review-graph review",
+            "## ReviewGraph review",
             "",
             "**The change analysis did not run, so this pull request has not "
             "been reviewed by code-review-graph.** This is not an all-clear.",

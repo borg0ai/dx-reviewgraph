@@ -1,4 +1,4 @@
-"""Code Review Graph - MCP server for persistent incremental code knowledge graphs."""
+"""ReviewGraph - MCP server for persistent incremental code knowledge graphs."""
 
 from .context_savings import (
     attach_context_savings,

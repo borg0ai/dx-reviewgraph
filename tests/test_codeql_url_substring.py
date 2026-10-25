@@ -129,7 +129,7 @@ def test_looks_like_url_matches_the_query():
     # A URL inside a longer literal is not a URL by itself.
     assert not looks_like_url("[click](https://attacker.invalid)")
     assert not looks_like_url("\\[click\\](https://attacker.invalid)")
-    assert not looks_like_url("https://github.com/tirth8205/code-review-graph")
+    assert not looks_like_url("https://github.com/borg0ai/dx-reviewgraph")
 
 
 def test_no_incomplete_url_substring_sanitization():

@@ -1,7 +1,7 @@
 # Composite GitHub Action: risk-scored, graph-aware PR review comments.
 # Local-first — the analysis runs entirely on the runner; no source code is
 # sent to any external service. See docs/GITHUB_ACTION.md for usage.
-name: "code-review-graph PR Review"
+name: "ReviewGraph PR Review"
 description: >-
   Post a risk-scored, graph-aware review comment on pull requests.
   Local-first: builds a Tree-sitter knowledge graph on the runner and

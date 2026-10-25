@@ -398,7 +398,7 @@ def test_token_savings_line_omitted_when_absent(report):
 
 def test_footer_powered_by(report):
     body = render.render_markdown(report)
-    assert "Powered by [code-review-graph]" in body
+    assert "Powered by [ReviewGraph]" in body
     assert "local-first" in body
 
 
@@ -434,7 +434,7 @@ def test_empty_report_renders_minimal_body():
     assert body.startswith(render.MARKER)
     assert "**Overall risk: 0.00 (LOW)**" in body
     assert "### Risk-scored changes" not in body
-    assert "Powered by [code-review-graph]" in body
+    assert "Powered by [ReviewGraph]" in body
 
 
 def test_body_size_capped():
@@ -448,7 +448,7 @@ def test_body_size_capped():
     }
     body = render.render_markdown(huge, max_functions=5000)
     assert len(body) < render._MAX_BODY + 1000
-    assert "Powered by [code-review-graph]" in body
+    assert "Powered by [ReviewGraph]" in body
 
 
 # ---------------------------------------------------------------------------
@@ -554,7 +554,7 @@ def test_written_artifact_never_exceeds_the_consumer_cap(tmp_path, offset):
     )
     assert code == 0
     assert out.stat().st_size <= render._MAX_BODY, out.stat().st_size
-    assert "Powered by [code-review-graph]" in out.read_text(encoding="utf-8")
+    assert "Powered by [ReviewGraph]" in out.read_text(encoding="utf-8")
 
 
 def test_output_file_preserves_the_bytes_measured_by_the_budget(tmp_path, report):
@@ -647,7 +647,7 @@ def test_windows_artifact_never_exceeds_the_consumer_cap(
     assert code == 0
     assert b"\r" not in data
     assert len(data) <= render._MAX_BODY, len(data)
-    assert b"Powered by [code-review-graph]" in data
+    assert b"Powered by [ReviewGraph]" in data
 
 
 def test_windows_artifact_that_fits_is_written_whole(tmp_path, windows_text_writes):
@@ -891,7 +891,7 @@ def test_windows_artifact_at_the_cap_is_accepted_by_the_trusted_validator(
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     wrapped = (tmp_path / "crg-comment-body.md").read_bytes().decode("utf-8")
-    assert wrapped.startswith(declared["TRUSTED_MARKER"] + "\n\n## code-review-graph review\n")
+    assert wrapped.startswith(declared["TRUSTED_MARKER"] + "\n\n## ReviewGraph review\n")
     assert wrapped.rstrip("\n").endswith(render.FOOTER)
 
 
@@ -995,7 +995,7 @@ def test_render_no_changes_has_marker_and_footer():
     body = render.render_no_changes()
     assert body.splitlines()[0] == render.MARKER
     assert "No analyzable code changes" in body
-    assert "Powered by [code-review-graph]" in body
+    assert "Powered by [ReviewGraph]" in body
 
 
 # ---------------------------------------------------------------------------
@@ -1105,4 +1105,4 @@ def test_cli_subprocess_stdout():
     )
     assert result.returncode == 0
     assert result.stdout.startswith(render.MARKER)
-    assert "Powered by [code-review-graph]" in result.stdout
+    assert "Powered by [ReviewGraph]" in result.stdout

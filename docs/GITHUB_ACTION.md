@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: tirth8205/code-review-graph@v2.3.9
+      - uses: borg0ai/dx-reviewgraph@v2.3.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -57,7 +57,7 @@ which run on Node 24. Self-hosted runners must be version `2.327.1` or newer.
 To turn the review into a merge gate:
 
 ```yaml
-      - uses: tirth8205/code-review-graph@v2.3.9
+      - uses: borg0ai/dx-reviewgraph@v2.3.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-risk: high
@@ -172,7 +172,7 @@ database) with `actions/cache`:
   `workflow_run` workflow. See
   [`.github/workflows/pr-review.yml`](../.github/workflows/pr-review.yml) and
   [`.github/workflows/pr-review-comment.yml`](../.github/workflows/pr-review-comment.yml).
-  GitHub loads the `workflow_run` workflow from the default branch (`staging`
+  GitHub loads the `workflow_run` workflow from the default branch (`main`
   in this repository), so the trusted commenting half becomes active only
   after that workflow is merged there.
   The privileged workflow must verify the source event and analysed commit,

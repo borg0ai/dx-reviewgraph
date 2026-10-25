@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-code-review-graph is a local-first knowledge graph for code review. It parses a repository with Tree-sitter (plus targeted fallbacks), stores nodes and edges in SQLite, updates the graph incrementally from Git changes, and serves compact context over MCP and the CLI to AI coding tools. Supported platforms are the entries in `PLATFORMS` in `skills.py`: Claude Code, Codex, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen Code, Kiro, Qoder, GitHub Copilot, GitHub Copilot CLI, Hermes Agent and CodeBuddy Code.
+ReviewGraph is a local-first knowledge graph for code review. It parses a repository with Tree-sitter (plus targeted fallbacks), stores nodes and edges in SQLite, updates the graph incrementally from Git changes, and serves compact context over MCP and the CLI to AI coding tools. Supported platforms are the entries in `PLATFORMS` in `skills.py`: Claude Code, Codex, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen Code, Kiro, Qoder, GitHub Copilot, GitHub Copilot CLI, Hermes Agent and CodeBuddy Code.
 
 ## Graph Tool Usage (Token-Efficient)
 
@@ -25,7 +25,7 @@ Core package `code_review_graph/` (Python 3.10+):
 - `prompts.py`: 5 MCP prompts (review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check).
 - `cli.py`: the `code-review-graph` command. `daemon.py` and `daemon_cli.py`: the `crg-daemon` multi-repo watch daemon.
 - `parser.py`: Tree-sitter multi-language parser with fallbacks for notebooks and other formats. `custom_languages.py`: languages defined in `.code-review-graph/languages.toml` (see docs/CUSTOM_LANGUAGES.md).
-- `graph.py`: SQLite graph store (nodes, edges, impact analysis). `migrations.py`: schema migrations; the current schema version is 13 and must equal `SUPPORTED_SCHEMA_VERSION` in the VS Code extension (CI checks this).
+- `graph.py`: SQLite graph store (nodes, edges, impact analysis). `migrations.py`: schema migrations; current schema version is 13.
 - `incremental.py`: full build, Git/SVN change detection, incremental update, stale-file reconciliation, watch mode. `postprocessing.py`: shared post-build pipeline (signatures, flows, communities, FTS).
 - Post-build resolvers: `python_resolver.py`, `jedi_resolver.py` (optional `enrichment` extra), `spring_resolver.py`, `event_resolver.py`, `temporal_resolver.py`, `config_keys.py`, `scoped_resolver.py` (PHP, Rust, C#), `rescript_resolver.py`, `hcl_resolver.py`, `tsconfig_resolver.py` (tsconfig and jsconfig path aliases).
 - `flows.py`: execution flows and criticality. `communities.py`: Leiden via igraph (optional) or file-based grouping, plus the architecture overview. `analysis.py`: hub and bridge nodes, knowledge gaps, surprise scoring, suggested questions.
@@ -34,8 +34,6 @@ Core package `code_review_graph/` (Python 3.10+):
 - `visualization.py`: D3.js HTML graph (D3 is bundled in `assets/`). `exports.py`: JSON, GraphML, Neo4j Cypher, Obsidian, SVG. `wiki.py`: Markdown wiki. `graph_diff.py`: snapshot diffing. `memory.py`: stored Q&A feedback.
 - `skills.py`: `install` (platform MCP configs, hooks, skills, instruction blocks). `_legacy_instructions.py`: instruction blocks shipped by earlier releases. `jsonc.py`: comment-preserving JSONC tokenising and splices, shared by install and uninstall so neither flattens a commented config. `uninstall.py`: reverses `install`. `enrich.py`: PreToolUse hook enrichment. `forget.py`: drops files from the graph. `registry.py`: multi-repo registry. `http_origin_guard.py`: Host/Origin checks for `serve --http`. `token_benchmark.py` and `eval/`: benchmarks. `constants.py`: shared constants.
 - `docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.
-
-VS Code extension: `code-review-graph-vscode/` (TypeScript, separate `package.json` and `tsconfig.json`). Reads `.code-review-graph/graph.db` directly.
 
 Database: `.code-review-graph/graph.db` (SQLite, WAL mode).
 
@@ -102,7 +100,6 @@ uv run code-review-graph --help             # full command list
 - lint: ruff on Python 3.10.
 - type-check: mypy.
 - security: bandit with the exemptions in `pyproject.toml`.
-- schema-sync: `LATEST_VERSION` in `migrations.py` must equal `SUPPORTED_SCHEMA_VERSION` in the VS Code extension.
 - test: pytest on Python 3.10, 3.11, 3.12 and 3.13; coverage must be at least 65%.
 - google-embeddings: constructs the Google provider with the `google-embeddings` and `all` extras.
 - windows-native: a subset of the suite on windows-latest.
@@ -127,20 +124,12 @@ bd close <id>         # Complete work
 - Run `bd prime` for detailed command reference and session close protocol
 - Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
 
-## Branching Model
+## Branching
 
-Three long-lived branches, one direction: feature PR → `staging` (default) → `testing` → `main` → tag → PyPI.
-Open every PR against `staging`. Never push to or open PRs against `testing` or `main`; those only
-receive promotion PRs, always merged with a merge commit.
-
-`staging` → `testing` is automatic: `.github/workflows/auto-promote.yml` runs once a day and merges
-the promotion PR when `staging` is ahead, every required check is green, and the promotion gate has
-not failed on `testing`. The decision lives in `scripts/auto_promote.py`. It merges only a PR it
-opened itself — same repository, correctly aimed, labelled `auto-promotion`, pinned to the commit
-whose checks were read — so a promotion PR you open by hand is left alone. It needs Settings →
-Actions → General → Workflow permissions → *Allow GitHub Actions to create and approve pull
-requests*. **Promotion to `main` is never automatic** — the maintainer opens and merges that PR by
-hand. Full rules in CONTRIBUTING.md "Branching and promotion".
+Use short-lived feature branches and open every pull request directly against `main`.
+CI and PR review run on that target. Merge through the pull request; tag releases from `main`.
+The optional long-running release checks live in `.github/workflows/release-gate.yml` and
+run manually before a release.
 
 ## Session Completion
 

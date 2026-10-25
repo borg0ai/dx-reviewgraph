@@ -1,4 +1,4 @@
-"""MCP server entry point for Code Review Graph.
+"""MCP server entry point for ReviewGraph.
 
 Run as: code-review-graph serve
 Communicates via stdio (standard MCP transport), or use
