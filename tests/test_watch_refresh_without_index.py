@@ -10,15 +10,15 @@ from unittest.mock import patch
 import pytest
 from watchdog.events import FileCreatedEvent
 
-from code_review_graph.embeddings import REFRESH_SKIPPED_WARNING
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import (
+from graph_engine.embeddings import REFRESH_SKIPPED_WARNING
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import (
     _create_watch_handler,
     _raise_watch_postprocess_warnings,
     incremental_update,
     watch,
 )
-from code_review_graph.postprocessing import run_post_processing
+from graph_engine.postprocessing import run_post_processing
 
 
 def _recording_refresh(results: list[dict]):
@@ -45,7 +45,7 @@ def test_startup_reconciliation_keeps_the_watch_running(tmp_path):
     results: list[dict] = []
     try:
         with (
-            patch("code_review_graph.embeddings.get_provider") as get_provider,
+            patch("graph_engine.embeddings.get_provider") as get_provider,
             patch("watchdog.observers.Observer") as observer,
             patch("time.sleep", side_effect=KeyboardInterrupt),
         ):
@@ -64,7 +64,7 @@ def test_watch_update_keeps_the_watch_running(tmp_path):
     results: list[dict] = []
     handler = _create_watch_handler(tmp_path, store, _recording_refresh(results))
     try:
-        with patch("code_review_graph.embeddings.get_provider") as get_provider:
+        with patch("graph_engine.embeddings.get_provider") as get_provider:
             handler.process([FileCreatedEvent(str(source))])
             handler.raise_if_failed()
         get_provider.assert_not_called()

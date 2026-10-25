@@ -11,8 +11,8 @@ from watchdog.events import (
     FileMovedEvent,
 )
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import (
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import (
     _create_watch_handler,
     _load_ignore_patterns,
     _should_ignore,
@@ -49,7 +49,7 @@ def test_first_maven_output_is_ignored_before_cache_expiry(tmp_path, store):
 
     # A file-only delivery must suffice: native backends can omit directory events.
     with patch(
-        "code_review_graph.incremental._scan_nested_output_dirs",
+        "graph_engine.incremental._scan_nested_output_dirs",
         side_effect=AssertionError("ordinary file event rescanned module tree"),
     ):
         handler.process([FileCreatedEvent(str(output))])
@@ -70,7 +70,7 @@ def test_new_manifest_purges_previously_indexed_output_unless_kept(tmp_path, sto
     manifest.write_text("<project/>")
 
     with patch(
-        "code_review_graph.incremental.collect_all_files",
+        "graph_engine.incremental.collect_all_files",
         side_effect=AssertionError("metadata event inventoried repository"),
     ):
         handler.process([FileCreatedEvent(str(manifest))])
@@ -126,11 +126,11 @@ def test_gitignore_edit_preserves_existing_explicit_update_semantics(tmp_path, s
 
     with (
         patch(
-            "code_review_graph.incremental._scan_nested_output_dirs",
+            "graph_engine.incremental._scan_nested_output_dirs",
             side_effect=AssertionError("ordinary file batch rescanned module tree"),
         ),
         patch(
-            "code_review_graph.incremental.collect_all_files",
+            "graph_engine.incremental.collect_all_files",
             side_effect=AssertionError("ordinary file batch inventoried repository"),
         ),
     ):
@@ -185,7 +185,7 @@ def test_cache_expiry_refreshes_snapshot_and_purges_stored_output(tmp_path, stor
     incremental_update(tmp_path, store, changed_files=[str(output), str(user)])
     handler = _create_watch_handler(tmp_path, store, None)
     (output.parent.parent / "pom.xml").write_text("<project/>")
-    monkeypatch.setattr("code_review_graph.incremental._NESTED_IGNORE_TTL_SECONDS", 0)
+    monkeypatch.setattr("graph_engine.incremental._NESTED_IGNORE_TTL_SECONDS", 0)
 
     handler.process([FileModifiedEvent(str(user))])
     handler.raise_if_failed()
@@ -227,7 +227,7 @@ def test_ignore_purge_refuses_partially_foreign_graph_before_mutation(tmp_path, 
     foreign = write_source(tmp_path.parent / (tmp_path.name + "-foreign") / "user.py")
     incremental_update(tmp_path, store, changed_files=[str(output)])
     # Preserve a legitimate File marker outside this root, as in a mixed legacy graph.
-    from code_review_graph.parser import CodeParser
+    from graph_engine.parser import CodeParser
 
     nodes, _ = CodeParser(foreign.parent).parse_file(foreign)
     for node in nodes:
@@ -250,7 +250,7 @@ def test_parent_directory_modification_does_not_rescan_ordinary_batch(tmp_path, 
     user = write_source(tmp_path / "src" / "user.py")
     handler = _create_watch_handler(tmp_path, store, None)
     with patch(
-        "code_review_graph.incremental._scan_nested_output_dirs",
+        "graph_engine.incremental._scan_nested_output_dirs",
         side_effect=AssertionError("parent directory notification rescanned module tree"),
     ):
         handler.process([FileModifiedEvent(str(user)), DirModifiedEvent(str(user.parent))])

@@ -2,11 +2,11 @@
 
 from importlib import metadata
 
-from code_review_graph.embeddings import GoogleEmbeddingProvider
+from graph_engine.embeddings import GoogleEmbeddingProvider
 
 
 def main() -> None:
-    requirements = metadata.requires("code-review-graph") or []
+    requirements = metadata.requires("reviewgraph") or []
     assert any(
         requirement.startswith("google-genai")
         and "google-embeddings" in requirement

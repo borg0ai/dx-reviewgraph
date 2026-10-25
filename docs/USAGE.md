@@ -1,13 +1,13 @@
 # User Guide
 
-Applies to code-review-graph 2.3.9.
+Applies to reviewgraph 2.3.9.
 
 ## Installation
 
 ```bash
-pip install code-review-graph
-code-review-graph install    # detect installed AI coding tools and configure each one
-code-review-graph build      # parse the codebase
+pip install reviewgraph
+reviewgraph install    # detect installed AI coding tools and configure each one
+reviewgraph build      # parse the codebase
 ```
 
 `install` detects which AI coding tools you have, writes an MCP server entry for each, installs hooks and skills where the platform supports them, and adds graph instructions to the platform's rules file (`CLAUDE.md`, `AGENTS.md`, and others). `--no-hooks`, `--no-skills` and `--no-instructions` skip those steps; `--dry-run` shows what would be written. Restart the editor or tool afterwards.
@@ -15,10 +15,10 @@ code-review-graph build      # parse the codebase
 To configure one platform only:
 
 ```bash
-code-review-graph install --platform codex
-code-review-graph install --platform cursor
-code-review-graph install --platform claude-code
-code-review-graph install --platform codebuddy
+reviewgraph install --platform codex
+reviewgraph install --platform cursor
+reviewgraph install --platform claude-code
+reviewgraph install --platform codebuddy
 ```
 
 ### Supported Platforms
@@ -62,7 +62,7 @@ implicit update does not build a second graph for another branch; set
 
 ### 1. Build the graph (first time only)
 ```
-/code-review-graph:build-graph
+/reviewgraph:build-graph
 ```
 Parses the whole codebase. Build time scales with repository size; a cold build of a ~3,000-file repository took about 40 seconds on the machine described in [REPRODUCING.md](REPRODUCING.md#incremental-update-latency).
 
@@ -70,34 +70,34 @@ If some files fail to parse, the build or update result has status `partial` and
 
 ### 2. Review changes (daily use)
 ```
-/code-review-graph:review-delta
+/reviewgraph:review-delta
 ```
 Reviews the files changed since the last commit plus their graph-derived impact radius. Review and impact responses carry a compact `context_savings` estimate. Across the 6 benchmark repositories, graph queries use about 65x fewer tokens per question (median; range 36x to 376x) than reading the whole corpus. See the [README benchmarks](../README.md#benchmarks) and [REPRODUCING.md](REPRODUCING.md).
 
 ### 3. Review a PR
 ```
-/code-review-graph:review-pr
+/reviewgraph:review-pr
 ```
 Structural review of a branch diff with blast-radius analysis.
 
 ### 4. Watch mode (optional)
 ```bash
-code-review-graph watch
+reviewgraph watch
 ```
 Updates the graph on every file save.
 
 ### 5. Visualize the graph (optional)
 ```bash
-code-review-graph visualize
+reviewgraph visualize
 open .code-review-graph/graph.html
 ```
 Interactive D3.js force-directed graph. It starts collapsed (File nodes only); click a file to expand its children. Use the search bar to filter and click legend edge types to toggle them. `--format json|graphml|svg|obsidian|cypher` writes other formats.
 
 ### 6. Semantic search (optional)
 ```bash
-pip install "code-review-graph[embeddings]"
+pip install "reviewgraph[embeddings]"
 ```
-Then run `code-review-graph embed` or the `embed_graph_tool` MCP tool to compute vectors. `semantic_search_nodes_tool` uses vector similarity when matching embeddings exist and falls back to keyword/FTS search otherwise.
+Then run `reviewgraph embed` or the `embed_graph_tool` MCP tool to compute vectors. `semantic_search_nodes_tool` uses vector similarity when matching embeddings exist and falls back to keyword/FTS search otherwise.
 
 Providers: local sentence-transformers, OpenAI-compatible endpoints, Google Gemini, MiniMax, and Voyage AI. Local embeddings read `CRG_EMBEDDING_MODEL`; OpenAI-compatible providers read `CRG_OPENAI_BASE_URL`, `CRG_OPENAI_API_KEY` and `CRG_OPENAI_MODEL`; Voyage reads `VOYAGE_API_KEY` and optionally `CRG_VOYAGE_MODEL`. Cloud providers print an egress warning unless `CRG_ACCEPT_CLOUD_EMBEDDINGS=1` is set. The full variable list is in the [README](../README.md#environment-variables).
 
@@ -106,12 +106,12 @@ Embedding text includes the first paragraph of each function or class docstring.
 `build`, `update`, `postprocess` and `watch` never refresh embeddings by default. To refresh an existing index, pass both options:
 
 ```bash
-code-review-graph build \
+reviewgraph build \
   --embedding-provider local \
   --embedding-model all-MiniLM-L6-v2
 ```
 
-A refresh only updates a previously embedded graph. On a graph with no embeddings yet it embeds nothing: `build`, `update` (also when it finds no changes) and `postprocess` return `embeddings_refresh_skipped: true` with a warning, and `watch` logs that warning after each update and keeps running. Run `code-review-graph embed` once to create the index. A refresh refuses to migrate vectors to a different provider, model or endpoint, removes vectors for deleted nodes, and turns provider or transport failures into build warnings.
+A refresh only updates a previously embedded graph. On a graph with no embeddings yet it embeds nothing: `build`, `update` (also when it finds no changes) and `postprocess` return `embeddings_refresh_skipped: true` with a warning, and `watch` logs that warning after each update and keeps running. Run `reviewgraph embed` once to create the index. A refresh refuses to migrate vectors to a different provider, model or endpoint, removes vectors for deleted nodes, and turns provider or transport failures into build warnings.
 
 ### 7. Detect changes with risk scoring
 Ask your MCP client: "Review my recent changes with risk scoring". This calls `detect_changes_tool`, which maps the diff to affected functions, flows, communities and test gaps.
@@ -119,8 +119,8 @@ Ask your MCP client: "Review my recent changes with risk scoring". This calls `d
 From the shell:
 
 ```bash
-code-review-graph detect-changes --brief              # against HEAD~1
-code-review-graph detect-changes --brief --base main
+reviewgraph detect-changes --brief              # against HEAD~1
+reviewgraph detect-changes --brief --base main
 ```
 
 When `--base` names a branch, the diff runs against the merge base of that branch and HEAD, which is the file set GitHub shows for a pull request. Commit hashes and other revisions are used as given. `detect-changes` is read-only; use `update --brief` when the graph may be stale.
@@ -130,13 +130,13 @@ Ask your MCP client: "Show me the architecture of this project". This calls `get
 
 ### 9. Generate a wiki
 ```bash
-code-review-graph wiki
+reviewgraph wiki
 ```
 Writes one markdown page per detected community, plus an index, to `.code-review-graph/wiki/`.
 
 ### 10. Multi-repo search
 ```bash
-code-review-graph register /path/to/other/repo --alias mylib
+reviewgraph register /path/to/other/repo --alias mylib
 ```
 Then use `cross_repo_search_tool` to search every registered repository, or pass `repos=["mylib"]` to search a subset.
 
@@ -147,7 +147,7 @@ Review and impact responses include compact `context_savings` metadata (`estimat
 The evaluation runner produces the benchmark numbers quoted in the README:
 
 ```bash
-code-review-graph eval --all
+reviewgraph eval --all
 ```
 
 ## Supported Languages

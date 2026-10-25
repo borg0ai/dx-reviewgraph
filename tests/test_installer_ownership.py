@@ -12,10 +12,10 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph import skills, uninstall
+from graph_engine import skills, uninstall
 
 # The two losses that motivated this file, quoted from the reports.
-TEAM_HOOK_COMMAND = "code-review-graph build --repo /srv/mono && notify-team"
+TEAM_HOOK_COMMAND = "reviewgraph build --repo /srv/mono && notify-team"
 TEAM_HOOK_NAME = "team nightly graph"
 ACRG_TOOLS_COMMAND = "bash /opt/acrg-tools/run.sh"
 
@@ -46,14 +46,14 @@ def _hook_commands(settings: dict, event: str) -> list[str]:
         # Four characters of an unrelated directory name are not ownership.
         ACRG_TOOLS_COMMAND,
         "bash /opt/acrg-tools/crg-helper.sh",
-        "code-review-graph build",
-        "code-review-graph update --skip-flows && deploy",
-        "code-review-graph detect-changes --brief; rm -rf /tmp/scratch",
+        "reviewgraph build",
+        "reviewgraph update --skip-flows && deploy",
+        "reviewgraph detect-changes --brief; rm -rf /tmp/scratch",
         "/usr/local/bin/crg-wrapper",
         # No release ever wrote a bare subcommand, so this is someone's own.
-        "code-review-graph update",
-        "code-review-graph detect-changes",
-        "code-review-graph update --skip-flows --verbose",
+        "reviewgraph update",
+        "reviewgraph detect-changes",
+        "reviewgraph update --skip-flows --verbose",
         # One of our scripts handed to someone else's script as an argument is
         # their command, not ours: the program being run is ``run.sh``.
         "bash /opt/acrg-tools/run.sh /home/u/.cursor/hooks/crg-update.sh",
@@ -74,18 +74,18 @@ def test_user_hook_commands_are_not_claimed(command: str) -> None:
     "command",
     [
         # Every shape a released version has written, oldest first.
-        "code-review-graph update --quiet",
-        "code-review-graph update --quiet --skip-flows",
-        "code-review-graph update --skip-flows",
-        "code-review-graph status",
-        "code-review-graph status --json",
-        "code-review-graph detect-changes --brief",
+        "reviewgraph update --quiet",
+        "reviewgraph update --quiet --skip-flows",
+        "reviewgraph update --skip-flows",
+        "reviewgraph status",
+        "reviewgraph status --json",
+        "reviewgraph detect-changes --brief",
         "git rev-parse --git-dir >/dev/null 2>&1"
-        " && code-review-graph update --skip-flows || true",
+        " && reviewgraph update --skip-flows || true",
         "cat >/dev/null || true; git rev-parse --git-dir >/dev/null 2>&1"
-        " && code-review-graph status || echo 'Not a git repo, skipping'",
-        'cat >/dev/null || true; command -v code-review-graph >/dev/null 2>&1 || exit 0;'
-        ' git rev-parse --git-dir >/dev/null 2>&1 && code-review-graph update'
+        " && reviewgraph status || echo 'Not a git repo, skipping'",
+        'cat >/dev/null || true; command -v reviewgraph >/dev/null 2>&1 || exit 0;'
+        ' git rev-parse --git-dir >/dev/null 2>&1 && reviewgraph update'
         ' --skip-flows --repo "$(git rev-parse --show-toplevel 2>/dev/null)" || true',
         "bash .gemini/hooks/crg-update.sh",
         "/home/u/.cursor/hooks/crg-session-start.sh",
@@ -106,10 +106,10 @@ def test_user_hook_commands_are_not_claimed(command: str) -> None:
         # v2.3.3-v2.3.6 pinned the repo with ``json.dumps``, so the path
         # arrives quoted and a space in it is still our own command.
         "cat >/dev/null || true; git rev-parse --git-dir >/dev/null 2>&1"
-        " && code-review-graph update --skip-flows"
+        " && reviewgraph update --skip-flows"
         ' --repo "/Users/jo smith/mono repo" || true',
         "cat >/dev/null || true; git rev-parse --git-dir >/dev/null 2>&1"
-        ' && code-review-graph status --repo "/Users/jo smith/mono repo"'
+        ' && reviewgraph status --repo "/Users/jo smith/mono repo"'
         " || echo 'Not a git repo, skipping'",
     ],
 )
@@ -241,7 +241,7 @@ def test_replacing_our_hook_keeps_its_position(tmp_path: Path) -> None:
                             "hooks": [
                                 {
                                     "type": "command",
-                                    "command": "code-review-graph update --skip-flows",
+                                    "command": "reviewgraph update --skip-flows",
                                 }
                             ],
                         },
@@ -289,7 +289,7 @@ def test_cursor_hook_replacement_keeps_its_position() -> None:
 
 HAND_TUNED_ENTRY = {
     "command": "uv",
-    "args": ["run", "--project", "/home/me/crg", "code-review-graph", "serve"],
+    "args": ["run", "--project", "/home/me/crg", "reviewgraph", "serve"],
     "type": "stdio",
 }
 
@@ -299,15 +299,15 @@ HAND_TUNED_ENTRY = {
     [
         # The exact line the troubleshooting guide asks people to write.
         HAND_TUNED_ENTRY,
-        {"command": "uvx", "args": ["code-review-graph", "serve", "--log-level", "debug"]},
-        {"command": "docker", "args": ["run", "crg", "code-review-graph", "serve"]},
-        {"command": "uvx", "args": ["code-review-graph", "serve"], "type": "sse"},
+        {"command": "uvx", "args": ["reviewgraph", "serve", "--log-level", "debug"]},
+        {"command": "docker", "args": ["run", "crg", "reviewgraph", "serve"]},
+        {"command": "uvx", "args": ["reviewgraph", "serve"], "type": "sse"},
         {
             "command": "uvx",
-            "args": ["code-review-graph", "serve"],
+            "args": ["reviewgraph", "serve"],
             "env": {"CRG_TOKEN": "secret"},
         },
-        {"command": "uvx", "args": ["code-review-graph", "serve"], "tools": ["query_graph"]},
+        {"command": "uvx", "args": ["reviewgraph", "serve"], "tools": ["query_graph"]},
     ],
 )
 def test_hand_written_server_entries_are_not_claimed(entry: dict) -> None:
@@ -317,18 +317,18 @@ def test_hand_written_server_entries_are_not_claimed(entry: dict) -> None:
 @pytest.mark.parametrize(
     "entry",
     [
-        {"command": "uvx", "args": ["code-review-graph", "serve"]},
-        {"command": "uvx", "args": ["code-review-graph", "serve"], "type": "stdio"},
-        {"command": "code-review-graph", "args": ["serve"]},
-        {"command": "poetry", "args": ["run", "code-review-graph", "serve"]},
-        {"command": "uv", "args": ["run", "code-review-graph", "serve"], "cwd": "/repo"},
+        {"command": "uvx", "args": ["reviewgraph", "serve"]},
+        {"command": "uvx", "args": ["reviewgraph", "serve"], "type": "stdio"},
+        {"command": "reviewgraph", "args": ["serve"]},
+        {"command": "poetry", "args": ["run", "reviewgraph", "serve"]},
+        {"command": "uv", "args": ["run", "reviewgraph", "serve"], "cwd": "/repo"},
         {
             "command": "/opt/previous-release/bin/python3.9",
-            "args": ["-m", "code_review_graph", "serve"],
+            "args": ["-m", "reviewgraph", "serve"],
             "cwd": "/previous/checkout",
         },
-        {"type": "local", "command": ["uvx", "code-review-graph", "serve", "--repo", "/r"]},
-        {"command": "uvx", "args": ["code-review-graph", "serve"], "env": []},
+        {"type": "local", "command": ["uvx", "reviewgraph", "serve", "--repo", "/r"]},
+        {"command": "uvx", "args": ["reviewgraph", "serve"], "env": []},
     ],
 )
 def test_generated_server_entries_are_claimed(entry: dict) -> None:
@@ -338,7 +338,7 @@ def test_generated_server_entries_are_claimed(entry: dict) -> None:
 def test_install_leaves_a_hand_tuned_entry_alone(tmp_path: Path, capsys) -> None:
     """The ``--project`` flag someone added survives a reinstall."""
     config = tmp_path / ".mcp.json"
-    original = json.dumps({"mcpServers": {"code-review-graph": HAND_TUNED_ENTRY}}, indent=2)
+    original = json.dumps({"mcpServers": {"reviewgraph": HAND_TUNED_ENTRY}}, indent=2)
     config.write_text(original + "\n", encoding="utf-8")
 
     configured = skills.install_platform_configs(tmp_path, target="claude")
@@ -355,12 +355,12 @@ def test_install_leaves_a_hand_tuned_codex_table_alone(tmp_path: Path) -> None:
     original = (
         "[mcp_servers.code-review-graph]\n"
         'command = "uv"\n'
-        'args = ["run", "--project", "/home/me/crg", "code-review-graph", "serve"]\n'
+        'args = ["run", "--project", "/home/me/crg", "reviewgraph", "serve"]\n'
     )
     config.write_text(original, encoding="utf-8")
 
     changed = skills._merge_toml_mcp_server(
-        config, "code-review-graph", {"command": "uvx", "args": ["x", "serve"]}
+        config, "reviewgraph", {"command": "uvx", "args": ["x", "serve"]}
     )
 
     # None means refused, so the caller does not report it as configured.
@@ -375,9 +375,9 @@ def test_install_leaves_a_hand_tuned_codex_table_alone(tmp_path: Path) -> None:
 
 def _codex_config(tail: str) -> str:
     return (
-        "[mcp_servers.code-review-graph]\n"
+        "[mcp_servers.reviewgraph]\n"
         'command = "uvx"\n'
-        'args = ["code-review-graph", "serve"]\n'
+        'args = ["reviewgraph", "serve"]\n'
         + tail
     )
 
@@ -398,8 +398,8 @@ def test_toml_replacement_keeps_the_comment_belonging_to_the_next_table(
 
     changed = skills._merge_toml_mcp_server(
         config,
-        "code-review-graph",
-        {"command": "uvx", "args": ["code-review-graph", "serve"], "cwd": str(tmp_path)},
+        "reviewgraph",
+        {"command": "uvx", "args": ["reviewgraph", "serve"], "cwd": str(tmp_path)},
     )
 
     text = config.read_text(encoding="utf-8")
@@ -420,8 +420,8 @@ def test_toml_replacement_keeps_a_free_standing_comment_at_end_of_file(
 
     changed = skills._merge_toml_mcp_server(
         config,
-        "code-review-graph",
-        {"command": "uvx", "args": ["code-review-graph", "serve"], "cwd": str(tmp_path)},
+        "reviewgraph",
+        {"command": "uvx", "args": ["reviewgraph", "serve"], "cwd": str(tmp_path)},
     )
 
     text = config.read_text(encoding="utf-8")
@@ -456,7 +456,7 @@ def test_opencode_install_keeps_comments(tmp_path: Path) -> None:
     data = _read_jsonc(config)
     assert data["theme"] == "system"
     assert "deploy-bot" in data["mcp"]
-    assert "code-review-graph" in data["mcp"]
+    assert "reviewgraph" in data["mcp"]
 
 
 def test_opencode_reinstall_keeps_comments_when_replacing_a_stale_entry(
@@ -467,9 +467,9 @@ def test_opencode_reinstall_keeps_comments_when_replacing_a_stale_entry(
         "{\n"
         '  "mcp": {\n'
         "    // installed by an older release\n"
-        '    "code-review-graph": {\n'
+        '    "reviewgraph": {\n'
         '      "type": "local",\n'
-        '      "command": ["uvx", "code-review-graph", "serve", "--repo", "/gone"]\n'
+        '      "command": ["uvx", "reviewgraph", "serve", "--repo", "/gone"]\n'
         "    }\n"
         "  }\n"
         "}\n",
@@ -481,7 +481,7 @@ def test_opencode_reinstall_keeps_comments_when_replacing_a_stale_entry(
     text = config.read_text(encoding="utf-8")
     assert "// installed by an older release" in text
     data = _read_jsonc(config)
-    assert data["mcp"]["code-review-graph"]["command"][-1] == str(tmp_path)
+    assert data["mcp"]["reviewgraph"]["command"][-1] == str(tmp_path)
 
 
 # ---------------------------------------------------------------------------
@@ -537,8 +537,8 @@ def test_uninstall_names_a_hand_edited_block_once(tmp_path: Path) -> None:
         "#!/bin/sh\n"
         + skills._GIT_HOOK_BLOCK
         + f"{skills._GIT_HOOK_NOTE}\n"
-        + "if command -v code-review-graph >/dev/null 2>&1; then\n"
-        + "    code-review-graph update --hand-edited || true\n"
+        + "if command -v reviewgraph >/dev/null 2>&1; then\n"
+        + "    reviewgraph update --hand-edited || true\n"
         + "fi\n",
         encoding="utf-8",
     )
@@ -564,7 +564,7 @@ def test_comment_only_config_keeps_its_comments(tmp_path: Path) -> None:
     text = config.read_text(encoding="utf-8")
     assert "// team config, fill me in" in text
     assert configured == ["OpenCode"]
-    assert "code-review-graph" in _read_jsonc(config)["mcp"]
+    assert "reviewgraph" in _read_jsonc(config)["mcp"]
 
 
 def test_a_kept_hook_that_mentions_this_project_is_reported(
@@ -640,7 +640,7 @@ def test_uninstall_keeps_the_comment_belonging_to_the_next_toml_table(
         'theme = "dark"\n\n'
         "[mcp_servers.code-review-graph]\n"
         'command = "uvx"\n'
-        'args = ["code-review-graph", "serve"]\n\n'
+        'args = ["reviewgraph", "serve"]\n\n'
         "# IMPORTANT: on-call paging bridge. DO NOT REMOVE.\n"
         "[mcp_servers.pager]\n"
         'command = "pagerd"\n',
@@ -649,7 +649,12 @@ def test_uninstall_keeps_the_comment_belonging_to_the_next_toml_table(
 
     report = uninstall.UninstallReport()
     uninstall._remove_toml_entry(
-        config, "mcp_servers", tmp_path, report, dry_run=False
+        config,
+        "mcp_servers",
+        tmp_path,
+        report,
+        dry_run=False,
+        entry_name="code-review-graph",
     )
 
     text = config.read_text(encoding="utf-8")

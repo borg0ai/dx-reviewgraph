@@ -39,11 +39,12 @@ from typing import Any
 
 import pytest
 
-from code_review_graph import cli, skills, uninstall
+from reviewgraph import cli
+from graph_engine import skills, uninstall
 
 pytestmark = pytest.mark.platform_lifecycle
 
-ENTRY_NAME = "code-review-graph"
+ENTRY_NAME = "reviewgraph"
 FOREIGN_SERVER = "unrelated-mcp-server"
 FOREIGN_SETTING = "unrelatedUserSetting"
 FOREIGN_VALUE = "do-not-touch-me"
@@ -266,10 +267,10 @@ EXPECTED_INSTRUCTION_FILES: dict[str, tuple[str, ...]] = {
     "antigravity": ("AGENTS.md", "GEMINI.md"),
     "gemini-cli": ("GEMINI.md",),
     "qwen": (),
-    "kiro": (".kiro/steering/code-review-graph.md",),
+    "kiro": (".kiro/steering/graph_engine.md",),
     "qoder": ("QODER.md",),
-    "copilot": (".github/instructions/code-review-graph.instructions.md",),
-    "copilot-cli": (".github/instructions/code-review-graph.instructions.md",),
+    "copilot": (".github/instructions/graph_engine.instructions.md",),
+    "copilot-cli": (".github/instructions/graph_engine.instructions.md",),
     "hermes": ("AGENTS.md",),
     "codebuddy": ("CODEBUDDY.md",),
 }
@@ -302,7 +303,7 @@ EXPECTED_EXTRA_ARTIFACTS: dict[str, tuple[str, ...]] = {
     ),
     "copilot": (),
     "copilot-cli": (),
-    "hermes": ("hermes:skills/code-review-graph/explore-codebase/SKILL.md",),
+    "hermes": ("hermes:skills/reviewgraph/explore-codebase/SKILL.md",),
     "codebuddy": (
         "repo:.codebuddy/settings.json",
         "repo:.codebuddy/skills/explore-codebase/SKILL.md",
@@ -377,7 +378,7 @@ def sandbox(tmp_path_factory, monkeypatch) -> Sandbox:
 
 
 def run_install(sandbox: Sandbox, key: str) -> None:
-    """Drive the real ``code-review-graph install`` handler for one platform."""
+    """Drive the real ``reviewgraph install`` handler for one platform."""
     args = _Namespace(
         repo=str(sandbox.repo),
         platform=key,
@@ -405,7 +406,7 @@ def run_uninstall(sandbox: Sandbox, **kwargs: Any) -> uninstall.UninstallReport:
 
 
 def read_entry(path: Path, expect: PlatformExpectation) -> dict[str, Any] | None:
-    """Return the code-review-graph entry from a config, or None if absent."""
+    """Return the reviewgraph entry from a config, or None if absent."""
     if not path.exists():
         return None
     raw = path.read_text(encoding="utf-8")
@@ -432,7 +433,7 @@ def read_entry(path: Path, expect: PlatformExpectation) -> dict[str, Any] | None
 
 
 def count_entries(path: Path, expect: PlatformExpectation) -> int:
-    """Count how many code-review-graph registrations the config holds."""
+    """Count how many reviewgraph registrations the config holds."""
     if not path.exists():
         return 0
     raw = path.read_text(encoding="utf-8")
@@ -522,7 +523,7 @@ def write_stale_config(path: Path, expect: PlatformExpectation) -> None:
         path.write_text(
             f"[{expect.server_key}.{ENTRY_NAME}]\n"
             f'command = "{STALE_ABSOLUTE}"\n'
-            'args = ["-m", "code_review_graph", "serve"]\n'
+            'args = ["-m", "reviewgraph", "serve"]\n'
             f'cwd = "{STALE_CWD}"\n',
             encoding="utf-8",
         )
@@ -534,14 +535,14 @@ def write_stale_config(path: Path, expect: PlatformExpectation) -> None:
             f"    command: {STALE_ABSOLUTE}\n"
             "    args:\n"
             "      - -m\n"
-            "      - code_review_graph\n"
+            "      - reviewgraph\n"
             "      - serve\n",
             encoding="utf-8",
         )
         return
     stale = {
         "command": STALE_ABSOLUTE,
-        "args": ["-m", "code_review_graph", "serve"],
+        "args": ["-m", "reviewgraph", "serve"],
         "cwd": STALE_CWD,
     }
     if expect.fmt == "array":
@@ -778,7 +779,7 @@ CONTENT_LEFTOVER_XFAIL = {
     "gemini-cli": (
         "install_gemini_cli_hooks copies .gemini/settings.json to "
         "settings.json.bak, and uninstall never removes the backup, so a full "
-        "copy of the code-review-graph MCP registration stays on disk"
+        "copy of the reviewgraph MCP registration stays on disk"
     ),
 }
 
@@ -815,13 +816,13 @@ def test_step4a_uninstall_removes_the_registration_and_keeps_user_settings(
     )
     checks += 1
     assert count_entries(config, expect) == 0, (
-        f"{key}: a code-review-graph registration is still readable in {config}"
+        f"{key}: a reviewgraph registration is still readable in {config}"
     )
     checks += 1
 
     stale_content = content_traces(before, after_uninstall)
     assert not stale_content, (
-        f"{key}: uninstall left code-review-graph text in pre-existing {stale_content}"
+        f"{key}: uninstall left reviewgraph text in pre-existing {stale_content}"
     )
     checks += 1
 
@@ -871,7 +872,7 @@ def test_step4b_uninstall_leaves_no_file_still_holding_our_content(
         for path in created
         if path in after_uninstall and ENTRY_NAME.encode() in after_uninstall[path]
     )
-    assert not live, f"{key}: uninstall left live code-review-graph content in {live}"
+    assert not live, f"{key}: uninstall left live reviewgraph content in {live}"
 
     _record("step4b_content_leftovers", key, len(created))
 
@@ -882,7 +883,7 @@ def test_step4b_qoder_uninstall_removes_every_skill_file_install_wrote(
     """Every ``.qoder/skills`` file install wrote is gone after uninstall.
 
     Step 4b only flags a leftover that still contains the string
-    ``code-review-graph``, and most bundled ``SKILL.md`` files never say it,
+    ``reviewgraph``, and most bundled ``SKILL.md`` files never say it,
     so an uninstall that dropped some of the bundled names would still pass
     there. This compares by path against what install actually wrote, in a
     repository with no ``skills/`` directory of its own (#909).
@@ -1009,7 +1010,7 @@ def test_step5_stale_config_entry_is_replaced(sandbox: Sandbox, key: str) -> Non
     """An entry a previous release wrote is replaced, not treated as current.
 
     Guards GH #558: ``install_platform_configs`` (and the TOML and YAML merges)
-    used to treat any existing ``code-review-graph`` entry as up to date and
+    used to treat any existing ``reviewgraph`` entry as up to date and
     return early, so an older release's absolute interpreter path and dead
     ``cwd`` survived every reinstall.
     """
@@ -1051,10 +1052,10 @@ def test_step5_stale_config_entry_is_replaced(sandbox: Sandbox, key: str) -> Non
 # ``Edit|Write|Bash``, v2.3.3 wrote the Codex one-liner without the ``cat``
 # prelude, and Gemini CLI's hook has always pointed at a ``crg-*.sh`` script
 # (here under a checkout that no longer exists).
-_OLD_SETTINGS_HOOK = "code-review-graph update --quiet --skip-flows"
+_OLD_SETTINGS_HOOK = "reviewgraph update --quiet --skip-flows"
 _OLD_CODEX_HOOK = (
     "git rev-parse --git-dir >/dev/null 2>&1"
-    " && code-review-graph update --skip-flows || true"
+    " && reviewgraph update --skip-flows || true"
 )
 HOOK_PLATFORMS: dict[str, tuple[str, str, str, str]] = {
     "claude": (
@@ -1089,7 +1090,7 @@ def test_step5b_stale_hook_shape_is_replaced(sandbox: Sandbox, key: str) -> None
 
     The hook merges used to compare whole entries (or exact command strings),
     so an older release's hook shape was kept and the current one appended
-    beside it, and the repository then ran two code-review-graph hooks on the
+    beside it, and the repository then ran two reviewgraph hooks on the
     same event.
     """
     marker, event, stale_matcher, stale_command = HOOK_PLATFORMS[key]
@@ -1136,7 +1137,7 @@ def test_step5b_stale_hook_shape_is_replaced(sandbox: Sandbox, key: str) -> None
     )
     checks += 1
     assert len(crg_hooks) == 1, (
-        f"{key}: {len(crg_hooks)} code-review-graph hooks now run on {event} "
+        f"{key}: {len(crg_hooks)} reviewgraph hooks now run on {event} "
         f"in {settings_path}"
     )
     checks += 1

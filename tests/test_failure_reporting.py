@@ -28,23 +28,23 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph import cli
-from code_review_graph.errors import (
+from reviewgraph import cli
+from graph_engine.errors import (
     ChangeDiscoveryError,
     CodeReviewGraphError,
     GraphRootMismatchError,
     GraphStoreError,
     is_lock_error,
 )
-from code_review_graph.graph import CorruptGraphDatabaseError, GraphStore
-from code_review_graph.incremental import (
+from graph_engine.graph import CorruptGraphDatabaseError, GraphStore
+from graph_engine.incremental import (
     assert_graph_serves_root,
     full_build,
     get_changed_files,
     get_db_path,
     get_staged_and_unstaged,
 )
-from code_review_graph.migrations import LATEST_VERSION
+from graph_engine.migrations import LATEST_VERSION
 
 # ---------------------------------------------------------------------------
 # 1. An unusable graph.db
@@ -96,7 +96,7 @@ def test_a_foreign_sqlite_file_is_not_adopted(tmp_path):
     conn.commit()
     conn.close()
 
-    with pytest.raises(GraphStoreError, match="not a code-review-graph"):
+    with pytest.raises(GraphStoreError, match="not a reviewgraph"):
         GraphStore(db)
 
     # And it is left exactly as it was found.
@@ -262,7 +262,7 @@ def test_an_equivalent_spelling_of_the_same_root_is_served(tmp_path):
 
 def test_a_relative_path_graph_carries_no_root_identity(tmp_path):
     """Relative markers cannot be attributed to any root, so they pass."""
-    from code_review_graph.parser import NodeInfo
+    from graph_engine.parser import NodeInfo
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
@@ -279,7 +279,7 @@ def test_a_relative_path_graph_carries_no_root_identity(tmp_path):
 
 def test_a_graph_of_files_not_on_this_machine_is_stale_not_foreign(tmp_path):
     """Nothing is being served another live checkout's answers here."""
-    from code_review_graph.parser import NodeInfo
+    from graph_engine.parser import NodeInfo
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
@@ -315,12 +315,12 @@ def git_repo(tmp_path):
     ids=["missing-binary", "timeout"],
 )
 def test_require_vcs_turns_an_unrunnable_git_into_an_error(failure, git_repo):
-    with patch("code_review_graph.incremental.subprocess.run", side_effect=failure):
+    with patch("graph_engine.incremental.subprocess.run", side_effect=failure):
         with pytest.raises(ChangeDiscoveryError) as caught:
             get_changed_files(git_repo, "HEAD~1", require_vcs=True)
     assert "could not determine the changes" in str(caught.value)
 
-    with patch("code_review_graph.incremental.subprocess.run", side_effect=failure):
+    with patch("graph_engine.incremental.subprocess.run", side_effect=failure):
         with pytest.raises(ChangeDiscoveryError):
             get_staged_and_unstaged(git_repo, require_vcs=True)
 
@@ -335,14 +335,14 @@ def test_require_vcs_turns_an_unrunnable_git_into_an_error(failure, git_repo):
 )
 def test_without_require_vcs_the_lenient_contract_is_unchanged(failure, git_repo):
     """``update`` recovers by re-parsing and hashing, so it keeps the [] path."""
-    with patch("code_review_graph.incremental.subprocess.run", side_effect=failure):
+    with patch("graph_engine.incremental.subprocess.run", side_effect=failure):
         assert get_changed_files(git_repo, "HEAD~1") == []
         assert get_staged_and_unstaged(git_repo) == []
 
 
 def test_the_timeout_message_names_the_knob(git_repo):
     with patch(
-        "code_review_graph.incremental.subprocess.run",
+        "graph_engine.incremental.subprocess.run",
         side_effect=subprocess.TimeoutExpired("git", 30),
     ):
         with pytest.raises(ChangeDiscoveryError) as caught:
@@ -368,14 +368,14 @@ def test_a_base_ref_that_does_not_resolve_is_not_an_unrunnable_git(git_repo):
 
         return _Result()
 
-    with patch("code_review_graph.incremental.subprocess.run", side_effect=fake_run):
+    with patch("graph_engine.incremental.subprocess.run", side_effect=fake_run):
         assert get_changed_files(git_repo, "HEAD~1", require_vcs=True) == []
     assert len(calls) == 2, "the --cached fallback was skipped"
 
 
 def test_analyze_changes_degrades_rather_than_failing_on_a_partial_diff(tmp_path):
     """Files are known, lines are not: precision is lost, honesty is not."""
-    from code_review_graph.changes import analyze_changes
+    from graph_engine.changes import analyze_changes
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
@@ -384,7 +384,7 @@ def test_analyze_changes_degrades_rather_than_failing_on_a_partial_diff(tmp_path
     try:
         full_build(repo, store)
         with patch(
-            "code_review_graph.changes.parse_diff_ranges",
+            "graph_engine.changes.parse_diff_ranges",
             side_effect=ChangeDiscoveryError("git timed out after 30s"),
         ):
             result = analyze_changes(
@@ -403,14 +403,14 @@ def test_analyze_changes_degrades_rather_than_failing_on_a_partial_diff(tmp_path
 
 def test_analyze_changes_refuses_when_there_is_nothing_else_to_go_on(tmp_path):
     """With no file list either, an empty answer would be an unearned all-clear."""
-    from code_review_graph.changes import analyze_changes
+    from graph_engine.changes import analyze_changes
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
     store = GraphStore(repo / ".code-review-graph" / "graph.db")
     try:
         with patch(
-            "code_review_graph.changes.parse_diff_ranges",
+            "graph_engine.changes.parse_diff_ranges",
             side_effect=ChangeDiscoveryError("git could not be run"),
         ):
             with pytest.raises(ChangeDiscoveryError):
@@ -438,7 +438,7 @@ def test_analyze_changes_refuses_when_there_is_nothing_else_to_go_on(tmp_path):
 def test_main_reports_a_self_explaining_failure_in_one_line(error, capsys):
     """One ``Error: ...`` line on stderr, exit 1, nothing on stdout."""
     with patch.object(cli, "_dispatch", side_effect=error):
-        with patch.object(sys, "argv", ["code-review-graph", "status"]):
+        with patch.object(sys, "argv", ["reviewgraph", "status"]):
             with pytest.raises(SystemExit) as caught:
                 cli.main()
     assert caught.value.code == 1
@@ -451,7 +451,7 @@ def test_main_reports_a_self_explaining_failure_in_one_line(error, capsys):
 def test_main_does_not_swallow_an_unforeseen_bug(capsys):
     """Only self-explaining failures lose their traceback."""
     with patch.object(cli, "_dispatch", side_effect=ZeroDivisionError("boom")):
-        with patch.object(sys, "argv", ["code-review-graph", "status"]):
+        with patch.object(sys, "argv", ["reviewgraph", "status"]):
             with pytest.raises(ZeroDivisionError):
                 cli.main()
 
@@ -472,7 +472,7 @@ def test_contention_is_reported_as_contention_not_as_damage(capsys):
     locked = sqlite3.OperationalError("database is locked")
     assert not isinstance(locked, CodeReviewGraphError)
     with patch.object(cli, "_dispatch", side_effect=locked):
-        with patch.object(sys, "argv", ["code-review-graph", "build"]):
+        with patch.object(sys, "argv", ["reviewgraph", "build"]):
             with pytest.raises(SystemExit) as caught:
                 cli.main()
     assert caught.value.code == 1
@@ -494,7 +494,7 @@ def test_a_contended_open_is_not_dressed_up_as_a_corrupt_graph(tmp_path):
     """
     db_path = tmp_path / "graph.db"
     with patch(
-        "code_review_graph.graph.run_migrations",
+        "graph_engine.graph.run_migrations",
         side_effect=sqlite3.OperationalError("database is locked"),
     ):
         with pytest.raises(sqlite3.OperationalError) as caught:
@@ -568,7 +568,7 @@ def test_build_does_not_discard_a_contended_database(tmp_path):
     db = _built_db(tmp_path)
     before = db.read_bytes()
     with patch(
-        "code_review_graph.graph.run_migrations",
+        "graph_engine.graph.run_migrations",
         side_effect=sqlite3.OperationalError("database is locked"),
     ):
         with pytest.raises(sqlite3.OperationalError) as caught:

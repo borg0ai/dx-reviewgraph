@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from code_review_graph.registry import ConnectionPool, Registry, resolve_repo
-from code_review_graph.tools.registry_tools import _echoed, _select_repos
+from graph_engine.registry import ConnectionPool, Registry, resolve_repo
+from graph_engine.tools.registry_tools import _echoed, _select_repos
 
 
 class TestRegistry:
@@ -225,11 +225,11 @@ class TestConnectionPool:
 class TestCrossRepoSearch:
     def test_cross_repo_search_no_repos(self):
         """cross_repo_search with empty registry returns empty results."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         tmp_dir = tempfile.mkdtemp()
 
-        with patch("code_review_graph.registry.Registry") as mock_registry_cls:
+        with patch("graph_engine.registry.Registry") as mock_registry_cls:
             mock_instance = MagicMock()
             mock_instance.list_repos.return_value = []
             mock_registry_cls.return_value = mock_instance
@@ -243,7 +243,7 @@ class TestCrossRepoSearch:
 
     def test_cross_repo_search_merges_by_local_rank(self, tmp_path):
         """Cross-repo results use local rank instead of incomparable raw scores."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         android_repo = tmp_path / "android"
         ios_repo = tmp_path / "ios"
@@ -264,14 +264,14 @@ class TestCrossRepoSearch:
         ]
 
         with (
-            patch("code_review_graph.registry.Registry") as mock_registry_cls,
+            patch("graph_engine.registry.Registry") as mock_registry_cls,
             patch(
-                "code_review_graph.tools.registry_tools.get_db_path",
+                "graph_engine.tools.registry_tools.get_db_path",
                 side_effect=[android_db, ios_db],
             ),
-            patch("code_review_graph.tools.registry_tools.GraphStore") as mock_store_cls,
+            patch("graph_engine.tools.registry_tools.GraphStore") as mock_store_cls,
             patch(
-                "code_review_graph.tools.registry_tools.hybrid_search",
+                "graph_engine.tools.registry_tools.hybrid_search",
                 side_effect=[android_results, ios_results],
             ) as mock_search,
         ):
@@ -317,21 +317,21 @@ class TestCrossRepoSearch:
 
     def test_cross_repo_search_repos_limits_the_registry_fanout(self, tmp_path):
         """``repos`` searches only the named repos, by alias or folder name."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         entries = self._three_repo_registry(tmp_path)
         ios_results = [{"name": "SplashViewController", "score": 3.0}]
         web_results = [{"name": "SplashBanner", "score": 0.5}]
 
         with (
-            patch("code_review_graph.registry.Registry") as mock_registry_cls,
+            patch("graph_engine.registry.Registry") as mock_registry_cls,
             patch(
-                "code_review_graph.tools.registry_tools.get_db_path",
+                "graph_engine.tools.registry_tools.get_db_path",
                 side_effect=[entries[1][1], entries[2][1]],
             ),
-            patch("code_review_graph.tools.registry_tools.GraphStore") as mock_store_cls,
+            patch("graph_engine.tools.registry_tools.GraphStore") as mock_store_cls,
             patch(
-                "code_review_graph.tools.registry_tools.hybrid_search",
+                "graph_engine.tools.registry_tools.hybrid_search",
                 side_effect=[ios_results, web_results],
             ) as mock_search,
         ):
@@ -350,19 +350,19 @@ class TestCrossRepoSearch:
 
     def test_cross_repo_search_reports_names_that_match_no_repo(self, tmp_path):
         """Unknown names are reported, not silently dropped."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         entries = self._three_repo_registry(tmp_path)
 
         with (
-            patch("code_review_graph.registry.Registry") as mock_registry_cls,
+            patch("graph_engine.registry.Registry") as mock_registry_cls,
             patch(
-                "code_review_graph.tools.registry_tools.get_db_path",
+                "graph_engine.tools.registry_tools.get_db_path",
                 side_effect=[entries[0][1]],
             ),
-            patch("code_review_graph.tools.registry_tools.GraphStore") as mock_store_cls,
+            patch("graph_engine.tools.registry_tools.GraphStore") as mock_store_cls,
             patch(
-                "code_review_graph.tools.registry_tools.hybrid_search",
+                "graph_engine.tools.registry_tools.hybrid_search",
                 side_effect=[[{"name": "Splash", "score": 0.03}]],
             ),
         ):
@@ -381,14 +381,14 @@ class TestCrossRepoSearch:
 
     def test_cross_repo_search_repos_matching_nothing_searches_nothing(self, tmp_path):
         """A selection that matches no entry returns empty, never the whole registry."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         entries = self._three_repo_registry(tmp_path)
 
         with (
-            patch("code_review_graph.registry.Registry") as mock_registry_cls,
+            patch("graph_engine.registry.Registry") as mock_registry_cls,
             patch(
-                "code_review_graph.tools.registry_tools.hybrid_search"
+                "graph_engine.tools.registry_tools.hybrid_search"
             ) as mock_search,
         ):
             mock_registry_cls.return_value.list_repos.return_value = [
@@ -405,21 +405,21 @@ class TestCrossRepoSearch:
 
     def test_cross_repo_search_repos_cannot_reorder_the_merge(self, tmp_path):
         """Selection order does not change the registry-order tie-breaker."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         entries = self._three_repo_registry(tmp_path)
         android_results = [{"name": "Splash", "score": 0.03}]
         ios_results = [{"name": "SplashViewController", "score": 3.0}]
 
         with (
-            patch("code_review_graph.registry.Registry") as mock_registry_cls,
+            patch("graph_engine.registry.Registry") as mock_registry_cls,
             patch(
-                "code_review_graph.tools.registry_tools.get_db_path",
+                "graph_engine.tools.registry_tools.get_db_path",
                 side_effect=[entries[0][1], entries[1][1]],
             ),
-            patch("code_review_graph.tools.registry_tools.GraphStore") as mock_store_cls,
+            patch("graph_engine.tools.registry_tools.GraphStore") as mock_store_cls,
             patch(
-                "code_review_graph.tools.registry_tools.hybrid_search",
+                "graph_engine.tools.registry_tools.hybrid_search",
                 side_effect=[android_results, ios_results],
             ),
         ):
@@ -434,8 +434,8 @@ class TestCrossRepoSearch:
 
     def test_cross_repo_search_tool_forwards_repo_selection(self):
         """The MCP tool passes ``repos`` through, and defaults it to None."""
-        from code_review_graph import main as crg_main
-        from code_review_graph.main import cross_repo_search_tool
+        from graph_engine import main as crg_main
+        from graph_engine.main import cross_repo_search_tool
 
         with patch.object(
             crg_main, "cross_repo_search_func", return_value={"status": "ok"}
@@ -456,9 +456,9 @@ class TestCrossRepoSearchEchoBounds:
     ENTRIES = [{"path": "/src/android", "alias": "droid"}]
 
     def _run(self, names):
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
-        with patch("code_review_graph.registry.Registry") as mock_registry_cls:
+        with patch("graph_engine.registry.Registry") as mock_registry_cls:
             mock_registry_cls.return_value.list_repos.return_value = self.ENTRIES
             return cross_repo_search_func(query="splash", repos=names)
 
@@ -482,7 +482,7 @@ class TestCrossRepoSearchEchoBounds:
 
     def test_a_dropped_name_reaches_the_summary_of_a_partial_match(self, tmp_path):
         """The partial branch says so too, not only the all-unknown branch."""
-        from code_review_graph.tools import cross_repo_search_func
+        from graph_engine.tools import cross_repo_search_func
 
         repo = tmp_path / "android"
         repo.mkdir()
@@ -490,14 +490,14 @@ class TestCrossRepoSearchEchoBounds:
         db.touch()
 
         with (
-            patch("code_review_graph.registry.Registry") as mock_registry_cls,
+            patch("graph_engine.registry.Registry") as mock_registry_cls,
             patch(
-                "code_review_graph.tools.registry_tools.get_db_path",
+                "graph_engine.tools.registry_tools.get_db_path",
                 side_effect=[db],
             ),
-            patch("code_review_graph.tools.registry_tools.GraphStore") as mock_store_cls,
+            patch("graph_engine.tools.registry_tools.GraphStore") as mock_store_cls,
             patch(
-                "code_review_graph.tools.registry_tools.hybrid_search",
+                "graph_engine.tools.registry_tools.hybrid_search",
                 side_effect=[[{"name": "Splash", "score": 0.03}]],
             ),
         ):
@@ -724,7 +724,7 @@ class TestRegistryLocationIsolation:
     """The registry must never fall back to the real home directory in tests."""
 
     def test_default_path_follows_the_env_override(self, tmp_path, monkeypatch):
-        from code_review_graph.registry import default_registry_path
+        from graph_engine.registry import default_registry_path
 
         monkeypatch.setenv("CRG_HOME", str(tmp_path / "elsewhere"))
         assert default_registry_path() == tmp_path / "elsewhere" / "registry.json"
@@ -736,7 +736,7 @@ class TestRegistryLocationIsolation:
         import-time constant would capture the wrong directory and every later
         override would be ignored.
         """
-        from code_review_graph.registry import default_registry_path
+        from graph_engine.registry import default_registry_path
 
         monkeypatch.setenv("CRG_HOME", str(tmp_path / "first"))
         first = default_registry_path()
@@ -745,7 +745,7 @@ class TestRegistryLocationIsolation:
         assert default_registry_path() == tmp_path / "second" / "registry.json"
 
     def test_blank_override_falls_back_to_home(self, monkeypatch):
-        from code_review_graph.constants import crg_home
+        from graph_engine.constants import crg_home
 
         monkeypatch.setenv("CRG_HOME", "   ")
         assert crg_home() == Path.home() / ".code-review-graph"
@@ -778,7 +778,7 @@ class TestRegistryLocationIsolation:
 
     def test_get_data_dir_uses_the_sandboxed_registry(self, tmp_path, monkeypatch):
         """incremental.get_data_dir() builds its own Registry() internally."""
-        from code_review_graph.incremental import get_data_dir
+        from graph_engine.incremental import get_data_dir
 
         monkeypatch.setenv("CRG_HOME", str(tmp_path / "sandbox"))
         monkeypatch.delenv("CRG_DATA_DIR", raising=False)

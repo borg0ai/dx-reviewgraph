@@ -4,8 +4,8 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.migrations import (
+from graph_engine.graph import GraphStore
+from graph_engine.migrations import (
     LATEST_VERSION,
     MIGRATIONS,
     get_schema_version,
@@ -190,7 +190,7 @@ class TestMigrations:
 
     def test_v6_migration_idempotent(self):
         """Running v6 migration twice should not fail."""
-        from code_review_graph.migrations import _migrate_v6
+        from graph_engine.migrations import _migrate_v6
 
         _migrate_v6(self.store._conn)
         _migrate_v6(self.store._conn)

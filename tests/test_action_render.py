@@ -78,17 +78,17 @@ def test_md_escape_caps_length():
 def test_relativize_strips_github_workspace(monkeypatch):
     monkeypatch.setenv("GITHUB_WORKSPACE", "/home/runner/work/repo/repo")
     out = render.relativize_path(
-        "/home/runner/work/repo/repo/code_review_graph/embeddings.py"
+        "/home/runner/work/repo/repo/modules/code-review/graph_engine/embeddings.py"
     )
-    assert out == "code_review_graph/embeddings.py"
+    assert out == "modules/code-review/graph_engine/embeddings.py"
 
 
 def test_relativize_keeps_symbol_suffix(monkeypatch):
     monkeypatch.setenv("GITHUB_WORKSPACE", "/home/runner/work/repo/repo")
     out = render.relativize_path(
-        "/home/runner/work/repo/repo/code_review_graph/embeddings.py::get_provider"
+        "/home/runner/work/repo/repo/modules/code-review/graph_engine/embeddings.py::get_provider"
     )
-    assert out == "code_review_graph/embeddings.py::get_provider"
+    assert out == "modules/code-review/graph_engine/embeddings.py::get_provider"
 
 
 def test_relativize_handles_workspace_with_trailing_slash(monkeypatch):
@@ -109,9 +109,9 @@ def test_relativize_leaves_already_relative_paths(monkeypatch):
 
 def test_relativize_falls_back_to_repo_segment_without_env(monkeypatch):
     monkeypatch.delenv("GITHUB_WORKSPACE", raising=False)
-    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/code-review-graph")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "borg0ai/dx-reviewgraph")
     out = render.relativize_path(
-        "/home/runner/work/code-review-graph/code-review-graph/"
+        "/home/runner/work/dx-reviewgraph/dx-reviewgraph/"
         "scripts/render_pr_comment.py::main"
     )
     assert out == "scripts/render_pr_comment.py::main"
@@ -137,8 +137,8 @@ def test_render_markdown_relativizes_absolute_paths(monkeypatch):
         "risk_score": 0.72,
         "review_priorities": [
             {
-                "qualified_name": f"{ws}/code_review_graph/embeddings.py::get_provider",
-                "file_path": f"{ws}/code_review_graph/embeddings.py",
+                "qualified_name": f"{ws}/modules/code-review/graph_engine/embeddings.py::get_provider",
+                "file_path": f"{ws}/modules/code-review/graph_engine/embeddings.py",
                 "line_start": 42,
                 "risk_score": 0.72,
                 "is_test": False,
@@ -150,9 +150,9 @@ def test_render_markdown_relativizes_absolute_paths(monkeypatch):
     body = render.render_markdown(abs_report)
     # Absolute CI-runner prefix must not leak into the rendered comment.
     assert "/home/runner/work" not in body
-    assert render.md_escape("code_review_graph/embeddings.py::get_provider") in body
+    assert render.md_escape("modules/code-review/graph_engine/embeddings.py::get_provider") in body
     # Location column path is markdown-escaped (underscores) like every cell.
-    assert f"{render.md_escape('code_review_graph/embeddings.py')}:42" in body
+    assert f"{render.md_escape('modules/code-review/graph_engine/embeddings.py')}:42" in body
 
 
 # ---------------------------------------------------------------------------
@@ -218,17 +218,17 @@ def _indirect_report() -> dict:
         "risk_score": 0.80,
         "review_priorities": [
             {
-                "qualified_name": "code_review_graph/main.py::_offload",
+                "qualified_name": "modules/code-review/graph_engine/main.py::_offload",
                 "name": "_offload",
-                "file_path": "code_review_graph/main.py",
+                "file_path": "modules/code-review/graph_engine/main.py",
                 "line_start": 130,
                 "risk_score": 0.62,
                 "is_test": False,
             },
             {
-                "qualified_name": "code_review_graph/incremental.py::orphan",
+                "qualified_name": "modules/code-review/graph_engine/incremental.py::orphan",
                 "name": "orphan",
-                "file_path": "code_review_graph/incremental.py",
+                "file_path": "modules/code-review/graph_engine/incremental.py",
                 "line_start": 900,
                 "risk_score": 0.55,
                 "is_test": False,
@@ -238,20 +238,20 @@ def _indirect_report() -> dict:
         "test_gaps": [
             {
                 "name": "orphan",
-                "qualified_name": "code_review_graph/incremental.py::orphan",
-                "file": "code_review_graph/incremental.py",
+                "qualified_name": "modules/code-review/graph_engine/incremental.py::orphan",
+                "file": "modules/code-review/graph_engine/incremental.py",
                 "line_start": 900,
                 "line_end": 929,
                 "coverage": "none",
             },
             {
                 "name": "_offload",
-                "qualified_name": "code_review_graph/main.py::_offload",
-                "file": "code_review_graph/main.py",
+                "qualified_name": "modules/code-review/graph_engine/main.py::_offload",
+                "file": "modules/code-review/graph_engine/main.py",
                 "line_start": 130,
                 "line_end": 140,
                 "coverage": "indirect",
-                "covered_via": "code_review_graph/main.py::_run_off_loop",
+                "covered_via": "modules/code-review/graph_engine/main.py::_run_off_loop",
                 "covered_depth": 1,
                 "covered_by": ["tests/test_main.py::test_offload"],
             },

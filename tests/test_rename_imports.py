@@ -24,14 +24,14 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.refactor import (
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.refactor import (
     _pending_refactors,
     _refactor_lock,
     apply_refactor,
 )
-from code_review_graph.tools.refactor_tools import apply_refactor_func, refactor_func
+from graph_engine.tools.refactor_tools import apply_refactor_func, refactor_func
 
 
 @pytest.fixture(autouse=True)

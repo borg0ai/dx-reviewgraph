@@ -28,14 +28,14 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import (
+from graph_engine.graph import (
     IMPACT_FRONTIER_DIRS_SQL,
     GraphStore,
     _impact_candidate_sql,
     import_scope_ancestors,
 )
-from code_review_graph.incremental import full_build, incremental_update
-from code_review_graph.tools.query import get_impact_radius, query_graph
+from graph_engine.incremental import full_build, incremental_update
+from graph_engine.tools.query import get_impact_radius, query_graph
 
 
 def _write(root: Path, rel: str, text: str) -> Path:

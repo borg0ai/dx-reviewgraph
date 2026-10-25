@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/code-review-graph/"><img src="https://img.shields.io/pypi/v/code-review-graph?style=flat-square&color=blue" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/code-review-graph"><img src="https://img.shields.io/pepy/dt/code-review-graph?style=flat-square" alt="Downloads"></a>
+  <a href="https://pypi.org/project/reviewgraph/"><img src="https://img.shields.io/pypi/v/reviewgraph?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/reviewgraph"><img src="https://img.shields.io/pepy/dt/reviewgraph?style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/stargazers"><img src="https://img.shields.io/github/stars/borg0ai/dx-reviewgraph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml"><img src="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
@@ -35,7 +35,7 @@
 
 <br>
 
-AI coding tools often re-read large parts of a codebase to review a change. ReviewGraph (the `code-review-graph` package and CLI) builds a structural map of the code with [Tree-sitter](https://tree-sitter.github.io/tree-sitter/), keeps it updated incrementally, and serves compact context over [MCP](https://modelcontextprotocol.io/), so the assistant reads only the files a change touches.
+AI coding tools often re-read large parts of a codebase to review a change. ReviewGraph (the `reviewgraph` package and CLI) builds a structural map of the code with [Tree-sitter](https://tree-sitter.github.io/tree-sitter/), keeps it updated incrementally, and serves compact context over [MCP](https://modelcontextprotocol.io/), so the assistant reads only the files a change touches.
 
 <p align="center">
   <img src="diagrams/diagram1_before_vs_after.png" alt="The Token Problem: reading flask's whole corpus costs 143,594 tokens, a graph answer costs 2,196 (65x fewer)" width="85%" />
@@ -46,12 +46,12 @@ AI coding tools often re-read large parts of a codebase to review a change. Revi
 ## Quick Start
 
 ```bash
-pip install code-review-graph          # or: pipx install code-review-graph
-code-review-graph install              # detect installed AI coding tools and configure each one
-code-review-graph build                # parse the codebase
+pip install reviewgraph          # or: pipx install reviewgraph
+reviewgraph install              # detect installed AI coding tools and configure each one
+reviewgraph build                # parse the codebase
 ```
 
-`install` detects which AI coding tools you have, writes an MCP server entry for each, installs hooks and skills where the platform supports them, and adds graph instructions to the platform's rules file. The MCP entry uses `poetry run` or `uv run` inside a Poetry or uv project environment, `uvx code-review-graph serve` when `uvx` is on PATH, and otherwise the current Python interpreter. Restart the editor or tool afterwards.
+`install` detects which AI coding tools you have, writes an MCP server entry for each, installs hooks and skills where the platform supports them, and adds graph instructions to the platform's rules file. The MCP entry uses `poetry run` or `uv run` inside a Poetry or uv project environment, `uvx reviewgraph serve` when `uvx` is on PATH, and otherwise the current Python interpreter. Restart the editor or tool afterwards.
 
 <p align="center">
   <img src="diagrams/diagram8_supported_platforms.png" alt="One install, every platform: detects Codex, Claude Code, CodeBuddy Code, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen, Qoder, Kiro, GitHub Copilot, GitHub Copilot CLI, and Hermes Agent" width="85%" />
@@ -60,8 +60,8 @@ code-review-graph build                # parse the codebase
 To configure one platform, pass `--platform` with one of `codex`, `claude-code`, `cursor`, `windsurf`, `zed`, `continue`, `opencode`, `antigravity`, `gemini-cli`, `qwen`, `kiro`, `qoder`, `copilot`, `copilot-cli`, `codebuddy`, or `hermes`:
 
 ```bash
-code-review-graph install --platform cursor
-code-review-graph install --platform codebuddy
+reviewgraph install --platform cursor
+reviewgraph install --platform codebuddy
 ```
 
 Config file locations are listed in [docs/USAGE.md](docs/USAGE.md#supported-platforms). Requires Python 3.10+.
@@ -69,12 +69,12 @@ Config file locations are listed in [docs/USAGE.md](docs/USAGE.md#supported-plat
 `uninstall` removes CRG-owned files and entries from a Git or SVN working tree and leaves other MCP servers, hooks, skills and JSONC comments alone. Run it from anywhere inside the tree. Shared config files are replaced atomically, so a failed write leaves the original intact.
 
 ```bash
-code-review-graph uninstall --dry-run    # preview only
-code-review-graph uninstall              # preview, confirm, apply
-code-review-graph uninstall --yes        # apply without prompting
-code-review-graph uninstall --all-repos  # also clean every registered repository
-code-review-graph uninstall --keep-data  # remove integrations, keep graph databases
-code-review-graph uninstall --keep-user-configs --repo .  # this project only
+reviewgraph uninstall --dry-run    # preview only
+reviewgraph uninstall              # preview, confirm, apply
+reviewgraph uninstall --yes        # apply without prompting
+reviewgraph uninstall --all-repos  # also clean every registered repository
+reviewgraph uninstall --keep-data  # remove integrations, keep graph databases
+reviewgraph uninstall --keep-user-configs --repo .  # this project only
 ```
 
 Then open the project and ask the assistant:
@@ -119,7 +119,7 @@ Hooks, the pre-commit hook and watch mode trigger incremental updates. The updat
 Instead of feeding a whole corpus to the model, the graph returns a slice shaped to the question. In the 2026-08-02 capture of this repository at `84bde354`, 208,821 source tokens became ~3,190 tokens per question. The repository has grown a lot since that snapshot, so both numbers are larger today.
 
 <p align="center">
-  <img src="diagrams/diagram6_monorepo_funnel.png" alt="code-review-graph at the 84bde354 snapshot: 208,821 source tokens funnel down to ~3,190 token graph responses, about 65x fewer tokens per question" width="80%" />
+  <img src="diagrams/diagram6_monorepo_funnel.png" alt="reviewgraph at the 84bde354 snapshot: 208,821 source tokens funnel down to ~3,190 token graph responses, about 65x fewer tokens per question" width="80%" />
 </p>
 
 ### Language coverage and notebooks
@@ -155,7 +155,7 @@ The generic tree-sitter walker does the extraction. Built-in languages cannot be
 The same analysis runs as a composite GitHub Action. The graph is built and queried on your CI runner; no source code is sent to an external service. On each pull request the action posts one sticky comment with risk-scored functions, affected execution flows and test gaps, updated in place on every push. The optional `fail-on-risk` input turns it into a merge gate.
 
 ```yaml
-# .github/workflows/code-review-graph.yml
+# .github/workflows/reviewgraph.yml
 on:
   pull_request:
 
@@ -191,22 +191,22 @@ All numbers come from the evaluation runner against 6 open-source repositories (
 <summary><strong>Token efficiency: ~63x median per-question reduction (range 35x to 358x; whole-corpus vs graph query)</strong></summary>
 <br>
 
-For a typical agent question (`"how does authentication work"`, `"what is the main entry point"`, and so on), the graph returns ~2,200 to 3,900 tokens of search hits plus neighbour edges instead of every source file. The table averages the 5 sample questions defined in `code_review_graph/token_benchmark.py`.
+For a typical agent question (`"how does authentication work"`, `"what is the main entry point"`, and so on), the graph returns ~2,200 to 3,900 tokens of search hits plus neighbour edges instead of every source file. The table averages the 5 sample questions defined in `modules/code-review/graph_engine/token_benchmark.py`.
 
 | Repo | Snapshot SHA | naive_corpus_tokens | avg graph_tokens | Reduction |
 |------|---|-----------------:|----------------:|----------:|
 | fastapi | `22381558` | 948,793 | 2,653 | **357.6x** |
 | flask | `a29f88ce` | 143,594 | 2,196 | **65.4x** |
-| code-review-graph | `84bde354` | 208,821 | 3,190 | **65.5x** |
+| reviewgraph | `84bde354` | 208,821 | 3,190 | **65.5x** |
 | gin | `5c00df8a` | 166,868 | 2,766 | **60.3x** |
 | httpx | `b55d4635` | 142,356 | 2,661 | **53.5x** |
 | express | `b4ab7d65` | 136,052 | 3,936 | **34.6x** |
 
 > Captured 2026-08-02 from clean clones at the pinned SHAs (crg 2.3.7, local `all-MiniLM-L6-v2` embeddings). These numbers are lower than the 2026-05-25 capture they replace: node embedding text became richer, so `avg graph_tokens` rose in every repo. fastapi is measured at its current pin `22381558` rather than the retired `0227991a`.
 >
-> The Reduction column is `naive_corpus_tokens / avg graph_tokens`, so it divides out from the two columns beside it. The benchmark's own `average_reduction_ratio` averages the five per-question ratios instead, which always reads higher; those per-question figures are in [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-code_review_graphtoken_benchmarkpy).
+> The Reduction column is `naive_corpus_tokens / avg graph_tokens`, so it divides out from the two columns beside it. The benchmark's own `average_reduction_ratio` averages the five per-question ratios instead, which always reads higher; those per-question figures are in [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-reviewgraphtoken_benchmarkpy).
 >
-> The `code-review-graph` row is a snapshot, not a current measurement. The repository has grown since `84bde354`, so its corpus and graph are both much larger today.
+> The `reviewgraph` row is a snapshot, not a current measurement. The repository has grown since `84bde354`, so its corpus and graph are both much larger today.
 
 The whole-corpus baseline is an upper bound no real agent pays; an agent greps for identifiers and reads the best-matching files. The `agent_baseline` eval benchmark measures that case (a pure-Python grep over the corpus, top-3 files by match count, token-counted against the graph query cost). It writes `evaluate/results/<repo>_agent_baseline_<date>.csv`; no canonical capture has been published yet.
 
@@ -225,7 +225,7 @@ Blast-radius analysis recovers every file in the ground truth on all 13 evaluati
 | Repo | Commits | Avg F1 | Avg Precision | Recall (graph-derived upper bound) |
 |------|--------:|-------:|--------------:|-------:|
 | httpx | 2 | 0.863 | 0.785 | 1.0 |
-| code-review-graph | 2 | 0.734 | 0.584 | 1.0 |
+| reviewgraph | 2 | 0.734 | 0.584 | 1.0 |
 | fastapi | 2 | 0.697 | 0.539 | 1.0 |
 | express | 2 | 0.667 | 0.500 | 1.0 |
 | flask | 2 | 0.633 | 0.485 | 1.0 |
@@ -240,14 +240,14 @@ The benchmark also runs a **co-change mode**: the predictor is seeded with one c
 <summary><strong>Build stats</strong></summary>
 <br>
 
-From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding counts are lower than node counts because File nodes are not embedded. The `code-review-graph` row is that snapshot, not the repository as it stands now.
+From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding counts are lower than node counts because File nodes are not embedded. The `reviewgraph` row is that snapshot, not the repository as it stands now.
 
 | Repo | Nodes | Edges | Embeddings |
 |------|------:|------:|-----------:|
 | fastapi | 6,287 | 32,036 | 5,159 |
 | express | 1,990 | 19,492 | 1,849 |
 | gin | 1,589 | 17,237 | 1,491 |
-| code-review-graph | 1,446 | 9,094 | 1,354 |
+| reviewgraph | 1,446 | 9,094 | 1,354 |
 | flask | 1,415 | 8,259 | 1,329 |
 | httpx | 1,263 | 8,236 | 1,193 |
 
@@ -282,7 +282,7 @@ From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding co
 | **Edge confidence** | Two-tier confidence (EXTRACTED/INFERRED) with float scores on edges |
 | **Graph traversal** | BFS/DFS from any node with configurable depth and token budget |
 | **Export formats** | GraphML (Gephi/yEd), Neo4j Cypher, Obsidian vault, JSON, and SVG (SVG needs matplotlib from the `eval` extra) |
-| **Token benchmarking** | `code_review_graph/token_benchmark.py` measures whole-corpus tokens against graph query tokens per question |
+| **Token benchmarking** | `modules/code-review/graph_engine/token_benchmark.py` measures whole-corpus tokens against graph query tokens per question |
 | **Estimated context savings** | `context_savings` metadata (`estimated`, `saved_tokens`, `saved_percent`) on review, impact, detect-changes and architecture responses |
 | **Community auto-split** | Communities above 25% of the graph are split recursively with Leiden |
 | **Execution flows** | Call chains from entry points, sorted by weighted criticality |
@@ -294,7 +294,7 @@ From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding co
 | **Refactoring tools** | Rename preview, framework-aware dead code detection, community-driven suggestions |
 | **Wiki generation** | Markdown wiki from community structure |
 | **Multi-repo registry** | Register several repos and search across them |
-| **Multi-repo daemon** | `crg-daemon` watches several repos as child processes, with health checks and restart |
+| **Multi-repo daemon** | `reviewgraph-daemon` watches several repos as child processes, with health checks and restart |
 | **MCP prompts** | 5 workflow templates: review, architecture, debug, onboard, pre-merge |
 | **Full-text search** | FTS5 hybrid search combining keyword and vector similarity |
 | **Local storage** | One SQLite file in `.code-review-graph/`; no external database or cloud service |
@@ -325,42 +325,42 @@ Qoder also gets `build-graph`, `review-delta` and `review-pr` from the repositor
 <br>
 
 ```bash
-code-review-graph install          # Detect and configure all platforms
-code-review-graph install --platform <name>  # One platform
-code-review-graph uninstall --dry-run  # Preview removal of installed artifacts
-code-review-graph build            # Parse the whole codebase
-code-review-graph update           # Incremental update (changed files only)
-code-review-graph status           # Graph statistics
-code-review-graph watch            # Update on file changes
-code-review-graph forget <path>    # Drop already-parsed files from the graph
-code-review-graph dead-code        # Functions and classes with no callers or tests
-code-review-graph visualize        # Interactive HTML graph
-code-review-graph visualize --format json      # Export graph data as JSON
-code-review-graph visualize --format graphml   # Export as GraphML
-code-review-graph visualize --format svg       # Export as SVG (needs matplotlib)
-code-review-graph visualize --format obsidian  # Export as Obsidian vault
-code-review-graph visualize --format cypher    # Export as Neo4j Cypher
-code-review-graph wiki             # Markdown wiki from communities
-code-review-graph detect-changes --brief         # Risk panel + token savings (read-only)
-code-review-graph detect-changes --brief --base main  # Against the merge base of main and HEAD
-code-review-graph update --brief                 # Refresh graph + same panel
-code-review-graph detect-changes --brief --verify  # Cross-check against tiktoken
-code-review-graph register <path>  # Register repo in the multi-repo registry
-code-review-graph unregister <path|alias>  # Remove repo from the registry
-code-review-graph repos            # List registered repositories
-code-review-graph daemon start     # Start the multi-repo watch daemon
-code-review-graph daemon stop      # Stop the daemon
-code-review-graph daemon status    # Daemon status and repos
-code-review-graph eval             # Run evaluation benchmarks
-code-review-graph serve            # Start the MCP server (stdio)
-code-review-graph serve --http     # MCP over Streamable HTTP on localhost:5555
+reviewgraph install          # Detect and configure all platforms
+reviewgraph install --platform <name>  # One platform
+reviewgraph uninstall --dry-run  # Preview removal of installed artifacts
+reviewgraph build            # Parse the whole codebase
+reviewgraph update           # Incremental update (changed files only)
+reviewgraph status           # Graph statistics
+reviewgraph watch            # Update on file changes
+reviewgraph forget <path>    # Drop already-parsed files from the graph
+reviewgraph dead-code        # Functions and classes with no callers or tests
+reviewgraph visualize        # Interactive HTML graph
+reviewgraph visualize --format json      # Export graph data as JSON
+reviewgraph visualize --format graphml   # Export as GraphML
+reviewgraph visualize --format svg       # Export as SVG (needs matplotlib)
+reviewgraph visualize --format obsidian  # Export as Obsidian vault
+reviewgraph visualize --format cypher    # Export as Neo4j Cypher
+reviewgraph wiki             # Markdown wiki from communities
+reviewgraph detect-changes --brief         # Risk panel + token savings (read-only)
+reviewgraph detect-changes --brief --base main  # Against the merge base of main and HEAD
+reviewgraph update --brief                 # Refresh graph + same panel
+reviewgraph detect-changes --brief --verify  # Cross-check against tiktoken
+reviewgraph register <path>  # Register repo in the multi-repo registry
+reviewgraph unregister <path|alias>  # Remove repo from the registry
+reviewgraph repos            # List registered repositories
+reviewgraph daemon start     # Start the multi-repo watch daemon
+reviewgraph daemon stop      # Stop the daemon
+reviewgraph daemon status    # Daemon status and repos
+reviewgraph eval             # Run evaluation benchmarks
+reviewgraph serve            # Start the MCP server (stdio)
+reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 ```
 
-This is a selection. `code-review-graph --help` lists every command, and [docs/COMMANDS.md](docs/COMMANDS.md) documents their flags.
+This is a selection. `reviewgraph --help` lists every command, and [docs/COMMANDS.md](docs/COMMANDS.md) documents their flags.
 
 When `detect-changes --base` names a branch, the diff runs against the merge base of that branch and HEAD. Commit hashes and other revisions are used as given.
 
-`visualize --format svg` needs matplotlib, which ships in the `eval` extra (`pip install "code-review-graph[eval]"`). The other export formats need no extra install.
+`visualize --format svg` needs matplotlib, which ships in the `eval` extra (`pip install "reviewgraph[eval]"`). The other export formats need no extra install.
 
 JSON exports are written inside the local graph data directory, which Git ignores by default. They can contain absolute paths and code-structure metadata, so inspect an export before publishing it.
 
@@ -383,7 +383,7 @@ Both commands print the same panel showing how many tokens the graph saved compa
 
 | Command | What it does | When to use |
 |---|---|---|
-| `detect-changes --brief` | Read-only. Queries the existing graph for the current changes and prints the panel. | Most of the time; hooks or `crg-daemon` keep the graph fresh. |
+| `detect-changes --brief` | Read-only. Queries the existing graph for the current changes and prints the panel. | Most of the time; hooks or `reviewgraph-daemon` keep the graph fresh. |
 | `update --brief` | Re-parses the changed files into the graph first, then prints the same panel. | After a rebase, a large change set, or whenever the graph may be stale. |
 
 Add `--verify` to either command to compare the figures with OpenAI's `cl100k_base` tokenizer (needs `pip install tiktoken`). The estimate is within about 1% of real tokens in aggregate; see [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table).
@@ -396,25 +396,25 @@ The same `context_savings` metadata is attached to the JSON responses of the `ge
 <summary><strong>Multi-repo daemon</strong></summary>
 <br>
 
-If your editor does not support hooks (for example Cursor or OpenCode), or you want the graph kept fresh without editor integration, the daemon watches your repositories and updates their graphs. It ships with `code-review-graph`; no separate install.
+If your editor does not support hooks (for example Cursor or OpenCode), or you want the graph kept fresh without editor integration, the daemon watches your repositories and updates their graphs. It ships with `reviewgraph`; no separate install.
 
 ```bash
 # 1. Register the repos to watch
-crg-daemon add ~/project-a --alias proj-a
-crg-daemon add ~/project-b
+reviewgraph-daemon add ~/project-a --alias proj-a
+reviewgraph-daemon add ~/project-b
 
 # 2. Start the daemon (runs in the background)
-crg-daemon start
+reviewgraph-daemon start
 
 # 3. Check on it
-crg-daemon status                 # daemon and per-repo watcher status
-crg-daemon logs --repo proj-a -f  # tail logs for one repo
-crg-daemon stop                   # stop the daemon and all watchers
+reviewgraph-daemon status                 # daemon and per-repo watcher status
+reviewgraph-daemon logs --repo proj-a -f  # tail logs for one repo
+reviewgraph-daemon stop                   # stop the daemon and all watchers
 ```
 
-Also available as `code-review-graph daemon start|stop|status|...`.
+Also available as `reviewgraph daemon start|stop|status|...`.
 
-`crg-daemon add` writes to `~/.code-review-graph/watch.toml`, which you can also edit directly:
+`reviewgraph-daemon add` writes to `~/.code-review-graph/watch.toml`, which you can also edit directly:
 
 ```toml
 [[repos]]
@@ -428,7 +428,7 @@ alias = "project-b"
 
 The daemon watches this file and starts or stops watcher processes as repos are added or removed. A health check every 30 seconds restarts dead watchers.
 
-See [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-crg-daemon) for the full config reference.
+See [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-reviewgraph-daemon) for the full config reference.
 
 </details>
 
@@ -494,13 +494,13 @@ In git repositories only tracked files are indexed (`git ls-files`), so gitignor
 Optional dependency groups:
 
 ```bash
-pip install "code-review-graph[embeddings]"          # Local vector embeddings (sentence-transformers)
-pip install "code-review-graph[google-embeddings]"   # Google Gemini embeddings
-pip install "code-review-graph[communities]"         # Community detection (igraph)
-pip install "code-review-graph[enrichment]"          # Python call-resolution enrichment (Jedi)
-pip install "code-review-graph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
-pip install "code-review-graph[wiki]"                # ollama client (not used by the current wiki generator)
-pip install "code-review-graph[all]"                 # All optional dependencies
+pip install "reviewgraph[embeddings]"          # Local vector embeddings (sentence-transformers)
+pip install "reviewgraph[google-embeddings]"   # Google Gemini embeddings
+pip install "reviewgraph[communities]"         # Community detection (igraph)
+pip install "reviewgraph[enrichment]"          # Python call-resolution enrichment (Jedi)
+pip install "reviewgraph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
+pip install "reviewgraph[wiki]"                # ollama client (not used by the current wiki generator)
+pip install "reviewgraph[all]"                 # All optional dependencies
 ```
 
 ### Environment Variables
@@ -562,12 +562,12 @@ Voyage embeddings need no extra install. Set `VOYAGE_API_KEY` and pass `provider
 ```bash
 export VOYAGE_API_KEY=pa-...
 export CRG_ACCEPT_CLOUD_EMBEDDINGS=1
-code-review-graph embed --provider voyage --model voyage-code-3
+reviewgraph embed --provider voyage --model voyage-code-3
 ```
 
 > **Model selection.** Avoid `-preview`, `-beta` or `-exp` model IDs for an index you plan to keep; preview models can change weights (a different dimension forces a full re-embed) or be withdrawn. Prefer GA releases such as `text-embedding-3-small` / `text-embedding-3-large` (OpenAI), `Qwen/Qwen3-Embedding-8B` (self-hosted vLLM or LocalAI), or `gemini-embedding-001` (native Gemini provider, which needs `GOOGLE_API_KEY`).
 >
-> The embedding text is identifiers, signatures, structural context, and a bounded first-paragraph docstring or doc-comment summary. Function bodies are not sent. Graphs created before documentation extraction was added need one full `code-review-graph build` before re-embedding. Routine builds never refresh embeddings; to refresh after a build, pass both `--embedding-provider` and `--embedding-model`. Cloud providers receive this source-derived text and may charge for it.
+> The embedding text is identifiers, signatures, structural context, and a bounded first-paragraph docstring or doc-comment summary. Function bodies are not sent. Graphs created before documentation extraction was added need one full `reviewgraph build` before re-embedding. Routine builds never refresh embeddings; to refresh after a build, pass both `--embedding-provider` and `--embedding-model`. Cloud providers receive this source-derived text and may charge for it.
 
 #### Tool Filtering
 
@@ -575,10 +575,10 @@ CRG exposes 30 MCP tools by default. To limit the server to a subset, use `--too
 
 ```bash
 # CLI flag
-code-review-graph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
+reviewgraph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
 
 # Environment variable
-CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
+CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ```
 
 The flag takes precedence over the variable. When neither is set, all tools are available. In an MCP client config:
@@ -586,8 +586,8 @@ The flag takes precedence over the variable. When neither is set, all tools are 
 ```json
 {
   "mcpServers": {
-    "code-review-graph": {
-      "command": "code-review-graph",
+    "reviewgraph": {
+      "command": "reviewgraph",
       "args": ["serve", "--tools", "query_graph_tool,semantic_search_nodes_tool,detect_changes_tool,get_review_context_tool"]
     }
   }
@@ -622,11 +622,11 @@ Installing from a source tree (for example `pipx install .`) needs build depende
 2. Install from a checkout with [uv](https://docs.astral.sh/uv/), which uses different download machinery:
 
    ```bash
-   cd /path/to/code-review-graph
+   cd /path/to/reviewgraph
    uv tool install . --force
    ```
 
-3. For development in a clone, use `uv sync` and `uv run code-review-graph ...`.
+3. For development in a clone, use `uv sync` and `uv run reviewgraph ...`.
 
 To diagnose: `python3 scripts/diagnose_pypi_connectivity.py`. If it prints `FAILED`, the problem is the network environment, not the package name.
 
@@ -635,8 +635,8 @@ To diagnose: `python3 scripts/diagnose_pypi_connectivity.py`. If it prints `FAIL
 Do not use a `cmd /c` wrapper in the Claude Code config. Point `~/.claude.json` at the `.exe` directly and set UTF-8 through the config:
 
 ```json
-"code-review-graph": {
-  "command": "C:\\path\\to\\your\\venv\\Scripts\\code-review-graph.exe",
+"reviewgraph": {
+  "command": "C:\\path\\to\\your\\venv\\Scripts\\reviewgraph.exe",
   "args": ["serve", "--repo", "C:\\path\\to\\your\\project"],
   "env": { "PYTHONUTF8": "1" }
 }
@@ -648,14 +648,14 @@ Do not use a `cmd /c` wrapper in the Claude Code config. Point `~/.claude.json` 
 git clone https://github.com/borg0ai/dx-reviewgraph.git
 cd dx-reviewgraph
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --group dev
 pytest
 ```
 
 Open feature and fix pull requests directly against `main`. Releases are tagged
 from `main`. See [CONTRIBUTING.md](CONTRIBUTING.md#branching) for the workflow.
 
-To add a built-in language, edit `code_review_graph/parser.py`: add the extension to `EXTENSION_TO_LANGUAGE` and node type mappings to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`. Include a test fixture and open a PR. For a language you only need in one repository, use [`languages.toml`](docs/CUSTOM_LANGUAGES.md) instead.
+To add a built-in language, edit `modules/code-review/graph_engine/parser.py`: add the extension to `EXTENSION_TO_LANGUAGE` and node type mappings to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`. Include a test fixture and open a PR. For a language you only need in one repository, use [`languages.toml`](docs/CUSTOM_LANGUAGES.md) instead.
 
 ## Licence
 
@@ -663,5 +663,5 @@ MIT. See [LICENSE](LICENSE).
 
 <p align="center">
 <br>
-<code>pip install code-review-graph && code-review-graph install</code>
+<code>pip install reviewgraph && reviewgraph install</code>
 </p>

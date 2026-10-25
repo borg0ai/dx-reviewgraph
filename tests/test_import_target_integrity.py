@@ -40,8 +40,8 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import _run_python_resolver, full_build
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import _run_python_resolver, full_build
 from tests.import_audit import (
     audit_imports,
     exists_case_exact,
@@ -275,8 +275,8 @@ def own_package_graph(tmp_path_factory) -> Path:
     """
     root = tmp_path_factory.mktemp("own-package") / "repo"
     shutil.copytree(
-        REPO_ROOT / "code_review_graph",
-        root / "code_review_graph",
+        REPO_ROOT / "modules" / "code-review" / "graph_engine",
+        root / "graph_engine",
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
@@ -309,7 +309,7 @@ def test_this_repository_resolves_every_relative_import(own_package_graph):
     store = GraphStore(own_package_graph)
     try:
         stats = audit_imports(
-            store._conn, repo / "code_review_graph", repo.resolve(),
+            store._conn, repo / "graph_engine", repo.resolve(),
         )
     finally:
         store.close()

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from code_review_graph.parser import CodeParser
+from graph_engine.parser import CodeParser
 
 
 def _calls_from(edges, source_suffix: str) -> list[str]:

@@ -3,9 +3,9 @@
 import tempfile
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import CodeParser
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.parser import CodeParser
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -221,7 +221,7 @@ class TestCodeParser:
 
     def test_parse_python_class_decorators_persisted(self):
         """Stacked Python class decorators reach downstream metadata consumers."""
-        from code_review_graph.flows import _has_framework_decorator
+        from graph_engine.flows import _has_framework_decorator
 
         source = b"""
 @Component(\"widget-card\")
@@ -277,7 +277,7 @@ class Plain:
         assert import_targets == {"a.b", "b", "x", "y"}
 
     def test_python_aliased_module_is_reported_by_queries(self, tmp_path):
-        from code_review_graph.tools.query import get_impact_radius, query_graph
+        from graph_engine.tools.query import get_impact_radius, query_graph
 
         (tmp_path / ".git").mkdir()
         (tmp_path / ".code-review-graph").mkdir()
@@ -896,8 +896,8 @@ class Plain:
     def test_python_callback_references_not_treated_as_dead(self):
         """End-to-end: with REFERENCES edges in place, find_dead_code
         should not flag callback functions as dead."""
-        from code_review_graph.graph import GraphStore
-        from code_review_graph.refactor import find_dead_code
+        from graph_engine.graph import GraphStore
+        from graph_engine.refactor import find_dead_code
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             db_path = Path(tmp_dir) / "graph.db"
@@ -955,7 +955,7 @@ class Plain:
     def test_jest_tests_dir_detected_as_test_file(self):
         """A file under __tests__/ should be classified as a test file even
         when the filename itself has no .test./.spec. marker."""
-        from code_review_graph.parser import _is_test_file
+        from graph_engine.parser import _is_test_file
         assert _is_test_file("src/__tests__/UserService.ts")
         assert _is_test_file("src\\__tests__\\UserService.ts")
         assert _is_test_file("/repo/src/__tests__/UserService.ts", "/repo")
@@ -1614,7 +1614,7 @@ class TestDeadGuardHelpers:
 
     def test_node_is_in_child_direct(self):
         """A call directly inside a block is a descendant."""
-        from code_review_graph.parser import _node_is_in_child
+        from graph_engine.parser import _node_is_in_child
 
         root, _ = self._parse("go", b"func f() { g() }")
         block = self._find(root, "block")
@@ -1623,7 +1623,7 @@ class TestDeadGuardHelpers:
 
     def test_node_is_in_child_nested(self):
         """A call 3 levels deep is still a descendant."""
-        from code_review_graph.parser import _node_is_in_child
+        from graph_engine.parser import _node_is_in_child
 
         root, _ = self._parse("go", b"func f() { if true { g() } }")
         outer_block = self._find(root, "block")
@@ -1633,7 +1633,7 @@ class TestDeadGuardHelpers:
     def test_node_is_in_child_sibling(self):
         """A call in the else branch is NOT a descendant of the
         consequence block."""
-        from code_review_graph.parser import _node_is_in_child
+        from graph_engine.parser import _node_is_in_child
 
         root, _ = self._parse("go", b"func f() { if false { a() } else { b() } }")
         if_stmt = self._find(root, "if_statement")
@@ -1643,7 +1643,7 @@ class TestDeadGuardHelpers:
 
     def test_node_is_in_child_self(self):
         """A node is a descendant of itself."""
-        from code_review_graph.parser import _node_is_in_child
+        from graph_engine.parser import _node_is_in_child
 
         root, _ = self._parse("go", b"func f() { g() }")
         block = self._find(root, "block")
@@ -1651,7 +1651,7 @@ class TestDeadGuardHelpers:
 
     def test_node_is_in_child_root(self):
         """A module-level call is NOT inside an if consequence."""
-        from code_review_graph.parser import _node_is_in_child
+        from graph_engine.parser import _node_is_in_child
 
         root, _ = self._parse("go", b"func f() { g() }\nfunc h() { if false { i() } }")
         if_stmt = self._find(root, "if_statement")
@@ -1664,42 +1664,42 @@ class TestDeadGuardHelpers:
     # --- _is_statically_false_condition ---
 
     def test_false_literal(self):
-        from code_review_graph.parser import _is_statically_false_condition
+        from graph_engine.parser import _is_statically_false_condition
 
         root, _ = self._parse("go", b"func f() { if false { g() } }")
         cond = self._find(root, "false")
         assert _is_statically_false_condition(cond) is True
 
     def test_number_zero(self):
-        from code_review_graph.parser import _is_statically_false_condition
+        from graph_engine.parser import _is_statically_false_condition
 
         root, _ = self._parse("typescript", b"f(); if (0) { g(); }")
         cond = self._find(root, "number")
         assert _is_statically_false_condition(cond) is True
 
     def test_parenthesized_false(self):
-        from code_review_graph.parser import _is_statically_false_condition
+        from graph_engine.parser import _is_statically_false_condition
 
         root, _ = self._parse("typescript", b"f(); if ((false)) { g(); }")
         cond = self._find(root, "parenthesized_expression")
         assert _is_statically_false_condition(cond) is True
 
     def test_true_literal(self):
-        from code_review_graph.parser import _is_statically_false_condition
+        from graph_engine.parser import _is_statically_false_condition
 
         root, _ = self._parse("go", b"func f() { if true { g() } }")
         cond = self._find(root, "true")
         assert _is_statically_false_condition(cond) is False
 
     def test_number_one(self):
-        from code_review_graph.parser import _is_statically_false_condition
+        from graph_engine.parser import _is_statically_false_condition
 
         root, _ = self._parse("typescript", b"f(); if (1) { g(); }")
         cond = self._find(root, "number")
         assert _is_statically_false_condition(cond) is False
 
     def test_variable_condition(self):
-        from code_review_graph.parser import _is_statically_false_condition
+        from graph_engine.parser import _is_statically_false_condition
 
         root, _ = self._parse("go", b"func f() { if x { g() } }")
         cond = self._find(root, "identifier")
@@ -1708,49 +1708,49 @@ class TestDeadGuardHelpers:
     # --- _is_in_static_dead_guard ---
 
     def test_go_if_false_dead(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("go", b"func f() { if false { g() } }")
         call = self._find_call(root, b"g")
         assert _is_in_static_dead_guard(call) is True
 
     def test_go_else_branch_live(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("go", b"func f() { if false { a() } else { b() } }")
         call_b = self._find_call(root, b"b")
         assert _is_in_static_dead_guard(call_b) is False
 
     def test_ts_if_false_dead(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("typescript", b"function f() { if (false) { g(); } }")
         call = self._find_call(root, b"g")
         assert _is_in_static_dead_guard(call) is True
 
     def test_ts_if_zero_dead(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("typescript", b"function f() { if (0) { g(); } }")
         call = self._find_call(root, b"g")
         assert _is_in_static_dead_guard(call) is True
 
     def test_ts_if_true_live(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("typescript", b"function f() { if (true) { g(); } }")
         call = self._find_call(root, b"g")
         assert _is_in_static_dead_guard(call) is False
 
     def test_c_if0_dead(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("c", b"void f() {\n#if 0\ng();\n#endif\n}\n")
         call = self._find_call(root, b"g")
         assert _is_in_static_dead_guard(call) is True
 
     def test_c_else_live(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse(
             "c", b"void f() {\n#if 0\na();\n#else\nb();\n#endif\n}\n"
@@ -1759,14 +1759,14 @@ class TestDeadGuardHelpers:
         assert _is_in_static_dead_guard(call_b) is False
 
     def test_c_if1_live(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("c", b"void f() {\n#if 1\ng();\n#endif\n}\n")
         call = self._find_call(root, b"g")
         assert _is_in_static_dead_guard(call) is False
 
     def test_no_guard_live(self):
-        from code_review_graph.parser import _is_in_static_dead_guard
+        from graph_engine.parser import _is_in_static_dead_guard
 
         root, _ = self._parse("go", b"func f() { g() }")
         call = self._find_call(root, b"g")

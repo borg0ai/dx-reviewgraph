@@ -19,11 +19,11 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph.changes import analyze_changes
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, get_db_path, incremental_update
-from code_review_graph.parser import CodeParser, NodeInfo
-from code_review_graph.tools.review import detect_changes_func
+from graph_engine.changes import analyze_changes
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, get_db_path, incremental_update
+from graph_engine.parser import CodeParser, NodeInfo
+from graph_engine.tools.review import detect_changes_func
 
 
 def test_parser_tags_interfaces_and_type_aliases_only():
@@ -279,7 +279,7 @@ class TestBuildAndUpdatePath:
     @staticmethod
     def _build(root: Path, store: GraphStore) -> None:
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["src dir/widget.tsx"],
         ):
             result = full_build(root, store)
@@ -568,7 +568,7 @@ def test_tag_follows_a_declaration_that_changes_kind_across_updates(tmp_path):
     store = GraphStore(root / "graph.db")
     try:
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["shape.ts"],
         ):
             assert full_build(root, store)["errors"] == []

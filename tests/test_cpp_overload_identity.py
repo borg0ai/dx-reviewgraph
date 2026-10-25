@@ -3,10 +3,10 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import CPP_IDENTITY_VERSION, incremental_update
-from code_review_graph.parser import CodeParser, EdgeInfo, NodeInfo
-from code_review_graph.tools.query import query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import CPP_IDENTITY_VERSION, incremental_update
+from graph_engine.parser import CodeParser, EdgeInfo, NodeInfo
+from graph_engine.tools.query import query_graph
 
 
 def _index_source(tmp_path: Path, source: str) -> tuple[Path, GraphStore]:
@@ -619,7 +619,7 @@ def test_incremental_upgrade_rebuilds_cpp_identities_and_removes_stale_edges(
         store.commit()
 
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["callee.cpp", "caller.cpp"],
         ):
             result = incremental_update(tmp_path, store, changed_files=[])
@@ -698,11 +698,11 @@ def test_failed_cpp_identity_upgrade_remains_pending_and_retries(tmp_path: Path)
 
         with (
             patch(
-                "code_review_graph.incremental.get_all_tracked_files",
+                "graph_engine.incremental.get_all_tracked_files",
                 return_value=["run.cpp"],
             ),
             patch(
-                "code_review_graph.incremental.CodeParser.parse_bytes",
+                "graph_engine.incremental.CodeParser.parse_bytes",
                 side_effect=RuntimeError("simulated parse failure"),
             ),
         ):
@@ -714,7 +714,7 @@ def test_failed_cpp_identity_upgrade_remains_pending_and_retries(tmp_path: Path)
         assert store.get_node(legacy_qn) is not None
 
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["run.cpp"],
         ):
             retried = incremental_update(tmp_path, store, changed_files=[])
@@ -1172,7 +1172,7 @@ def test_non_cpp_failure_does_not_repeat_cpp_identity_migration(tmp_path: Path):
 
         with (
             patch(
-                "code_review_graph.incremental.get_all_tracked_files",
+                "graph_engine.incremental.get_all_tracked_files",
                 return_value=["run.cpp", "broken.py"],
             ),
             patch.object(CodeParser, "parse_bytes", new=parse_with_python_failure),

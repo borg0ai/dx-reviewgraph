@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/code-review-graph/"><img src="https://img.shields.io/pypi/v/code-review-graph?style=flat-square&color=blue" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/code-review-graph"><img src="https://img.shields.io/pepy/dt/code-review-graph?style=flat-square" alt="Downloads"></a>
+  <a href="https://pypi.org/project/reviewgraph/"><img src="https://img.shields.io/pypi/v/reviewgraph?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/reviewgraph"><img src="https://img.shields.io/pepy/dt/reviewgraph?style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/stargazers"><img src="https://img.shields.io/github/stars/borg0ai/dx-reviewgraph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml"><img src="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
@@ -35,7 +35,7 @@
 
 <br>
 
-AI 编码工具为了审查一次改动，常常要重新读取代码库的大部分内容。`code-review-graph` 用 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) 构建代码的结构图，增量保持更新，并通过 [MCP](https://modelcontextprotocol.io/) 提供紧凑的上下文，让助手只读取改动涉及的文件。
+AI 编码工具为了审查一次改动，常常要重新读取代码库的大部分内容。`reviewgraph` 用 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) 构建代码的结构图，增量保持更新，并通过 [MCP](https://modelcontextprotocol.io/) 提供紧凑的上下文，让助手只读取改动涉及的文件。
 
 <p align="center">
   <img src="diagrams/diagram1_before_vs_after.png" alt="Token 问题：读完 flask 的全部语料需要 143,594 个 token，图给出的回答只需 2,196 个（少 65 倍）" width="85%" />
@@ -46,12 +46,12 @@ AI 编码工具为了审查一次改动，常常要重新读取代码库的大�
 ## 快速开始
 
 ```bash
-pip install code-review-graph          # or: pipx install code-review-graph
-code-review-graph install              # detect installed AI coding tools and configure each one
-code-review-graph build                # parse the codebase
+pip install reviewgraph          # or: pipx install reviewgraph
+reviewgraph install              # detect installed AI coding tools and configure each one
+reviewgraph build                # parse the codebase
 ```
 
-`install` 会检测你安装了哪些 AI 编码工具，为每个工具写入一条 MCP 服务器配置，在平台支持的地方安装钩子和技能，并把图谱说明加入平台的规则文件。在 Poetry 或 uv 项目环境中，MCP 配置使用 `poetry run` 或 `uv run`；当 PATH 上有 `uvx` 时使用 `uvx code-review-graph serve`；否则使用当前的 Python 解释器。安装后请重启编辑器或工具。
+`install` 会检测你安装了哪些 AI 编码工具，为每个工具写入一条 MCP 服务器配置，在平台支持的地方安装钩子和技能，并把图谱说明加入平台的规则文件。在 Poetry 或 uv 项目环境中，MCP 配置使用 `poetry run` 或 `uv run`；当 PATH 上有 `uvx` 时使用 `uvx reviewgraph serve`；否则使用当前的 Python 解释器。安装后请重启编辑器或工具。
 
 <p align="center">
   <img src="diagrams/diagram8_supported_platforms.png" alt="一次安装，覆盖所有平台：检测 Codex、Claude Code、CodeBuddy Code、Cursor、Windsurf、Zed、Continue、OpenCode、Antigravity、Gemini CLI、Qwen、Qoder、Kiro、GitHub Copilot、GitHub Copilot CLI 和 Hermes Agent" width="85%" />
@@ -60,8 +60,8 @@ code-review-graph build                # parse the codebase
 只配置一个平台时，给 `--platform` 传入 `codex`、`claude-code`、`cursor`、`windsurf`、`zed`、`continue`、`opencode`、`antigravity`、`gemini-cli`、`qwen`、`kiro`、`qoder`、`copilot`、`copilot-cli`、`codebuddy` 或 `hermes` 之一：
 
 ```bash
-code-review-graph install --platform cursor
-code-review-graph install --platform codebuddy
+reviewgraph install --platform cursor
+reviewgraph install --platform codebuddy
 ```
 
 配置文件的位置列在 [docs/USAGE.md](docs/USAGE.md#supported-platforms) 中。需要 Python 3.10+。
@@ -69,12 +69,12 @@ code-review-graph install --platform codebuddy
 `uninstall` 会从 Git 或 SVN 工作树中移除 CRG 自己写入的文件和配置项，不动其他 MCP 服务器、钩子、技能和 JSONC 注释。在工作树内的任意位置运行即可。共享配置文件采用原子替换，写入失败时原文件保持完整。
 
 ```bash
-code-review-graph uninstall --dry-run    # preview only
-code-review-graph uninstall              # preview, confirm, apply
-code-review-graph uninstall --yes        # apply without prompting
-code-review-graph uninstall --all-repos  # also clean every registered repository
-code-review-graph uninstall --keep-data  # remove integrations, keep graph databases
-code-review-graph uninstall --keep-user-configs --repo .  # this project only
+reviewgraph uninstall --dry-run    # preview only
+reviewgraph uninstall              # preview, confirm, apply
+reviewgraph uninstall --yes        # apply without prompting
+reviewgraph uninstall --all-repos  # also clean every registered repository
+reviewgraph uninstall --keep-data  # remove integrations, keep graph databases
+reviewgraph uninstall --keep-user-configs --repo .  # this project only
 ```
 
 然后打开项目，对助手说：
@@ -119,7 +119,7 @@ Build the code review graph for this project
 图谱不会把整个语料喂给模型，而是返回按问题裁剪的切片。在 2026-08-02 对本仓库 `84bde354` 的快照中，208,821 个源码 token 变成每个问题约 3,190 个 token。此后仓库增长了很多，所以今天这两个数字都更大。
 
 <p align="center">
-  <img src="diagrams/diagram6_monorepo_funnel.png" alt="code-review-graph 在 84bde354 快照：208,821 个源码 token 收敛为约 3,190 token 的图谱响应，每个问题的 token 约少 65 倍" width="80%" />
+  <img src="diagrams/diagram6_monorepo_funnel.png" alt="reviewgraph 在 84bde354 快照：208,821 个源码 token 收敛为约 3,190 token 的图谱响应，每个问题的 token 约少 65 倍" width="80%" />
 </p>
 
 ### 语言覆盖与笔记本
@@ -155,7 +155,7 @@ call_node_types = ["call"]
 同样的分析也以组合式 GitHub Action 的形式运行。图谱在你的 CI runner 上构建和查询，不会把源代码发送给外部服务。每个 pull request 上，该 action 会发布一条常驻评论，列出风险评分的函数、受影响的执行流和测试缺口，并在每次推送时就地更新。可选的 `fail-on-risk` 输入可以把它变成合并门禁。
 
 ```yaml
-# .github/workflows/code-review-graph.yml
+# .github/workflows/reviewgraph.yml
 on:
   pull_request:
 
@@ -191,22 +191,22 @@ jobs:
 <summary><strong>Token 效率：每个问题减少中位数约 63 倍（范围 35 倍到 358 倍；全语料对比图谱查询）</strong></summary>
 <br>
 
-对于典型的智能体问题（`"how does authentication work"`、`"what is the main entry point"` 等），图谱返回约 2,200 到 3,900 个 token 的搜索命中加邻接边，而不是每一个源文件。表格对 `code_review_graph/token_benchmark.py` 中定义的 5 个样例问题取平均。
+对于典型的智能体问题（`"how does authentication work"`、`"what is the main entry point"` 等），图谱返回约 2,200 到 3,900 个 token 的搜索命中加邻接边，而不是每一个源文件。表格对 `modules/code-review/graph_engine/token_benchmark.py` 中定义的 5 个样例问题取平均。
 
 | 仓库 | 快照 SHA | naive_corpus_tokens | avg graph_tokens | 减少倍数 |
 |------|---|-----------------:|----------------:|----------:|
 | fastapi | `22381558` | 948,793 | 2,653 | **357.6x** |
 | flask | `a29f88ce` | 143,594 | 2,196 | **65.4x** |
-| code-review-graph | `84bde354` | 208,821 | 3,190 | **65.5x** |
+| reviewgraph | `84bde354` | 208,821 | 3,190 | **65.5x** |
 | gin | `5c00df8a` | 166,868 | 2,766 | **60.3x** |
 | httpx | `b55d4635` | 142,356 | 2,661 | **53.5x** |
 | express | `b4ab7d65` | 136,052 | 3,936 | **34.6x** |
 
 > 2026-08-02 从固定 SHA 的干净克隆中采集（crg 2.3.7，本地 `all-MiniLM-L6-v2` 嵌入）。这些数字低于它们取代的 2026-05-25 采集：节点嵌入文本变得更丰富，因此每个仓库的 `avg graph_tokens` 都上升了。fastapi 按当前固定的 `22381558` 测量，而不是已退役的 `0227991a`。
 >
-> 减少倍数一列是 `naive_corpus_tokens / avg graph_tokens`，因此可以由旁边两列直接除出来。基准测试自己的 `average_reduction_ratio` 取的是五个问题各自比率的平均值，那个值总是更高；每个问题的数字见 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-code_review_graphtoken_benchmarkpy)。
+> 减少倍数一列是 `naive_corpus_tokens / avg graph_tokens`，因此可以由旁边两列直接除出来。基准测试自己的 `average_reduction_ratio` 取的是五个问题各自比率的平均值，那个值总是更高；每个问题的数字见 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-reviewgraphtoken_benchmarkpy)。
 >
-> `code-review-graph` 这一行是快照，不是当前测量值。仓库自 `84bde354` 以来有所增长，其语料和图谱今天都大得多。
+> `reviewgraph` 这一行是快照，不是当前测量值。仓库自 `84bde354` 以来有所增长，其语料和图谱今天都大得多。
 
 全语料基线是任何真实智能体都不会付出的上限；智能体会 grep 标识符并读取最匹配的文件。`agent_baseline` 评估基准测量的就是这种情况（纯 Python 对语料做 grep，按匹配数取前 3 个文件，再与图谱查询开销做 token 对比）。它写入 `evaluate/results/<repo>_agent_baseline_<date>.csv`；目前还没有发布过权威采集结果。
 
@@ -225,7 +225,7 @@ jobs:
 | 仓库 | 提交数 | 平均 F1 | 平均精确率 | 召回率（图谱生成的上限） |
 |------|--------:|-------:|--------------:|-------:|
 | httpx | 2 | 0.863 | 0.785 | 1.0 |
-| code-review-graph | 2 | 0.734 | 0.584 | 1.0 |
+| reviewgraph | 2 | 0.734 | 0.584 | 1.0 |
 | fastapi | 2 | 0.697 | 0.539 | 1.0 |
 | express | 2 | 0.667 | 0.500 | 1.0 |
 | flask | 2 | 0.633 | 0.485 | 1.0 |
@@ -240,14 +240,14 @@ jobs:
 <summary><strong>构建统计</strong></summary>
 <br>
 
-来自上文固定 SHA 的同一次 2026-08-02 干净构建。嵌入数量低于节点数量，因为 File 节点不做嵌入。`code-review-graph` 这一行是那个快照，不是仓库现在的状态。
+来自上文固定 SHA 的同一次 2026-08-02 干净构建。嵌入数量低于节点数量，因为 File 节点不做嵌入。`reviewgraph` 这一行是那个快照，不是仓库现在的状态。
 
 | 仓库 | 节点 | 边 | 嵌入 |
 |------|------:|------:|-----------:|
 | fastapi | 6,287 | 32,036 | 5,159 |
 | express | 1,990 | 19,492 | 1,849 |
 | gin | 1,589 | 17,237 | 1,491 |
-| code-review-graph | 1,446 | 9,094 | 1,354 |
+| reviewgraph | 1,446 | 9,094 | 1,354 |
 | flask | 1,415 | 8,259 | 1,329 |
 | httpx | 1,263 | 8,236 | 1,193 |
 
@@ -282,7 +282,7 @@ jobs:
 | **边置信度** | 两级置信度（EXTRACTED/INFERRED），边上带浮点分数 |
 | **图谱遍历** | 从任意节点出发的 BFS/DFS，深度和 token 预算可配置 |
 | **导出格式** | GraphML（Gephi/yEd）、Neo4j Cypher、Obsidian 知识库、JSON，以及 SVG（SVG 需要 `eval` 附加依赖中的 matplotlib） |
-| **Token 基准测试** | `code_review_graph/token_benchmark.py` 按问题测量全语料 token 与图谱查询 token |
+| **Token 基准测试** | `modules/code-review/graph_engine/token_benchmark.py` 按问题测量全语料 token 与图谱查询 token |
 | **估算的上下文节省** | 在审查、影响、detect-changes 和架构响应上附带 `context_savings` 元数据（`estimated`、`saved_tokens`、`saved_percent`） |
 | **社区自动拆分** | 占图谱 25% 以上的社区用 Leiden 递归拆分 |
 | **执行流** | 从入口点出发的调用链，按加权关键度排序 |
@@ -294,7 +294,7 @@ jobs:
 | **重构工具** | 重命名预览、框架感知的死代码检测、基于社区的建议 |
 | **Wiki 生成** | 从社区结构生成 Markdown Wiki |
 | **多仓库注册表** | 注册多个仓库并跨仓库搜索 |
-| **多仓库守护进程** | `crg-daemon` 以子进程方式监视多个仓库，带健康检查和重启 |
+| **多仓库守护进程** | `reviewgraph-daemon` 以子进程方式监视多个仓库，带健康检查和重启 |
 | **MCP 提示模板** | 5 个工作流模板：审查、架构、调试、入职、合并前检查 |
 | **全文搜索** | FTS5 混合搜索，结合关键词与向量相似度 |
 | **本地存储** | `.code-review-graph/` 中的一个 SQLite 文件；没有外部数据库或云服务 |
@@ -325,42 +325,42 @@ Qoder 还会从本仓库的 `skills/` 目录得到 `build-graph`、`review-delta
 <br>
 
 ```bash
-code-review-graph install          # Detect and configure all platforms
-code-review-graph install --platform <name>  # One platform
-code-review-graph uninstall --dry-run  # Preview removal of installed artifacts
-code-review-graph build            # Parse the whole codebase
-code-review-graph update           # Incremental update (changed files only)
-code-review-graph status           # Graph statistics
-code-review-graph watch            # Update on file changes
-code-review-graph forget <path>    # Drop already-parsed files from the graph
-code-review-graph dead-code        # Functions and classes with no callers or tests
-code-review-graph visualize        # Interactive HTML graph
-code-review-graph visualize --format json      # Export graph data as JSON
-code-review-graph visualize --format graphml   # Export as GraphML
-code-review-graph visualize --format svg       # Export as SVG (needs matplotlib)
-code-review-graph visualize --format obsidian  # Export as Obsidian vault
-code-review-graph visualize --format cypher    # Export as Neo4j Cypher
-code-review-graph wiki             # Markdown wiki from communities
-code-review-graph detect-changes --brief         # Risk panel + token savings (read-only)
-code-review-graph detect-changes --brief --base main  # Against the merge base of main and HEAD
-code-review-graph update --brief                 # Refresh graph + same panel
-code-review-graph detect-changes --brief --verify  # Cross-check against tiktoken
-code-review-graph register <path>  # Register repo in the multi-repo registry
-code-review-graph unregister <path|alias>  # Remove repo from the registry
-code-review-graph repos            # List registered repositories
-code-review-graph daemon start     # Start the multi-repo watch daemon
-code-review-graph daemon stop      # Stop the daemon
-code-review-graph daemon status    # Daemon status and repos
-code-review-graph eval             # Run evaluation benchmarks
-code-review-graph serve            # Start the MCP server (stdio)
-code-review-graph serve --http     # MCP over Streamable HTTP on localhost:5555
+reviewgraph install          # Detect and configure all platforms
+reviewgraph install --platform <name>  # One platform
+reviewgraph uninstall --dry-run  # Preview removal of installed artifacts
+reviewgraph build            # Parse the whole codebase
+reviewgraph update           # Incremental update (changed files only)
+reviewgraph status           # Graph statistics
+reviewgraph watch            # Update on file changes
+reviewgraph forget <path>    # Drop already-parsed files from the graph
+reviewgraph dead-code        # Functions and classes with no callers or tests
+reviewgraph visualize        # Interactive HTML graph
+reviewgraph visualize --format json      # Export graph data as JSON
+reviewgraph visualize --format graphml   # Export as GraphML
+reviewgraph visualize --format svg       # Export as SVG (needs matplotlib)
+reviewgraph visualize --format obsidian  # Export as Obsidian vault
+reviewgraph visualize --format cypher    # Export as Neo4j Cypher
+reviewgraph wiki             # Markdown wiki from communities
+reviewgraph detect-changes --brief         # Risk panel + token savings (read-only)
+reviewgraph detect-changes --brief --base main  # Against the merge base of main and HEAD
+reviewgraph update --brief                 # Refresh graph + same panel
+reviewgraph detect-changes --brief --verify  # Cross-check against tiktoken
+reviewgraph register <path>  # Register repo in the multi-repo registry
+reviewgraph unregister <path|alias>  # Remove repo from the registry
+reviewgraph repos            # List registered repositories
+reviewgraph daemon start     # Start the multi-repo watch daemon
+reviewgraph daemon stop      # Stop the daemon
+reviewgraph daemon status    # Daemon status and repos
+reviewgraph eval             # Run evaluation benchmarks
+reviewgraph serve            # Start the MCP server (stdio)
+reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 ```
 
-这是一份精选列表。`code-review-graph --help` 会列出全部命令，[docs/COMMANDS.md](docs/COMMANDS.md) 记录了它们的参数。
+这是一份精选列表。`reviewgraph --help` 会列出全部命令，[docs/COMMANDS.md](docs/COMMANDS.md) 记录了它们的参数。
 
 当 `detect-changes --base` 指定的是一个分支时，diff 会针对该分支与 HEAD 的合并基做。提交哈希和其他 revision 按原样使用。
 
-`visualize --format svg` 需要 matplotlib，它随 `eval` 附加依赖提供（`pip install "code-review-graph[eval]"`）。其他导出格式无需额外安装。
+`visualize --format svg` 需要 matplotlib，它随 `eval` 附加依赖提供（`pip install "reviewgraph[eval]"`）。其他导出格式无需额外安装。
 
 JSON 导出写在本地图谱数据目录中，该目录默认被 Git 忽略。导出内容可能包含绝对路径和代码结构元数据，发布前请先检查。
 
@@ -383,7 +383,7 @@ JSON 导出写在本地图谱数据目录中，该目录默认被 Git 忽略。�
 
 | 命令 | 作用 | 何时使用 |
 |---|---|---|
-| `detect-changes --brief` | 只读。针对当前改动查询已有图谱并打印面板。 | 大多数时候；钩子或 `crg-daemon` 会保持图谱新鲜。 |
+| `detect-changes --brief` | 只读。针对当前改动查询已有图谱并打印面板。 | 大多数时候；钩子或 `reviewgraph-daemon` 会保持图谱新鲜。 |
 | `update --brief` | 先把变更文件重新解析进图谱，再打印同样的面板。 | rebase 之后、改动集很大时，或图谱可能已过期时。 |
 
 给任一命令加上 `--verify`，可以把数字与 OpenAI 的 `cl100k_base` 分词器做对比（需要 `pip install tiktoken`）。总体估算与真实 token 的偏差约在 1% 以内；见 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)。
@@ -396,25 +396,25 @@ JSON 导出写在本地图谱数据目录中，该目录默认被 Git 忽略。�
 <summary><strong>多仓库守护进程</strong></summary>
 <br>
 
-如果你的编辑器不支持钩子（例如 Cursor 或 OpenCode），或者你想在没有编辑器集成的情况下保持图谱新鲜，守护进程会监视你的仓库并更新它们的图谱。它随 `code-review-graph` 一起提供，无需单独安装。
+如果你的编辑器不支持钩子（例如 Cursor 或 OpenCode），或者你想在没有编辑器集成的情况下保持图谱新鲜，守护进程会监视你的仓库并更新它们的图谱。它随 `reviewgraph` 一起提供，无需单独安装。
 
 ```bash
 # 1. Register the repos to watch
-crg-daemon add ~/project-a --alias proj-a
-crg-daemon add ~/project-b
+reviewgraph-daemon add ~/project-a --alias proj-a
+reviewgraph-daemon add ~/project-b
 
 # 2. Start the daemon (runs in the background)
-crg-daemon start
+reviewgraph-daemon start
 
 # 3. Check on it
-crg-daemon status                 # daemon and per-repo watcher status
-crg-daemon logs --repo proj-a -f  # tail logs for one repo
-crg-daemon stop                   # stop the daemon and all watchers
+reviewgraph-daemon status                 # daemon and per-repo watcher status
+reviewgraph-daemon logs --repo proj-a -f  # tail logs for one repo
+reviewgraph-daemon stop                   # stop the daemon and all watchers
 ```
 
-也可以用 `code-review-graph daemon start|stop|status|...`。
+也可以用 `reviewgraph daemon start|stop|status|...`。
 
-`crg-daemon add` 写入 `~/.code-review-graph/watch.toml`，你也可以直接编辑该文件：
+`reviewgraph-daemon add` 写入 `~/.code-review-graph/watch.toml`，你也可以直接编辑该文件：
 
 ```toml
 [[repos]]
@@ -428,7 +428,7 @@ alias = "project-b"
 
 守护进程会监视这个文件，并随着仓库的增删启动或停止 watcher 进程。每 30 秒一次的健康检查会重启已死的 watcher。
 
-完整配置参考见 [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-crg-daemon)。
+完整配置参考见 [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-reviewgraph-daemon)。
 
 </details>
 
@@ -494,13 +494,13 @@ node_modules/**
 可选依赖组：
 
 ```bash
-pip install "code-review-graph[embeddings]"          # Local vector embeddings (sentence-transformers)
-pip install "code-review-graph[google-embeddings]"   # Google Gemini embeddings
-pip install "code-review-graph[communities]"         # Community detection (igraph)
-pip install "code-review-graph[enrichment]"          # Python call-resolution enrichment (Jedi)
-pip install "code-review-graph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
-pip install "code-review-graph[wiki]"                # ollama client (not used by the current wiki generator)
-pip install "code-review-graph[all]"                 # All optional dependencies
+pip install "reviewgraph[embeddings]"          # Local vector embeddings (sentence-transformers)
+pip install "reviewgraph[google-embeddings]"   # Google Gemini embeddings
+pip install "reviewgraph[communities]"         # Community detection (igraph)
+pip install "reviewgraph[enrichment]"          # Python call-resolution enrichment (Jedi)
+pip install "reviewgraph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
+pip install "reviewgraph[wiki]"                # ollama client (not used by the current wiki generator)
+pip install "reviewgraph[all]"                 # All optional dependencies
 ```
 
 ### 环境变量
@@ -562,12 +562,12 @@ Voyage 嵌入无需额外安装。设置 `VOYAGE_API_KEY` 并给 `embed_graph` �
 ```bash
 export VOYAGE_API_KEY=pa-...
 export CRG_ACCEPT_CLOUD_EMBEDDINGS=1
-code-review-graph embed --provider voyage --model voyage-code-3
+reviewgraph embed --provider voyage --model voyage-code-3
 ```
 
 > **模型选择。** 对于打算长期保留的索引，避免使用 `-preview`、`-beta` 或 `-exp` 结尾的模型 ID；预览模型可能更换权重（维度一变就要全量重新嵌入）或被下架。请优先选择正式发布的模型，例如 `text-embedding-3-small` / `text-embedding-3-large`（OpenAI）、`Qwen/Qwen3-Embedding-8B`（自建 vLLM 或 LocalAI），或 `gemini-embedding-001`（原生 Gemini 提供方，需要 `GOOGLE_API_KEY`）。
 >
-> 嵌入文本包含标识符、签名、结构上下文，以及有长度上限的首段 docstring 或文档注释摘要。函数体不会被发送。在文档提取功能加入之前创建的图谱，需要先完整执行一次 `code-review-graph build` 再重新嵌入。常规构建不会刷新嵌入；要在构建后刷新，请同时传入 `--embedding-provider` 和 `--embedding-model`。云端提供方会收到这些由源码派生的文本，并可能据此收费。
+> 嵌入文本包含标识符、签名、结构上下文，以及有长度上限的首段 docstring 或文档注释摘要。函数体不会被发送。在文档提取功能加入之前创建的图谱，需要先完整执行一次 `reviewgraph build` 再重新嵌入。常规构建不会刷新嵌入；要在构建后刷新，请同时传入 `--embedding-provider` 和 `--embedding-model`。云端提供方会收到这些由源码派生的文本，并可能据此收费。
 
 #### 工具过滤
 
@@ -575,10 +575,10 @@ CRG 默认暴露 30 个 MCP 工具。要把服务器限制到一个子集，使�
 
 ```bash
 # CLI flag
-code-review-graph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
+reviewgraph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
 
 # Environment variable
-CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
+CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ```
 
 命令行参数优先于环境变量。两者都未设置时，所有工具都可用。在 MCP 客户端配置中：
@@ -586,8 +586,8 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
 ```json
 {
   "mcpServers": {
-    "code-review-graph": {
-      "command": "code-review-graph",
+    "reviewgraph": {
+      "command": "reviewgraph",
       "args": ["serve", "--tools", "query_graph_tool,semantic_search_nodes_tool,detect_changes_tool,get_review_context_tool"]
     }
   }
@@ -622,11 +622,11 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
 2. 用 [uv](https://docs.astral.sh/uv/) 从 checkout 安装，它使用不同的下载机制：
 
    ```bash
-   cd /path/to/code-review-graph
+   cd /path/to/reviewgraph
    uv tool install . --force
    ```
 
-3. 在克隆中做开发时，使用 `uv sync` 和 `uv run code-review-graph ...`。
+3. 在克隆中做开发时，使用 `uv sync` 和 `uv run reviewgraph ...`。
 
 诊断方法：`python3 scripts/diagnose_pypi_connectivity.py`。如果它打印 `FAILED`，问题出在网络环境，而不是包名。
 
@@ -635,8 +635,8 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
 不要在 Claude Code 配置中使用 `cmd /c` 包装。让 `~/.claude.json` 直接指向 `.exe`，并通过配置设置 UTF-8：
 
 ```json
-"code-review-graph": {
-  "command": "C:\\path\\to\\your\\venv\\Scripts\\code-review-graph.exe",
+"reviewgraph": {
+  "command": "C:\\path\\to\\your\\venv\\Scripts\\reviewgraph.exe",
   "args": ["serve", "--repo", "C:\\path\\to\\your\\project"],
   "env": { "PYTHONUTF8": "1" }
 }
@@ -648,14 +648,14 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
 git clone https://github.com/borg0ai/dx-reviewgraph.git
 cd dx-reviewgraph
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --group dev
 pytest
 ```
 
 功能和修复 PR 直接提交到 `main`。版本从 `main` 打标签。完整流程见
 [CONTRIBUTING.md](CONTRIBUTING.md#branching)。
 
-要添加内置语言，编辑 `code_review_graph/parser.py`：把扩展名加入 `EXTENSION_TO_LANGUAGE`，并把节点类型映射加入 `_CLASS_TYPES`、`_FUNCTION_TYPES`、`_IMPORT_TYPES` 和 `_CALL_TYPES`。附上测试 fixture 并提交 PR。如果某种语言只在一个仓库里需要，请改用 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)。
+要添加内置语言，编辑 `modules/code-review/graph_engine/parser.py`：把扩展名加入 `EXTENSION_TO_LANGUAGE`，并把节点类型映射加入 `_CLASS_TYPES`、`_FUNCTION_TYPES`、`_IMPORT_TYPES` 和 `_CALL_TYPES`。附上测试 fixture 并提交 PR。如果某种语言只在一个仓库里需要，请改用 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)。
 
 ## 许可证
 
@@ -663,5 +663,5 @@ MIT。见 [LICENSE](LICENSE)。
 
 <p align="center">
 <br>
-<code>pip install code-review-graph && code-review-graph install</code>
+<code>pip install reviewgraph && reviewgraph install</code>
 </p>

@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import CodeParser
+from graph_engine.graph import GraphStore
+from graph_engine.parser import CodeParser
 
 
 @pytest.mark.parametrize("framework", ["spring", "temporal"])
 def test_kotlin_implementor_of_java_interface_resolves_call(tmp_path, framework):
-    from code_review_graph.spring_resolver import resolve_spring_di_calls
-    from code_review_graph.temporal_resolver import resolve_temporal_calls
+    from graph_engine.spring_resolver import resolve_spring_di_calls
+    from graph_engine.temporal_resolver import resolve_temporal_calls
 
     java_source = "@ActivityInterface interface WorkActivity { void work(); }\n"
     if framework == "spring":

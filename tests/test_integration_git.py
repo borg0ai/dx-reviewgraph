@@ -21,10 +21,10 @@ from unittest.mock import patch
 
 import pytest
 
-from code_review_graph.changes import parse_git_diff_ranges
-from code_review_graph.errors import ChangeDiscoveryError
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import (
+from graph_engine.changes import parse_git_diff_ranges
+from graph_engine.errors import ChangeDiscoveryError
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import (
     _commit_object_exists,
     collect_all_files,
     discover_review_changes,
@@ -36,10 +36,10 @@ from code_review_graph.incremental import (
     resolve_incremental_base,
     resolve_review_base,
 )
-from code_review_graph.tools._common import graph_provenance
-from code_review_graph.tools.build import build_or_update_graph
-from code_review_graph.tools.context import get_minimal_context
-from code_review_graph.wiki import get_wiki_page
+from graph_engine.tools._common import graph_provenance
+from graph_engine.tools.build import build_or_update_graph
+from graph_engine.tools.context import get_minimal_context
+from graph_engine.wiki import get_wiki_page
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -197,9 +197,9 @@ def test_a_new_package_is_visible_to_every_review_tool(
     these files lived one layer below the tools, and every tool's own test
     passed while every tool returned nothing.
     """
-    from code_review_graph.incremental import full_build, get_db_path
-    from code_review_graph.tools.query import get_impact_radius
-    from code_review_graph.tools.review import (
+    from graph_engine.incremental import full_build, get_db_path
+    from graph_engine.tools.query import get_impact_radius
+    from graph_engine.tools.review import (
         detect_changes_func,
         get_affected_flows_func,
         get_review_context,
@@ -366,7 +366,7 @@ def test_review_base_falls_back_when_merge_base_is_unavailable(
             return subprocess.CompletedProcess(command, 1, stdout="", stderr="no ancestor")
         return real_run(*args, **kwargs)
 
-    monkeypatch.setattr("code_review_graph.incremental.subprocess.run", fail_merge_base)
+    monkeypatch.setattr("graph_engine.incremental.subprocess.run", fail_merge_base)
 
     branch = _git_ok(git_repo, "branch", "--show-current").stdout.strip()
     assert resolve_review_base(git_repo, branch) == branch
@@ -749,7 +749,7 @@ def test_failed_automatic_update_does_not_claim_graph_is_current(
         raise RuntimeError("forced parse failure")
 
     monkeypatch.setattr(
-        "code_review_graph.incremental.CodeParser.parse_bytes",
+        "graph_engine.incremental.CodeParser.parse_bytes",
         fail_parse,
     )
     result = build_or_update_graph(
@@ -879,7 +879,7 @@ def test_update_without_usable_anchor_falls_back_to_full_rebuild(
     build_or_update_graph(full_rebuild=True, repo_root=str(repo), postprocess="none")
 
     # Corrupt the anchor to an unreachable SHA (as a history rewrite would).
-    from code_review_graph.incremental import get_db_path
+    from graph_engine.incremental import get_db_path
 
     store = GraphStore(str(get_db_path(repo)))
     try:
@@ -945,8 +945,8 @@ def test_status_then_update_builds_complete_queryable_graph(
     monkeypatch,
     capsys,
 ) -> None:
-    from code_review_graph import cli
-    from code_review_graph.tools.query import query_graph
+    from reviewgraph import cli
+    from graph_engine.tools.query import query_graph
 
     repo = tmp_path / "queryable-repo"
     repo.mkdir()
@@ -974,7 +974,7 @@ def test_status_then_update_builds_complete_queryable_graph(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["code-review-graph", "status", "--repo", str(repo)],
+        ["reviewgraph", "status", "--repo", str(repo)],
     )
     with pytest.raises(SystemExit) as exc_info:
         cli.main()
@@ -993,7 +993,7 @@ def test_status_then_update_builds_complete_queryable_graph(
         sys,
         "argv",
         [
-            "code-review-graph",
+            "reviewgraph",
             "update",
             "--repo",
             str(repo),
@@ -1028,7 +1028,7 @@ def test_update_explicit_base_bypasses_auto_resolution(tmp_path: Path) -> None:
 def test_mcp_tool_base_defaults_to_none() -> None:
     """The MCP wrapper must default base to None so omitted-base calls reach
     the auto-resolution path instead of a hardcoded HEAD~1."""
-    from code_review_graph.main import build_or_update_graph_tool
+    from graph_engine.main import build_or_update_graph_tool
 
     # FastMCP may wrap the tool; the underlying callable is stored on ``.fn``.
     fn = getattr(build_or_update_graph_tool, "fn", build_or_update_graph_tool)
@@ -1041,7 +1041,7 @@ def test_cli_update_brief_default_base_does_not_crash(
     """`update --brief` with no explicit --base must not crash. The base now
     defaults to None, which the brief impact path cannot pass to git directly;
     it has to reuse the resolved base."""
-    from code_review_graph import cli
+    from reviewgraph import cli
 
     repo = _init_repo(tmp_path)
     build_or_update_graph(full_rebuild=True, repo_root=str(repo), postprocess="none")
@@ -1050,7 +1050,7 @@ def test_cli_update_brief_default_base_does_not_crash(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["code-review-graph", "update", "--brief", "--repo", str(repo)],
+        ["reviewgraph", "update", "--brief", "--repo", str(repo)],
     )
     cli.main()  # would raise AttributeError/TypeError on a None base before the fix
 

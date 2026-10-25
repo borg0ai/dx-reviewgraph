@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph import jsonc
-from code_review_graph.jsonc import remove_paths
-from code_review_graph.skills import _strip_jsonc
+from graph_engine import jsonc
+from graph_engine.jsonc import remove_paths
+from graph_engine.skills import _strip_jsonc
 
 
 @pytest.mark.parametrize("raw,paths,expected", [
@@ -37,7 +37,7 @@ def test_existing_jsonc_trailing_comma_is_preserved():
 
 
 def test_install_uninstall_preserves_strict_claude_settings(tmp_path, monkeypatch):
-    from code_review_graph import skills, uninstall
+    from graph_engine import skills, uninstall
 
     home = tmp_path / "home"
     home.mkdir()

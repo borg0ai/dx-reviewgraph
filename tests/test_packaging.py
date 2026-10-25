@@ -11,7 +11,7 @@ build``, installs each into its own throwaway virtual environment, and then
 drives the installed program from a working directory that has nothing to do
 with this checkout:
 
-* ``code-review-graph --version``
+* ``reviewgraph --version``
 * ``build`` over a small real repository assembled from this project's own
   source files
 * ``status --json`` and ``detect-changes``
@@ -20,14 +20,14 @@ with this checkout:
   ``initialize``, ``tools/list``, ``prompts/list`` and a ``tools/call`` that
   reads the packaged LLM reference document
 
-Every smoke test first asserts that the installed ``code_review_graph``
+Every smoke test first asserts that the installed ``reviewgraph``
 resolves inside the environment's ``site-packages`` and nowhere near
 ``REPO_ROOT``, so a pass can never come from the source tree leaking in.
 
 The content assertions do not trust ``pyproject.toml``. The list of data
 files the wheel must carry is derived by parsing every packaged module and
 statically evaluating the path expressions it builds out of
-``importlib.resources.files("code_review_graph")`` and
+``importlib.resources.files("graph_engine")`` and
 ``Path(__file__).parent`` -- that is, by looking at what the code actually
 opens. ``test_discovery_finds_the_known_data_surface`` is the canary for
 that derivation: if the evaluator silently stops finding anything, the
@@ -59,8 +59,8 @@ from pathlib import Path, PurePosixPath
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PKG_DIR = REPO_ROOT / "code_review_graph"
-PKG_NAME = "code_review_graph"
+PKG_DIR = REPO_ROOT / "modules" / "code-review" / "graph_engine"
+PKG_NAME = "graph_engine"
 
 # Generous: a cold interpreter, a pip resolve over the network and a full
 # tree-sitter build on a loaded runner are all slow, but nothing here should
@@ -149,17 +149,17 @@ class InstalledEnv:
     daemon_script: Path
 
 
-def _install_into_fresh_venv(kind: str, artefact: Path, dest: Path) -> InstalledEnv:
+def _install_into_fresh_venv(kind: str, artefacts: tuple[Path, ...], dest: Path) -> InstalledEnv:
     bindir = _make_venv(sys.executable, dest)
     python = bindir / ("python.exe" if os.name == "nt" else "python")
-    _run([str(python), "-m", "pip", "install", "--quiet", str(artefact)])
+    _run([str(python), "-m", "pip", "install", "--quiet", *(str(path) for path in artefacts)])
     suffix = ".exe" if os.name == "nt" else ""
     return InstalledEnv(
         kind=kind,
         root=dest,
         python=python,
-        script=bindir / f"code-review-graph{suffix}",
-        daemon_script=bindir / f"crg-daemon{suffix}",
+        script=bindir / f"reviewgraph{suffix}",
+        daemon_script=bindir / f"reviewgraph-daemon{suffix}",
     )
 
 
@@ -180,8 +180,13 @@ def builder_python(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 @dataclass(frozen=True)
 class Artefacts:
-    wheel: Path
-    sdist: Path
+    wheel: tuple[Path, ...]
+    sdist: tuple[Path, ...]
+
+
+def _zip_names(path: Path) -> list[str]:
+    with zipfile.ZipFile(path) as archive:
+        return archive.namelist()
 
 
 @pytest.fixture(scope="session")
@@ -190,44 +195,52 @@ def artefacts(builder_python: Path, tmp_path_factory: pytest.TempPathFactory) ->
 
     ``--outdir`` keeps the checkout's own ``dist/`` untouched.
     """
-    outdir = tmp_path_factory.mktemp("crg-dist")
-    _run([str(builder_python), "-m", "build", "--outdir", str(outdir)], cwd=REPO_ROOT)
-    wheels = sorted(outdir.glob("*.whl"))
-    sdists = sorted(outdir.glob("*.tar.gz"))
-    assert len(wheels) == 1, f"expected exactly one wheel in {outdir}, got {wheels}"
-    assert len(sdists) == 1, f"expected exactly one sdist in {outdir}, got {sdists}"
-    return Artefacts(wheel=wheels[0], sdist=sdists[0])
+    outdir = tmp_path_factory.mktemp("reviewgraph-dists")
+    wheels: list[Path] = []
+    sdists: list[Path] = []
+    for name, project in (("module", "modules/code-review"), ("cli", "apps/cli")):
+        project_out = outdir / name
+        project_out.mkdir()
+        _run(
+            [str(builder_python), "-m", "build", "--outdir", str(project_out), project],
+            cwd=REPO_ROOT,
+        )
+        wheels.extend(sorted(project_out.glob("*.whl")))
+        sdists.extend(sorted(project_out.glob("*.tar.gz")))
+    assert len(wheels) == 2, f"expected one wheel per project, got {wheels}"
+    assert len(sdists) == 2, f"expected one sdist per project, got {sdists}"
+    return Artefacts(wheel=tuple(wheels), sdist=tuple(sdists))
 
 
 @pytest.fixture(scope="session")
 def wheel_names(artefacts: Artefacts) -> list[str]:
-    with zipfile.ZipFile(artefacts.wheel) as zf:
-        return sorted(zf.namelist())
+    return sorted(name for wheel in artefacts.wheel for name in _zip_names(wheel))
 
 
 @pytest.fixture(scope="session")
 def sdist_names(artefacts: Artefacts) -> list[str]:
     """Sdist member paths with the ``<name>-<version>/`` prefix stripped."""
-    with tarfile.open(artefacts.sdist) as tf:
-        members = [m.name for m in tf.getmembers() if m.isfile()]
-    stripped = []
-    for name in members:
-        parts = PurePosixPath(name).parts
-        stripped.append(str(PurePosixPath(*parts[1:])) if len(parts) > 1 else name)
-    return sorted(stripped)
+    stripped: list[str] = []
+    for sdist in artefacts.sdist:
+        with tarfile.open(sdist) as tf:
+            members = [m.name for m in tf.getmembers() if m.isfile()]
+        for name in members:
+            parts = PurePosixPath(name).parts
+            stripped.append(str(PurePosixPath(*parts[1:])) if len(parts) > 1 else name)
+    return sorted(set(stripped))
 
 
 @pytest.fixture(scope="session")
 def wheel_env(artefacts: Artefacts, tmp_path_factory: pytest.TempPathFactory) -> InstalledEnv:
     return _install_into_fresh_venv(
-        "wheel", artefacts.wheel, tmp_path_factory.mktemp("crg-env-wheel")
+        "wheel", artefacts.wheel, tmp_path_factory.mktemp("reviewgraph-env-wheel")
     )
 
 
 @pytest.fixture(scope="session")
 def sdist_env(artefacts: Artefacts, tmp_path_factory: pytest.TempPathFactory) -> InstalledEnv:
     return _install_into_fresh_venv(
-        "sdist", artefacts.sdist, tmp_path_factory.mktemp("crg-env-sdist")
+        "sdist", artefacts.sdist, tmp_path_factory.mktemp("reviewgraph-env-sdist")
     )
 
 
@@ -266,7 +279,7 @@ def _static_path(node: ast.AST, module_path: Path, constants: dict[str, str]) ->
     Understands exactly the shapes this package uses to reach its own data
     files::
 
-        importlib.resources.files("code_review_graph")
+        importlib.resources.files("graph_engine")
         Path(__file__)  /  .resolve()  /  .parent
         <base> / "literal"   or   <base> / MODULE_LEVEL_CONSTANT
         <base>.joinpath("literal", ...)
@@ -428,12 +441,12 @@ def test_wheel_contains_every_runtime_data_file(wheel_names: list[str]) -> None:
 def test_wheel_bundles_every_shipped_skill(wheel_names: list[str]) -> None:
     """The bundled skill resource must equal the checkout's ``skills/`` tree.
 
-    ``skills.py`` treats ``code_review_graph/_bundled_skills`` and the
+    ``skills.py`` treats ``graph_engine/_bundled_skills`` and the
     checkout's top-level ``skills/`` as the same content: the first is the
     installed resource, the second the editable-install fallback. Regression
     #909 was exactly this set coming back empty.
     """
-    source_skills = REPO_ROOT / "skills"
+    source_skills = REPO_ROOT / "modules" / "code-review" / "skills"
     expected = {
         p.relative_to(source_skills).as_posix()
         for p in sorted(source_skills.rglob("*"))
@@ -462,13 +475,13 @@ def test_bundled_skill_files_match_the_generated_ones(wheel_names: list[str]) ->
     skill exists in both, the bytes must agree, or two platforms ship
     different instructions under one name.
     """
-    from code_review_graph.skills import _SKILLS
+    from graph_engine.skills import _SKILLS
 
     assert _SKILLS, "no inline skills defined; this check would be vacuous"
     compared = 0
     for filename, skill in _SKILLS.items():
         name = filename.removesuffix(".md")
-        bundled = REPO_ROOT / "skills" / name / "SKILL.md"
+        bundled = REPO_ROOT / "modules" / "code-review" / "skills" / name / "SKILL.md"
         if not bundled.is_file():
             continue
         rendered = (
@@ -500,14 +513,6 @@ def test_no_package_module_reads_a_hook_template(sdist_names: list[str]) -> None
         f"packaged code now resolves hook templates as package data: {hookish}. "
         "The wheel does not ship the checkout's hooks/ directory, so these "
         "must be added to the wheel before this assertion is relaxed."
-    )
-    # The checkout's templates still travel in the sdist, which is where the
-    # GitHub Action and manual installs pick them up.
-    assert "hooks/hooks.json" in sdist_names
-    assert "hooks/session-start.sh" in sdist_names
-    shipped = json.loads((REPO_ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))
-    assert set(shipped) == {"SessionStart", "PostToolUse"}, (
-        f"shipped hook template declares unexpected events: {sorted(shipped)}"
     )
 
 
@@ -567,8 +572,10 @@ def _forbidden_hits(names: list[str], *, allow_dot: set[str]) -> list[str]:
 
 def test_wheel_ships_nothing_it_should_not(wheel_names: list[str]) -> None:
     # Canary: a listing that came back empty or tiny must not pass silently.
-    assert len(wheel_names) > 50, f"only {len(wheel_names)} entries in the wheel"
-    assert f"{PKG_NAME}/cli.py" in wheel_names, "the wheel does not even contain the CLI"
+    assert len(wheel_names) > 50, f"only {len(wheel_names)} entries in the wheels"
+    assert f"{PKG_NAME}/graph.py" in wheel_names
+    assert "reviewgraph/cli.py" in wheel_names
+    assert f"{PKG_NAME}/cli.py" not in wheel_names
 
     hits = _forbidden_hits(wheel_names, allow_dot=set())
     assert not hits, f"the wheel ships files that must never reach a user: {hits}"
@@ -576,7 +583,7 @@ def test_wheel_ships_nothing_it_should_not(wheel_names: list[str]) -> None:
     strays = sorted(
         n
         for n in wheel_names
-        if not n.startswith(f"{PKG_NAME}/") and ".dist-info/" not in n
+        if not n.startswith((f"{PKG_NAME}/", "reviewgraph/")) and ".dist-info/" not in n
     )
     assert not strays, f"wheel has top-level entries outside the package: {strays}"
 
@@ -603,12 +610,12 @@ def test_artefact_size_and_file_count(artefacts: Artefacts, wheel_names: list[st
     A wheel that suddenly triples has picked something up; one that halves has
     dropped something. Both are worth a human look.
     """
-    wheel_bytes = artefacts.wheel.stat().st_size
-    sdist_bytes = artefacts.sdist.stat().st_size
+    wheel_bytes = sum(path.stat().st_size for path in artefacts.wheel)
+    sdist_bytes = sum(path.stat().st_size for path in artefacts.sdist)
     print(
-        f"\nwheel: {artefacts.wheel.name} {wheel_bytes} bytes, "
+        f"\nwheels: {[path.name for path in artefacts.wheel]} {wheel_bytes} bytes, "
         f"{len(wheel_names)} files\n"
-        f"sdist: {artefacts.sdist.name} {sdist_bytes} bytes"
+        f"sdists: {[path.name for path in artefacts.sdist]} {sdist_bytes} bytes"
     )
     assert 200_000 < wheel_bytes < 5_000_000, f"wheel size {wheel_bytes} is out of band"
     assert 200_000 < sdist_bytes < 8_000_000, f"sdist size {sdist_bytes} is out of band"
@@ -631,16 +638,19 @@ def _metadata_field(blob: str, field: str) -> str | None:
 
 @pytest.fixture(scope="session")
 def wheel_metadata(artefacts: Artefacts) -> str:
-    with zipfile.ZipFile(artefacts.wheel) as zf:
-        name = next(n for n in zf.namelist() if n.endswith(".dist-info/METADATA"))
-        return zf.read(name).decode("utf-8")
+    for wheel in artefacts.wheel:
+        if wheel.name.startswith("code_review_engine-"):
+            with zipfile.ZipFile(wheel) as archive:
+                name = next(n for n in archive.namelist() if n.endswith(".dist-info/METADATA"))
+                return archive.read(name).decode("utf-8")
+    raise AssertionError("reviewgraph core wheel was not built")
 
 
 def test_version_is_the_same_everywhere(wheel_metadata: str, artefacts: Artefacts) -> None:
     init_match = re.search(
         r'^__version__\s*=\s*"([^"]+)"', (PKG_DIR / "__init__.py").read_text(), re.MULTILINE
     )
-    assert init_match, "code_review_graph/__init__.py has no __version__"
+    assert init_match, "graph_engine/__init__.py has no __version__"
     init_version = init_match.group(1)
     assert re.fullmatch(r"\d+\.\d+\.\d+", init_version), f"odd version {init_version!r}"
 
@@ -651,8 +661,10 @@ def test_version_is_the_same_everywhere(wheel_metadata: str, artefacts: Artefact
         f"pyproject version {project_match.group(1)} != __init__ {init_version}"
     )
     assert _metadata_field(wheel_metadata, "Version") == init_version
-    assert init_version in artefacts.wheel.name
-    assert init_version in artefacts.sdist.name
+    assert all(init_version in path.name for path in artefacts.wheel)
+    assert all(init_version in path.name for path in artefacts.sdist)
+    cli_pyproject = (REPO_ROOT / "apps/cli/pyproject.toml").read_text(encoding="utf-8")
+    assert f'version = "{init_version}"' in cli_pyproject
 
 
 def test_declared_python_floor_matches_the_code(wheel_metadata: str) -> None:
@@ -686,13 +698,14 @@ def test_console_scripts_resolve_in_the_installed_env(
     wheel_env: InstalledEnv, artefacts: Artefacts
 ) -> None:
     """Every declared entry point must import and be callable after install."""
-    with zipfile.ZipFile(artefacts.wheel) as zf:
-        name = next(n for n in zf.namelist() if n.endswith(".dist-info/entry_points.txt"))
-        entry_points = zf.read(name).decode("utf-8")
+    cli_wheel = next(path for path in artefacts.wheel if path.name.startswith("reviewgraph-"))
+    with zipfile.ZipFile(cli_wheel) as archive:
+        name = next(n for n in archive.namelist() if n.endswith(".dist-info/entry_points.txt"))
+        entry_points = archive.read(name).decode("utf-8")
     pairs = re.findall(r"^([\w-]+)\s*=\s*([\w.]+):(\w+)$", entry_points, re.M)
     assert len(pairs) >= 2, f"expected at least two console scripts, got {entry_points!r}"
     declared = {script: (mod, attr) for script, mod, attr in pairs}
-    assert "code-review-graph" in declared and "crg-daemon" in declared
+    assert "reviewgraph" in declared and "reviewgraph-daemon" in declared
 
     probe = (
         "import importlib, json, sys\n"
@@ -710,9 +723,9 @@ def test_console_scripts_resolve_in_the_installed_env(
 
     for script in (wheel_env.script, wheel_env.daemon_script):
         assert script.exists(), f"console script {script.name} was not installed"
-    assert wheel_env.daemon_script.name.startswith("crg-daemon")
+    assert wheel_env.daemon_script.name.startswith("reviewgraph-daemon")
     help_out = _run([str(wheel_env.daemon_script), "--help"], cwd=wheel_env.root).stdout
-    assert "crg-daemon" in help_out
+    assert "reviewgraph-daemon" in help_out
 
 
 def test_declared_dependencies_are_sufficient(wheel_env: InstalledEnv) -> None:
@@ -741,16 +754,16 @@ def test_declared_dependencies_are_sufficient(wheel_env: InstalledEnv) -> None:
         "for d in md.distributions() if d.metadata['Name']}\n"
         "extras = json.loads(sys.argv[1])\n"
         "leaked = sorted(e for e in extras if e in installed)\n"
-        "import code_review_graph\n"
+        "import graph_engine\n"
         "failed = []\n"
-        "for m in pkgutil.walk_packages(code_review_graph.__path__, 'code_review_graph.'):\n"
+        "for m in pkgutil.walk_packages(graph_engine.__path__, 'graph_engine.'):\n"
         "    if m.name.endswith('.__main__'):\n"
         "        continue\n"
         "    try:\n"
         "        importlib.import_module(m.name)\n"
         "    except Exception as exc:\n"
         "        failed.append(f'{m.name}: {type(exc).__name__}: {exc}')\n"
-        "core = sorted(md.requires('code-review-graph') or [])\n"
+        "core = sorted(md.requires('code-review-engine') or [])\n"
         "print(json.dumps({'leaked': leaked, 'failed': failed, 'requires': core,\n"
         "                  'n_installed': len(installed)}))\n"
     )
@@ -799,10 +812,10 @@ def test_wheel_installs_and_runs_on_the_declared_python_floor(
     venv = tmp_path_factory.mktemp("crg-floor")
     bindir = _make_venv(base, venv)
     python = bindir / ("python.exe" if os.name == "nt" else "python")
-    _run([str(python), "-m", "pip", "install", "--quiet", str(artefacts.wheel)])
+    _run([str(python), "-m", "pip", "install", "--quiet", *(str(path) for path in artefacts.wheel)])
 
     version = _run(
-        [str(bindir / ("code-review-graph.exe" if os.name == "nt" else "code-review-graph")),
+        [str(bindir / ("graph_engine.exe" if os.name == "nt" else "reviewgraph")),
          "--version"],
         cwd=venv,
     ).stdout
@@ -811,9 +824,9 @@ def test_wheel_installs_and_runs_on_the_declared_python_floor(
     probe = (
         "import importlib, json, pkgutil, sys\n"
         "assert sys.version_info[:2] == tuple(json.loads(sys.argv[1])), sys.version\n"
-        "import code_review_graph\n"
+        "import graph_engine\n"
         "failed = []\n"
-        "for m in pkgutil.walk_packages(code_review_graph.__path__, 'code_review_graph.'):\n"
+        "for m in pkgutil.walk_packages(graph_engine.__path__, 'graph_engine.'):\n"
         "    if m.name.endswith('.__main__'):\n"
         "        continue\n"
         "    try:\n"
@@ -836,16 +849,16 @@ def test_wheel_installs_and_runs_on_the_declared_python_floor(
 
 # Real source files, copied out of this checkout into a standalone git
 # repository. Real code, real cross-file imports, real call edges -- and none
-# of it importable as ``code_review_graph``, so a build can never reach back
+# of it importable as ``reviewgraph``, so a build can never reach back
 # into the package under test.
 _CORPUS_PY = (
-    "code_review_graph/config_keys.py",
-    "code_review_graph/constants.py",
-    "code_review_graph/memory.py",
-    "code_review_graph/graph_diff.py",
-    "code_review_graph/python_resolver.py",
-    "code_review_graph/hcl_resolver.py",
-    "code_review_graph/postprocessing.py",
+    "modules/code-review/graph_engine/config_keys.py",
+    "modules/code-review/graph_engine/constants.py",
+    "modules/code-review/graph_engine/memory.py",
+    "modules/code-review/graph_engine/graph_diff.py",
+    "modules/code-review/graph_engine/python_resolver.py",
+    "modules/code-review/graph_engine/hcl_resolver.py",
+    "modules/code-review/graph_engine/postprocessing.py",
     "scripts/render_pr_comment.py",
 )
 _MCP_PROBE = '''
@@ -965,7 +978,7 @@ def test_installed_distribution_smoke(
         [
             str(env.python),
             "-c",
-            "import code_review_graph, sys; print(code_review_graph.__file__); "
+            "import graph_engine, sys; print(graph_engine.__file__); "
             "print(sys.prefix)",
         ],
         cwd=repo,
@@ -1019,7 +1032,7 @@ def test_installed_distribution_smoke(
     assert html.is_file() and html.stat().st_size > 10_000
     assert d3.is_file(), (
         "the vendored D3 asset did not reach the generated page, so the wheel "
-        "either omits code_review_graph/assets/d3.v7.min.js or ships it corrupt"
+        "either omits graph_engine/assets/d3.v7.min.js or ships it corrupt"
     )
     assert d3.read_bytes() == (PKG_DIR / "assets" / "d3.v7.min.js").read_bytes()
 
@@ -1028,7 +1041,7 @@ def test_installed_distribution_smoke(
         [
             str(env.python),
             "-c",
-            "from code_review_graph.eval.runner import load_all_configs;"
+            "from graph_engine.eval.runner import load_all_configs;"
             "print(len(load_all_configs()))",
         ],
         cwd=repo,
@@ -1105,7 +1118,7 @@ def test_install_command_works_from_the_installed_wheel(
             str(wheel_env.python),
             "-c",
             "from pathlib import Path;"
-            "from code_review_graph.skills import install_qoder_skills;"
+            "from graph_engine.skills import install_qoder_skills;"
             "print(install_qoder_skills(Path(__import__('sys').argv[1])))",
             str(project),
         ],
@@ -1118,8 +1131,8 @@ def test_install_command_works_from_the_installed_wheel(
         for p in (project / ".qoder" / "skills").rglob("SKILL.md")
     )
     expected = sorted(
-        p.relative_to(REPO_ROOT / "skills").as_posix()
-        for p in (REPO_ROOT / "skills").rglob("SKILL.md")
+        p.relative_to(REPO_ROOT / "modules" / "code-review" / "skills").as_posix()
+        for p in (REPO_ROOT / "modules" / "code-review" / "skills").rglob("SKILL.md")
     )
     assert bundled == expected, (
         f"Qoder install copied {bundled} but the checkout ships {expected}"

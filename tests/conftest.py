@@ -1,6 +1,6 @@
 """Shared test fixtures.
 
-Keeps code-review-graph's own per-user state out of the developer's real
+Keeps reviewgraph's own per-user state out of the developer's real
 home directory. Scoped deliberately: the editor-integration installers in
 ``skills.py`` write to other user-level locations (``~/.codex``,
 ``~/.cursor``, ``~/.config/opencode``) that are outside CRG state and are

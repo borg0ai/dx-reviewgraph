@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-from code_review_graph.skills import install_git_hook
+from graph_engine.skills import install_git_hook
 
 LEGACY_SCRIPT = """#!/bin/sh
 # Installed by code-review-graph. Remove this file to disable pre-commit graph checks.
@@ -47,7 +47,7 @@ def hook_repo(tmp_path, monkeypatch):
     monkeypatch.setenv("CRG_HOOK_LOG", str(commands))
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    binary = bin_dir / "code-review-graph"
+    binary = bin_dir / "reviewgraph"
     binary.write_text(
         '#!/bin/sh\nprintf "%s\\n" "$*" >> "$CRG_HOOK_LOG"\n'
         "mkdir -p .code-review-graph\ntouch .code-review-graph/graph.db\n"

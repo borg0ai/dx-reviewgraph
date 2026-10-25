@@ -12,9 +12,9 @@ code paths that accept ``Path``-like values.
 
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import _reconcile_stale_files
-from code_review_graph.parser import CodeParser, EdgeInfo, NodeInfo, normalize_file_path
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import _reconcile_stale_files
+from graph_engine.parser import CodeParser, EdgeInfo, NodeInfo, normalize_file_path
 
 # ---------------------------------------------------------------------------
 # The normalization helper itself

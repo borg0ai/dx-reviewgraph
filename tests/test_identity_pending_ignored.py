@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import (
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import (
     CPP_IDENTITY_VERSION,
     full_build,
     incremental_update,
@@ -15,7 +15,7 @@ from code_review_graph.incremental import (
 
 def test_ignoring_a_never_stored_pending_file_clears_it(tmp_path, monkeypatch):
     monkeypatch.setenv("CRG_SERIAL_PARSE", "1")
-    from code_review_graph.parser import CodeParser
+    from graph_engine.parser import CodeParser
 
     original = CodeParser.parse_bytes
 

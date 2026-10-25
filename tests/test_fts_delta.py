@@ -14,10 +14,10 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import NodeInfo
-from code_review_graph.postprocessing import run_post_processing
-from code_review_graph.search import (
+from graph_engine.graph import GraphStore
+from graph_engine.parser import NodeInfo
+from graph_engine.postprocessing import run_post_processing
+from graph_engine.search import (
     _fts_search,
     hybrid_search,
     rebuild_fts_index,
@@ -210,7 +210,7 @@ class TestFtsDelta:
         self._set_signatures()
 
         with patch(
-            "code_review_graph.search.rebuild_fts_index",
+            "graph_engine.search.rebuild_fts_index",
             side_effect=AssertionError("full rebuild taken"),
         ):
             update_fts_index(self.store, ["alpha.py"])
@@ -375,8 +375,8 @@ class TestFtsFileHint:
         """The delta hint must match ``nodes.file_path``, or it narrows nothing."""
         from unittest.mock import patch as _patch
 
-        from code_review_graph.incremental import full_build
-        from code_review_graph.tools.build import _fts_file_hint
+        from graph_engine.incremental import full_build
+        from graph_engine.tools.build import _fts_file_hint
 
         (tmp_path / "pkg").mkdir()
         (tmp_path / "pkg" / "mod.py").write_text("def hinted():\n    pass\n")
@@ -385,7 +385,7 @@ class TestFtsFileHint:
         store = GraphStore(tmp_path / "graph.db")
         try:
             with _patch(
-                "code_review_graph.incremental.get_all_tracked_files",
+                "graph_engine.incremental.get_all_tracked_files",
                 return_value=["pkg/mod.py"],
             ):
                 full_build(tmp_path, store)
@@ -399,7 +399,7 @@ class TestFtsFileHint:
         assert set(_fts_file_hint(str(tmp_path), ["pkg/mod.py"])) <= stored
 
     def test_hint_is_absent_when_nothing_changed(self):
-        from code_review_graph.tools.build import _fts_file_hint
+        from graph_engine.tools.build import _fts_file_hint
 
         assert _fts_file_hint("/repo", None) is None
         assert _fts_file_hint("/repo", []) is None

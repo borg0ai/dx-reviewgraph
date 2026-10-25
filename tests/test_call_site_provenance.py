@@ -25,10 +25,10 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.migrations import LATEST_VERSION, get_schema_version
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.tools import get_impact_radius, list_graph_stats, query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.migrations import LATEST_VERSION, get_schema_version
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.tools import get_impact_radius, list_graph_stats, query_graph
 
 
 @pytest.fixture()
@@ -468,7 +468,7 @@ class TestFilteringUsesTheIndex:
 
 def test_build_populates_the_column(tmp_path: Path):
     """A real build must leave no CALLS edge unclassified."""
-    from code_review_graph.incremental import full_build
+    from graph_engine.incremental import full_build
 
     root = tmp_path
     (root / ".code-review-graph").mkdir()

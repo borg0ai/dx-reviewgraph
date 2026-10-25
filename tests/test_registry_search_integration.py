@@ -2,10 +2,10 @@
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import NodeInfo
-from code_review_graph.registry import Registry
-from code_review_graph.tools.registry_tools import cross_repo_search_func
+from graph_engine.graph import GraphStore
+from graph_engine.parser import NodeInfo
+from graph_engine.registry import Registry
+from graph_engine.tools.registry_tools import cross_repo_search_func
 
 
 @pytest.fixture

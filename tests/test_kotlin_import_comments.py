@@ -13,7 +13,7 @@ KDoc comment (PR #862).
 
 from pathlib import Path
 
-from code_review_graph.parser import CodeParser
+from graph_engine.parser import CodeParser
 
 
 def _import_targets(repo_root: Path, source_file: Path) -> set[str]:

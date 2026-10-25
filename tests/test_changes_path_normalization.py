@@ -11,10 +11,10 @@ IN-clause batching with >450 changed files.
 import tempfile
 from pathlib import Path
 
-from code_review_graph.changes import analyze_changes
-from code_review_graph.flows import store_flows, trace_flows
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
+from graph_engine.changes import analyze_changes
+from graph_engine.flows import store_flows, trace_flows
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
 
 
 def _repo_root() -> str:

@@ -12,8 +12,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from code_review_graph.graph import EdgeInfo, GraphStore, NodeInfo
-from code_review_graph.tools.review import get_affected_flows_func
+from graph_engine.graph import EdgeInfo, GraphStore, NodeInfo
+from graph_engine.tools.review import get_affected_flows_func
 
 MINIMAL_KEYS = {"id", "name", "criticality", "depth", "node_count", "file_count"}
 
@@ -58,7 +58,7 @@ class _FlowFixture:
             ))
         self.store.commit()
 
-        from code_review_graph.flows import store_flows, trace_flows
+        from graph_engine.flows import store_flows, trace_flows
         store_flows(self.store, trace_flows(self.store))
 
     def teardown_method(self):
@@ -221,7 +221,7 @@ class TestMinimalProjection(_FlowFixture):
 def test_affected_flows_empty_result_includes_truncated(monkeypatch, tmp_path):
     store = MagicMock()
     monkeypatch.setattr(
-        "code_review_graph.tools.review._get_store",
+        "graph_engine.tools.review._get_store",
         lambda _root: (store, tmp_path),
     )
 

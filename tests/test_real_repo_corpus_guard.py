@@ -113,7 +113,7 @@ def test_every_pin_is_a_full_sha() -> None:
 def test_pins_shared_with_the_evaluation_corpus_stay_in_step() -> None:
     """The eval configs own their pins; the corpus must not fork a second one.
 
-    When ``code_review_graph/eval/configs/<name>.yaml`` moves to a new commit,
+    When ``modules/code-review/graph_engine/eval/configs/<name>.yaml`` moves to a new commit,
     the recorded baseline stops describing the tree that will be measured. This
     fails at that moment rather than at the next slow run.
     """

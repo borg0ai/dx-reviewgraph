@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import CodeParser
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.parser import CodeParser
 
 
 def test_for_expression_references_are_emitted_for_local_binding() -> None:

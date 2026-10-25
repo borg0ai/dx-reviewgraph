@@ -4,18 +4,18 @@
 
 These commands are installed for clients that support project skills or slash commands.
 
-### `/code-review-graph:build-graph`
+### `/reviewgraph:build-graph`
 Build or update the knowledge graph.
 - First run: full build
 - Later runs: incremental update (changed files only)
 
-### `/code-review-graph:review-delta`
+### `/reviewgraph:review-delta`
 Review changes since the last commit.
 - Changed files come from `git diff`
 - Blast radius is changed nodes plus 2-hop neighbours
 - Output is a structured review with guidance
 
-### `/code-review-graph:review-pr`
+### `/reviewgraph:review-pr`
 Review a PR or branch diff.
 - Uses `main` (or `master`) as the base
 - Covers every commit in the PR
@@ -152,7 +152,7 @@ repo_root: str | None
 model: str | None    # Embedding model name
 provider: str | None # local, openai, google, minimax, voyage
 ```
-Local embeddings need `pip install "code-review-graph[embeddings]"`. Cloud
+Local embeddings need `pip install "reviewgraph[embeddings]"`. Cloud
 providers use the standard library HTTP client and read their keys from
 environment variables (see the README).
 
@@ -403,109 +403,109 @@ base: str = "HEAD~1"
 
 ## CLI Commands
 
-Run `code-review-graph <command> --help` for the full option list.
+Run `reviewgraph <command> --help` for the full option list.
 
 ```bash
 # Setup
-code-review-graph install           # Configure detected AI coding platforms (alias: init)
-code-review-graph install --dry-run # Preview without writing files
-code-review-graph install --platform codex  # Configure one platform
-code-review-graph uninstall                 # Remove CRG configs, hooks, skills, and data
-code-review-graph uninstall --platform codex  # Unbind one platform (keeps graph data and others)
+reviewgraph install           # Configure detected AI coding platforms (alias: init)
+reviewgraph install --dry-run # Preview without writing files
+reviewgraph install --platform codex  # Configure one platform
+reviewgraph uninstall                 # Remove CRG configs, hooks, skills, and data
+reviewgraph uninstall --platform codex  # Unbind one platform (keeps graph data and others)
 
 # Build and update
-code-review-graph build                        # Full build
-code-review-graph build --skip-flows           # Parse + signatures + FTS only
-code-review-graph build --skip-postprocess     # Raw parse only
-code-review-graph update                       # Incremental update from the last-built commit
-code-review-graph update --base origin/main    # Custom base ref
-code-review-graph update --brief               # Update graph, then show the risk panel
-code-review-graph update --brief --verify      # ...and cross-check against tiktoken
-code-review-graph postprocess                  # Re-run flows, communities, FTS
-code-review-graph forget PATH [PATH ...]       # Drop parsed files from the graph (no full rebuild)
-code-review-graph forget src/legacy --dry-run  # Preview which files would be forgotten
-code-review-graph embed --provider local       # Compute vector embeddings for semantic search
-code-review-graph update --embedding-provider local --embedding-model all-MiniLM-L6-v2
+reviewgraph build                        # Full build
+reviewgraph build --skip-flows           # Parse + signatures + FTS only
+reviewgraph build --skip-postprocess     # Raw parse only
+reviewgraph update                       # Incremental update from the last-built commit
+reviewgraph update --base origin/main    # Custom base ref
+reviewgraph update --brief               # Update graph, then show the risk panel
+reviewgraph update --brief --verify      # ...and cross-check against tiktoken
+reviewgraph postprocess                  # Re-run flows, communities, FTS
+reviewgraph forget PATH [PATH ...]       # Drop parsed files from the graph (no full rebuild)
+reviewgraph forget src/legacy --dry-run  # Preview which files would be forgotten
+reviewgraph embed --provider local       # Compute vector embeddings for semantic search
+reviewgraph update --embedding-provider local --embedding-model all-MiniLM-L6-v2
                                                 # Refresh an existing embedding index (default: off)
 
 # Monitor and inspect
-code-review-graph status                       # Graph statistics (no graph: exit 1, no DB created)
-code-review-graph status --json                # One JSON object
-code-review-graph watch                        # Auto-update on file changes (needs an existing graph)
-code-review-graph visualize                    # Interactive HTML graph (needs an existing graph)
-code-review-graph visualize --format graphml   # Formats: html, json, graphml, cypher, obsidian, svg
-code-review-graph visualize --serve            # Serve graph.html on localhost:8765
+reviewgraph status                       # Graph statistics (no graph: exit 1, no DB created)
+reviewgraph status --json                # One JSON object
+reviewgraph watch                        # Auto-update on file changes (needs an existing graph)
+reviewgraph visualize                    # Interactive HTML graph (needs an existing graph)
+reviewgraph visualize --format graphml   # Formats: html, json, graphml, cypher, obsidian, svg
+reviewgraph visualize --serve            # Serve graph.html on localhost:8765
 
 # Neighbourhood view: draw a symbol's surroundings instead of the repository.
 # The whole-repo page collapses to one bubble per community past 3000 nodes or
 # 9000 edges; a seeded page ships only the nodes within --depth hops.
-code-review-graph visualize --seed-symbol login             # depth 2 by default
-code-review-graph visualize --seed-symbol login --depth 3   # more context
-code-review-graph visualize --seed-file src/auth.py         # a file and its symbols
-code-review-graph visualize --seed-changed                  # the files in this review
-code-review-graph visualize --seed-changed --seed-changed-base origin/main
-code-review-graph visualize --seed-flow "login request"     # an execution flow
-code-review-graph visualize --path-from login --path-to audit_log
-code-review-graph visualize --seed-symbol login --render-depth 0  # expand on click
-code-review-graph visualize --seed-symbol login --max-nodes 300  # hard cap
-code-review-graph visualize --seed-symbol login --sidecar   # payload in graph.data.js
+reviewgraph visualize --seed-symbol login             # depth 2 by default
+reviewgraph visualize --seed-symbol login --depth 3   # more context
+reviewgraph visualize --seed-file src/auth.py         # a file and its symbols
+reviewgraph visualize --seed-changed                  # the files in this review
+reviewgraph visualize --seed-changed --seed-changed-base origin/main
+reviewgraph visualize --seed-flow "login request"     # an execution flow
+reviewgraph visualize --path-from login --path-to audit_log
+reviewgraph visualize --seed-symbol login --render-depth 0  # expand on click
+reviewgraph visualize --seed-symbol login --max-nodes 300  # hard cap
+reviewgraph visualize --seed-symbol login --sidecar   # payload in graph.data.js
 
 # Analysis
-code-review-graph detect-changes               # Risk-scored change analysis (read-only)
-code-review-graph detect-changes --base HEAD~3 # Custom base revision
-code-review-graph detect-changes --base origin/main # Branch refs use their merge base with HEAD
-code-review-graph detect-changes --brief       # Compact panel with token-savings estimate
-code-review-graph detect-changes --brief --verify  # ...and cross-check against tiktoken
-code-review-graph detect-changes --churn       # Add opt-in change-frequency risk (CRG_CHURN_WINDOW_DAYS, default 90)
+reviewgraph detect-changes               # Risk-scored change analysis (read-only)
+reviewgraph detect-changes --base HEAD~3 # Custom base revision
+reviewgraph detect-changes --base origin/main # Branch refs use their merge base with HEAD
+reviewgraph detect-changes --brief       # Compact panel with token-savings estimate
+reviewgraph detect-changes --brief --verify  # ...and cross-check against tiktoken
+reviewgraph detect-changes --churn       # Add opt-in change-frequency risk (CRG_CHURN_WINDOW_DAYS, default 90)
                                                 #   The MCP tools (detect_changes, get_minimal_context) always include it.
                                                 #   Cached per commit; CRG_CHURN_TIMEOUT (5s) and CRG_CHURN_MAX_COMMITS
                                                 #   (2000) bound the git log. A repository that cannot answer in time is
                                                 #   recorded as unavailable for the life of the process, so the timeout is
                                                 #   paid once, and the response says so: `churn_status` is "unavailable"
                                                 #   and the summary carries a "Degraded" line.
-code-review-graph dead-code                    # Functions/classes with no callers or test references
-code-review-graph dead-code --kind Function --file-pattern src/ --json
+reviewgraph dead-code                    # Functions/classes with no callers or test references
+reviewgraph dead-code --kind Function --file-pattern src/ --json
 
 # Read-only graph queries (CLI mirrors of the MCP tools)
-code-review-graph query callers_of <target>    # Patterns: callers_of, callees_of, imports_of, importers_of,
+reviewgraph query callers_of <target>    # Patterns: callers_of, callees_of, imports_of, importers_of,
                                                 #   children_of, tests_for, inheritors_of, file_summary
-code-review-graph impact [--files F ...] [--depth N] [--base REF]
-code-review-graph search <query> [--kind Function] [--limit N]
-code-review-graph flows [--sort criticality] [--limit N] [--kind KIND]
-code-review-graph flow --id ID | --name NAME [--source]
-code-review-graph communities [--sort size] [--min-size N]
-code-review-graph community --id ID | --name NAME [--members]
-code-review-graph architecture [--detail-level minimal|standard]
-code-review-graph large-functions [--min-lines N] [--kind Function] [--path SUBSTR] [--limit N]
-code-review-graph refactor rename --old-name A --new-name B
-code-review-graph refactor dead_code [--kind Function] [--path SUBSTR]
-code-review-graph refactor suggest
+reviewgraph impact [--files F ...] [--depth N] [--base REF]
+reviewgraph search <query> [--kind Function] [--limit N]
+reviewgraph flows [--sort criticality] [--limit N] [--kind KIND]
+reviewgraph flow --id ID | --name NAME [--source]
+reviewgraph communities [--sort size] [--min-size N]
+reviewgraph community --id ID | --name NAME [--members]
+reviewgraph architecture [--detail-level minimal|standard]
+reviewgraph large-functions [--min-lines N] [--kind Function] [--path SUBSTR] [--limit N]
+reviewgraph refactor rename --old-name A --new-name B
+reviewgraph refactor dead_code [--kind Function] [--path SUBSTR]
+reviewgraph refactor suggest
 
 # Wiki
-code-review-graph wiki                         # Markdown wiki from communities (needs an existing graph)
+reviewgraph wiki                         # Markdown wiki from communities (needs an existing graph)
 
 # Multi-repo
-code-review-graph register <path> [--alias name]  # Register a repository
-code-review-graph unregister <path_or_alias>       # Remove from registry
-code-review-graph repos                            # List registered repositories
+reviewgraph register <path> [--alias name]  # Register a repository
+reviewgraph unregister <path_or_alias>       # Remove from registry
+reviewgraph repos                            # List registered repositories
 
 # Daemon (multi-repo watcher), installed with the package
-code-review-graph daemon start [--foreground]       # Start the watch daemon
-code-review-graph daemon stop                       # Stop the daemon
-code-review-graph daemon restart [--foreground]     # Restart the daemon
-code-review-graph daemon status                     # Daemon status and repos
-code-review-graph daemon logs [--repo ALIAS] [--follow] [--lines N]  # Daemon or per-repo logs (default 50 lines)
-code-review-graph daemon add <path> [--alias NAME]  # Add a repo to the daemon config
-code-review-graph daemon remove <path_or_alias>     # Remove a repo from the daemon config
+reviewgraph daemon start [--foreground]       # Start the watch daemon
+reviewgraph daemon stop                       # Stop the daemon
+reviewgraph daemon restart [--foreground]     # Restart the daemon
+reviewgraph daemon status                     # Daemon status and repos
+reviewgraph daemon logs [--repo ALIAS] [--follow] [--lines N]  # Daemon or per-repo logs (default 50 lines)
+reviewgraph daemon add <path> [--alias NAME]  # Add a repo to the daemon config
+reviewgraph daemon remove <path_or_alias>     # Remove a repo from the daemon config
 
 # Evaluation
-code-review-graph eval                         # Run evaluation benchmarks
+reviewgraph eval                         # Run evaluation benchmarks
 
 # Server
-code-review-graph serve                        # Start MCP server (stdio)
-code-review-graph serve --http                 # Streamable HTTP on 127.0.0.1:5555 (--host, --port)
-code-review-graph serve --tools query_graph_tool,detect_changes_tool  # Tool allowlist (or CRG_TOOLS)
-code-review-graph mcp                          # Alias for serve; accepts only --repo and --auto-watch
+reviewgraph serve                        # Start MCP server (stdio)
+reviewgraph serve --http                 # Streamable HTTP on 127.0.0.1:5555 (--host, --port)
+reviewgraph serve --tools query_graph_tool,detect_changes_tool  # Tool allowlist (or CRG_TOOLS)
+reviewgraph mcp                          # Alias for serve; accepts only --repo and --auto-watch
 ```
 
 Notes:
@@ -562,22 +562,22 @@ Notes:
 - `install` appends a Git `pre-commit` hook that prints a risk summary before
   each commit. The hook skips linked worktrees unless `CRG_HOOK_WORKTREES=1`
   is set, so a worktree does not build a second graph for another branch.
-- For an empty or incomplete graph, run `code-review-graph build`. See
+- For an empty or incomplete graph, run `reviewgraph build`. See
   docs/TROUBLESHOOTING.md, "Empty or incomplete graph".
 
-## Standalone Daemon CLI (`crg-daemon`)
+## Standalone Daemon CLI (`reviewgraph-daemon`)
 
-`crg-daemon` is installed with `code-review-graph` and mirrors the
-`code-review-graph daemon` subcommands:
+`reviewgraph-daemon` is installed with `reviewgraph` and mirrors the
+`reviewgraph daemon` subcommands:
 
 ```bash
-crg-daemon start [--foreground]       # Start the multi-repo watch daemon
-crg-daemon stop                       # Stop the daemon and all watcher processes
-crg-daemon restart [--foreground]     # Restart (stop + start)
-crg-daemon status                     # Daemon status, repos, and process liveness
-crg-daemon logs [--repo ALIAS] [-f] [-n N]  # Tail daemon or per-repo log files
-crg-daemon add <path> [--alias NAME]  # Add a repository to watch.toml
-crg-daemon remove <path_or_alias>     # Remove a repository from watch.toml
+reviewgraph-daemon start [--foreground]       # Start the multi-repo watch daemon
+reviewgraph-daemon stop                       # Stop the daemon and all watcher processes
+reviewgraph-daemon restart [--foreground]     # Restart (stop + start)
+reviewgraph-daemon status                     # Daemon status, repos, and process liveness
+reviewgraph-daemon logs [--repo ALIAS] [-f] [-n N]  # Tail daemon or per-repo log files
+reviewgraph-daemon add <path> [--alias NAME]  # Add a repository to watch.toml
+reviewgraph-daemon remove <path_or_alias>     # Remove a repository from watch.toml
 ```
 
 ### Configuration
@@ -599,7 +599,7 @@ path = "/home/user/project-b"
 alias = "project-b"
 ```
 
-The daemon spawns one `code-review-graph watch` child process per repo with
+The daemon spawns one `reviewgraph watch` child process per repo with
 `subprocess.Popen`. It polls the config file and starts or stops children as
 repos are added or removed. A health check every 30 seconds restarts dead
 watchers. No tmux or screen is needed.

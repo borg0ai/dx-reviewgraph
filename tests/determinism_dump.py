@@ -182,8 +182,8 @@ class _StubEmbeddingProvider:
 
 def populate_stub_embeddings(db_path: Path) -> int:
     """Run the real embedding refresh path against a deterministic provider."""
-    from code_review_graph.embeddings import EmbeddingStore
-    from code_review_graph.graph import GraphStore
+    from graph_engine.embeddings import EmbeddingStore
+    from graph_engine.graph import GraphStore
 
     store = GraphStore(str(db_path))
     try:
@@ -453,7 +453,7 @@ def dump_database(db_path: Path, repo_root: Path) -> dict[str, list[str]]:
         # widening the mirror widens this section with it. Intersected with what
         # the database actually has, because a mirror written by an older
         # release carries fewer columns.
-        from code_review_graph.migrations import (
+        from graph_engine.migrations import (
             NODES_FTS_COLUMNS,
             NODES_FTS_STATE_TABLE,
         )
@@ -482,8 +482,8 @@ def dump_database(db_path: Path, repo_root: Path) -> dict[str, list[str]]:
 
         # What the embedding pipeline selects and what text it reduces each
         # node to -- computed from the graph, independent of any provider.
-        from code_review_graph.embeddings import _node_to_text
-        from code_review_graph.graph import GraphNode
+        from graph_engine.embeddings import _node_to_text
+        from graph_engine.graph import GraphNode
 
         embedding_texts: list[str] = []
         for r in _rows(

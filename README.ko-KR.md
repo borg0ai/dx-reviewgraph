@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/code-review-graph/"><img src="https://img.shields.io/pypi/v/code-review-graph?style=flat-square&color=blue" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/code-review-graph"><img src="https://img.shields.io/pepy/dt/code-review-graph?style=flat-square" alt="Downloads"></a>
+  <a href="https://pypi.org/project/reviewgraph/"><img src="https://img.shields.io/pypi/v/reviewgraph?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pepy.tech/project/reviewgraph"><img src="https://img.shields.io/pepy/dt/reviewgraph?style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/stargazers"><img src="https://img.shields.io/github/stars/borg0ai/dx-reviewgraph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml"><img src="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
@@ -35,7 +35,7 @@
 
 <br>
 
-AI 코딩 도구는 변경 하나를 리뷰하려고 코드베이스의 많은 부분을 다시 읽곤 합니다. `code-review-graph`는 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)로 코드의 구조 지도를 만들고, 증분으로 최신 상태를 유지하며, [MCP](https://modelcontextprotocol.io/)를 통해 작은 맥락을 제공합니다. 그래서 어시스턴트는 변경이 건드리는 파일만 읽습니다.
+AI 코딩 도구는 변경 하나를 리뷰하려고 코드베이스의 많은 부분을 다시 읽곤 합니다. `reviewgraph`는 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)로 코드의 구조 지도를 만들고, 증분으로 최신 상태를 유지하며, [MCP](https://modelcontextprotocol.io/)를 통해 작은 맥락을 제공합니다. 그래서 어시스턴트는 변경이 건드리는 파일만 읽습니다.
 
 <p align="center">
   <img src="diagrams/diagram1_before_vs_after.png" alt="토큰 문제: flask 전체 코퍼스를 읽으면 143,594 토큰, 그래프 응답은 2,196 토큰(65배 적음)" width="85%" />
@@ -46,12 +46,12 @@ AI 코딩 도구는 변경 하나를 리뷰하려고 코드베이스의 많은 �
 ## 빠른 시작
 
 ```bash
-pip install code-review-graph          # or: pipx install code-review-graph
-code-review-graph install              # detect installed AI coding tools and configure each one
-code-review-graph build                # parse the codebase
+pip install reviewgraph          # or: pipx install reviewgraph
+reviewgraph install              # detect installed AI coding tools and configure each one
+reviewgraph build                # parse the codebase
 ```
 
-`install`은 설치된 AI 코딩 도구를 찾아 각각에 MCP 서버 항목을 쓰고, 플랫폼이 지원하면 훅과 스킬을 설치하며, 플랫폼의 규칙 파일에 그래프 안내를 추가합니다. MCP 항목은 Poetry나 uv 프로젝트 환경에서는 `poetry run` 또는 `uv run`을, PATH에 `uvx`가 있으면 `uvx code-review-graph serve`를, 그 밖에는 현재 Python 인터프리터를 사용합니다. 실행 후 편집기나 도구를 다시 시작하세요.
+`install`은 설치된 AI 코딩 도구를 찾아 각각에 MCP 서버 항목을 쓰고, 플랫폼이 지원하면 훅과 스킬을 설치하며, 플랫폼의 규칙 파일에 그래프 안내를 추가합니다. MCP 항목은 Poetry나 uv 프로젝트 환경에서는 `poetry run` 또는 `uv run`을, PATH에 `uvx`가 있으면 `uvx reviewgraph serve`를, 그 밖에는 현재 Python 인터프리터를 사용합니다. 실행 후 편집기나 도구를 다시 시작하세요.
 
 <p align="center">
   <img src="diagrams/diagram8_supported_platforms.png" alt="한 번의 설치로 모든 플랫폼 지원: Codex, Claude Code, CodeBuddy Code, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen, Qoder, Kiro, GitHub Copilot, GitHub Copilot CLI, Hermes Agent를 감지" width="85%" />
@@ -60,8 +60,8 @@ code-review-graph build                # parse the codebase
 플랫폼 하나만 설정하려면 `--platform`에 `codex`, `claude-code`, `cursor`, `windsurf`, `zed`, `continue`, `opencode`, `antigravity`, `gemini-cli`, `qwen`, `kiro`, `qoder`, `copilot`, `copilot-cli`, `codebuddy`, `hermes` 중 하나를 넘기세요.
 
 ```bash
-code-review-graph install --platform cursor
-code-review-graph install --platform codebuddy
+reviewgraph install --platform cursor
+reviewgraph install --platform codebuddy
 ```
 
 설정 파일 위치는 [docs/USAGE.md](docs/USAGE.md#supported-platforms)에 있습니다. Python 3.10+가 필요합니다.
@@ -69,12 +69,12 @@ code-review-graph install --platform codebuddy
 `uninstall`은 Git 또는 SVN 작업 트리에서 CRG가 만든 파일과 항목을 제거하고, 다른 MCP 서버, 훅, 스킬, JSONC 주석은 건드리지 않습니다. 트리 안 어디에서든 실행할 수 있습니다. 공유 설정 파일은 원자적으로 교체되므로 쓰기가 실패해도 원본은 그대로 남습니다.
 
 ```bash
-code-review-graph uninstall --dry-run    # preview only
-code-review-graph uninstall              # preview, confirm, apply
-code-review-graph uninstall --yes        # apply without prompting
-code-review-graph uninstall --all-repos  # also clean every registered repository
-code-review-graph uninstall --keep-data  # remove integrations, keep graph databases
-code-review-graph uninstall --keep-user-configs --repo .  # this project only
+reviewgraph uninstall --dry-run    # preview only
+reviewgraph uninstall              # preview, confirm, apply
+reviewgraph uninstall --yes        # apply without prompting
+reviewgraph uninstall --all-repos  # also clean every registered repository
+reviewgraph uninstall --keep-data  # remove integrations, keep graph databases
+reviewgraph uninstall --keep-user-configs --repo .  # this project only
 ```
 
 그런 다음 프로젝트를 열고 어시스턴트에게 이렇게 요청하세요.
@@ -119,7 +119,7 @@ Build the code review graph for this project
 그래프는 코퍼스 전체를 모델에 넘기는 대신 질문에 맞춰 잘라낸 조각을 돌려줍니다. 이 저장소의 `84bde354`에 대한 2026-08-02 측정에서는 208,821개의 소스 토큰이 질문당 약 3,190 토큰이 되었습니다. 그 스냅샷 이후 저장소가 많이 커져서 오늘은 두 숫자 모두 더 큽니다.
 
 <p align="center">
-  <img src="diagrams/diagram6_monorepo_funnel.png" alt="code-review-graph의 84bde354 스냅샷: 208,821개의 소스 토큰이 약 3,190 토큰의 그래프 응답으로 좁혀져, 질문당 토큰이 약 65배 줄어든다" width="80%" />
+  <img src="diagrams/diagram6_monorepo_funnel.png" alt="reviewgraph의 84bde354 스냅샷: 208,821개의 소스 토큰이 약 3,190 토큰의 그래프 응답으로 좁혀져, 질문당 토큰이 약 65배 줄어든다" width="80%" />
 </p>
 
 ### 언어 지원과 노트북
@@ -155,7 +155,7 @@ call_node_types = ["call"]
 같은 분석이 composite GitHub Action으로도 동작합니다. 그래프는 사용자의 CI 러너에서 만들어지고 질의되며, 소스 코드가 외부 서비스로 전송되지 않습니다. 풀 리퀘스트마다 위험 점수가 매겨진 함수, 영향받는 실행 흐름, 테스트 공백을 담은 고정 댓글 하나를 남기고, 푸시할 때마다 그 자리에서 갱신합니다. 선택 입력 `fail-on-risk`를 쓰면 머지 게이트가 됩니다.
 
 ```yaml
-# .github/workflows/code-review-graph.yml
+# .github/workflows/reviewgraph.yml
 on:
   pull_request:
 
@@ -191,22 +191,22 @@ jobs:
 <summary><strong>토큰 효율: 질문당 감소 중앙값 약 63배(범위 35배에서 358배. 코퍼스 전체 대 그래프 질의)</strong></summary>
 <br>
 
-전형적인 에이전트 질문(`"how does authentication work"`, `"what is the main entry point"` 등)에 대해 그래프는 모든 소스 파일 대신 검색 결과와 이웃 엣지로 이루어진 약 2,200에서 3,900 토큰을 돌려줍니다. 표는 `code_review_graph/token_benchmark.py`에 정의된 샘플 질문 5개를 평균한 값입니다.
+전형적인 에이전트 질문(`"how does authentication work"`, `"what is the main entry point"` 등)에 대해 그래프는 모든 소스 파일 대신 검색 결과와 이웃 엣지로 이루어진 약 2,200에서 3,900 토큰을 돌려줍니다. 표는 `modules/code-review/graph_engine/token_benchmark.py`에 정의된 샘플 질문 5개를 평균한 값입니다.
 
 | 저장소 | 스냅샷 SHA | naive_corpus_tokens | avg graph_tokens | 감소 배수 |
 |------|---|-----------------:|----------------:|----------:|
 | fastapi | `22381558` | 948,793 | 2,653 | **357.6x** |
 | flask | `a29f88ce` | 143,594 | 2,196 | **65.4x** |
-| code-review-graph | `84bde354` | 208,821 | 3,190 | **65.5x** |
+| reviewgraph | `84bde354` | 208,821 | 3,190 | **65.5x** |
 | gin | `5c00df8a` | 166,868 | 2,766 | **60.3x** |
 | httpx | `b55d4635` | 142,356 | 2,661 | **53.5x** |
 | express | `b4ab7d65` | 136,052 | 3,936 | **34.6x** |
 
 > 2026-08-02에 고정된 SHA의 깨끗한 클론에서 측정했습니다(crg 2.3.7, 로컬 `all-MiniLM-L6-v2` 임베딩). 이 숫자들은 이전의 2026-05-25 측정보다 낮습니다. 노드 임베딩 텍스트가 풍부해지면서 모든 저장소에서 `avg graph_tokens`가 올라갔기 때문입니다. fastapi는 폐기된 `0227991a`가 아니라 현재 핀인 `22381558`에서 측정했습니다.
 >
-> 감소 배수 열은 `naive_corpus_tokens / avg graph_tokens`이므로 옆의 두 열에서 그대로 나눗셈으로 얻을 수 있습니다. 벤치마크 자체의 `average_reduction_ratio`는 질문별 비율을 평균한 값이라 언제나 더 크게 나옵니다. 질문별 숫자는 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-code_review_graphtoken_benchmarkpy)에 있습니다.
+> 감소 배수 열은 `naive_corpus_tokens / avg graph_tokens`이므로 옆의 두 열에서 그대로 나눗셈으로 얻을 수 있습니다. 벤치마크 자체의 `average_reduction_ratio`는 질문별 비율을 평균한 값이라 언제나 더 크게 나옵니다. 질문별 숫자는 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#standalone-token-benchmark-reviewgraphtoken_benchmarkpy)에 있습니다.
 >
-> `code-review-graph` 행은 스냅샷이며 현재 측정값이 아닙니다. `84bde354` 이후 저장소가 커져서 코퍼스도 그래프도 오늘은 훨씬 큽니다.
+> `reviewgraph` 행은 스냅샷이며 현재 측정값이 아닙니다. `84bde354` 이후 저장소가 커져서 코퍼스도 그래프도 오늘은 훨씬 큽니다.
 
 코퍼스 전체 기준선은 실제 에이전트가 치르지 않는 상한입니다. 에이전트는 식별자를 grep하고 가장 잘 맞는 파일을 읽습니다. `agent_baseline` 평가 벤치마크가 바로 그 경우를 측정합니다(순수 파이썬으로 코퍼스를 grep하고, 일치 수 기준 상위 3개 파일을 골라, 그래프 질의 비용과 토큰을 비교). 결과는 `evaluate/results/<repo>_agent_baseline_<date>.csv`에 기록됩니다. 아직 공식 측정값은 공개하지 않았습니다.
 
@@ -225,7 +225,7 @@ jobs:
 | 저장소 | 커밋 수 | 평균 F1 | 평균 정밀도 | 재현율(그래프에서 유도한 상한) |
 |------|--------:|-------:|--------------:|-------:|
 | httpx | 2 | 0.863 | 0.785 | 1.0 |
-| code-review-graph | 2 | 0.734 | 0.584 | 1.0 |
+| reviewgraph | 2 | 0.734 | 0.584 | 1.0 |
 | fastapi | 2 | 0.697 | 0.539 | 1.0 |
 | express | 2 | 0.667 | 0.500 | 1.0 |
 | flask | 2 | 0.633 | 0.485 | 1.0 |
@@ -240,14 +240,14 @@ jobs:
 <summary><strong>빌드 통계</strong></summary>
 <br>
 
-위에 고정된 SHA에서의 같은 2026-08-02 클린 빌드 결과입니다. File 노드는 임베딩하지 않으므로 임베딩 수가 노드 수보다 적습니다. `code-review-graph` 행은 그 스냅샷이며 지금의 저장소 상태가 아닙니다.
+위에 고정된 SHA에서의 같은 2026-08-02 클린 빌드 결과입니다. File 노드는 임베딩하지 않으므로 임베딩 수가 노드 수보다 적습니다. `reviewgraph` 행은 그 스냅샷이며 지금의 저장소 상태가 아닙니다.
 
 | 저장소 | 노드 | 엣지 | 임베딩 |
 |------|------:|------:|-----------:|
 | fastapi | 6,287 | 32,036 | 5,159 |
 | express | 1,990 | 19,492 | 1,849 |
 | gin | 1,589 | 17,237 | 1,491 |
-| code-review-graph | 1,446 | 9,094 | 1,354 |
+| reviewgraph | 1,446 | 9,094 | 1,354 |
 | flask | 1,415 | 8,259 | 1,329 |
 | httpx | 1,263 | 8,236 | 1,193 |
 
@@ -282,7 +282,7 @@ jobs:
 | **엣지 신뢰도** | 2단계 신뢰도(EXTRACTED/INFERRED)와 엣지의 실수 점수 |
 | **그래프 순회** | 아무 노드에서 시작하는 BFS/DFS. 깊이와 토큰 예산 설정 가능 |
 | **내보내기 형식** | GraphML(Gephi/yEd), Neo4j Cypher, Obsidian 볼트, JSON, 그리고 SVG(SVG는 `eval` 엑스트라의 matplotlib 필요) |
-| **토큰 벤치마크** | `code_review_graph/token_benchmark.py`가 질문마다 코퍼스 전체 토큰과 그래프 질의 토큰을 측정 |
+| **토큰 벤치마크** | `modules/code-review/graph_engine/token_benchmark.py`가 질문마다 코퍼스 전체 토큰과 그래프 질의 토큰을 측정 |
 | **맥락 절감 추정치** | 리뷰, 영향 분석, detect-changes, 아키텍처 응답에 붙는 `context_savings` 메타데이터(`estimated`, `saved_tokens`, `saved_percent`) |
 | **커뮤니티 자동 분할** | 그래프의 25%를 넘는 커뮤니티를 Leiden으로 재귀 분할 |
 | **실행 흐름** | 진입점에서 이어지는 호출 사슬을 가중 중요도로 정렬 |
@@ -294,7 +294,7 @@ jobs:
 | **리팩터링 도구** | 이름 변경 미리보기, 프레임워크를 아는 데드 코드 탐지, 커뮤니티 기반 제안 |
 | **위키 생성** | 커뮤니티 구조에서 Markdown 위키 생성 |
 | **다중 저장소 레지스트리** | 여러 저장소를 등록하고 가로질러 검색 |
-| **다중 저장소 데몬** | `crg-daemon`이 여러 저장소를 자식 프로세스로 감시. 헬스 체크와 재시작 포함 |
+| **다중 저장소 데몬** | `reviewgraph-daemon`이 여러 저장소를 자식 프로세스로 감시. 헬스 체크와 재시작 포함 |
 | **MCP 프롬프트** | 워크플로 템플릿 5개: 리뷰, 아키텍처, 디버그, 온보딩, 머지 전 점검 |
 | **전문 검색** | 키워드와 벡터 유사도를 결합한 FTS5 하이브리드 검색 |
 | **로컬 저장** | `.code-review-graph/` 안의 SQLite 파일 하나. 외부 데이터베이스나 클라우드 서비스 없음 |
@@ -325,42 +325,42 @@ Qoder에는 이 저장소의 `skills/` 디렉터리에서 `build-graph`, `review
 <br>
 
 ```bash
-code-review-graph install          # Detect and configure all platforms
-code-review-graph install --platform <name>  # One platform
-code-review-graph uninstall --dry-run  # Preview removal of installed artifacts
-code-review-graph build            # Parse the whole codebase
-code-review-graph update           # Incremental update (changed files only)
-code-review-graph status           # Graph statistics
-code-review-graph watch            # Update on file changes
-code-review-graph forget <path>    # Drop already-parsed files from the graph
-code-review-graph dead-code        # Functions and classes with no callers or tests
-code-review-graph visualize        # Interactive HTML graph
-code-review-graph visualize --format json      # Export graph data as JSON
-code-review-graph visualize --format graphml   # Export as GraphML
-code-review-graph visualize --format svg       # Export as SVG (needs matplotlib)
-code-review-graph visualize --format obsidian  # Export as Obsidian vault
-code-review-graph visualize --format cypher    # Export as Neo4j Cypher
-code-review-graph wiki             # Markdown wiki from communities
-code-review-graph detect-changes --brief         # Risk panel + token savings (read-only)
-code-review-graph detect-changes --brief --base main  # Against the merge base of main and HEAD
-code-review-graph update --brief                 # Refresh graph + same panel
-code-review-graph detect-changes --brief --verify  # Cross-check against tiktoken
-code-review-graph register <path>  # Register repo in the multi-repo registry
-code-review-graph unregister <path|alias>  # Remove repo from the registry
-code-review-graph repos            # List registered repositories
-code-review-graph daemon start     # Start the multi-repo watch daemon
-code-review-graph daemon stop      # Stop the daemon
-code-review-graph daemon status    # Daemon status and repos
-code-review-graph eval             # Run evaluation benchmarks
-code-review-graph serve            # Start the MCP server (stdio)
-code-review-graph serve --http     # MCP over Streamable HTTP on localhost:5555
+reviewgraph install          # Detect and configure all platforms
+reviewgraph install --platform <name>  # One platform
+reviewgraph uninstall --dry-run  # Preview removal of installed artifacts
+reviewgraph build            # Parse the whole codebase
+reviewgraph update           # Incremental update (changed files only)
+reviewgraph status           # Graph statistics
+reviewgraph watch            # Update on file changes
+reviewgraph forget <path>    # Drop already-parsed files from the graph
+reviewgraph dead-code        # Functions and classes with no callers or tests
+reviewgraph visualize        # Interactive HTML graph
+reviewgraph visualize --format json      # Export graph data as JSON
+reviewgraph visualize --format graphml   # Export as GraphML
+reviewgraph visualize --format svg       # Export as SVG (needs matplotlib)
+reviewgraph visualize --format obsidian  # Export as Obsidian vault
+reviewgraph visualize --format cypher    # Export as Neo4j Cypher
+reviewgraph wiki             # Markdown wiki from communities
+reviewgraph detect-changes --brief         # Risk panel + token savings (read-only)
+reviewgraph detect-changes --brief --base main  # Against the merge base of main and HEAD
+reviewgraph update --brief                 # Refresh graph + same panel
+reviewgraph detect-changes --brief --verify  # Cross-check against tiktoken
+reviewgraph register <path>  # Register repo in the multi-repo registry
+reviewgraph unregister <path|alias>  # Remove repo from the registry
+reviewgraph repos            # List registered repositories
+reviewgraph daemon start     # Start the multi-repo watch daemon
+reviewgraph daemon stop      # Stop the daemon
+reviewgraph daemon status    # Daemon status and repos
+reviewgraph eval             # Run evaluation benchmarks
+reviewgraph serve            # Start the MCP server (stdio)
+reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 ```
 
-이것은 일부만 고른 목록입니다. `code-review-graph --help`가 모든 명령을 보여 주고, [docs/COMMANDS.md](docs/COMMANDS.md)가 각 플래그를 설명합니다.
+이것은 일부만 고른 목록입니다. `reviewgraph --help`가 모든 명령을 보여 주고, [docs/COMMANDS.md](docs/COMMANDS.md)가 각 플래그를 설명합니다.
 
 `detect-changes --base`에 브랜치 이름을 주면 diff는 그 브랜치와 HEAD의 머지 베이스를 기준으로 실행됩니다. 커밋 해시와 그 밖의 리비전은 준 그대로 쓰입니다.
 
-`visualize --format svg`에는 matplotlib이 필요하며, `eval` 엑스트라에 들어 있습니다(`pip install "code-review-graph[eval]"`). 다른 내보내기 형식에는 추가 설치가 필요 없습니다.
+`visualize --format svg`에는 matplotlib이 필요하며, `eval` 엑스트라에 들어 있습니다(`pip install "reviewgraph[eval]"`). 다른 내보내기 형식에는 추가 설치가 필요 없습니다.
 
 JSON 내보내기는 로컬 그래프 데이터 디렉터리에 기록되며, 이 디렉터리는 기본으로 Git이 무시합니다. 절대 경로와 코드 구조 메타데이터가 들어갈 수 있으니 공개하기 전에 내용을 확인하세요.
 
@@ -383,7 +383,7 @@ JSON 내보내기는 로컬 그래프 데이터 디렉터리에 기록되며, �
 
 | 명령 | 하는 일 | 쓸 때 |
 |---|---|---|
-| `detect-changes --brief` | 읽기 전용. 현재 변경에 대해 기존 그래프에 질의하고 패널을 출력합니다. | 대부분의 경우. 훅이나 `crg-daemon`이 그래프를 최신으로 유지합니다. |
+| `detect-changes --brief` | 읽기 전용. 현재 변경에 대해 기존 그래프에 질의하고 패널을 출력합니다. | 대부분의 경우. 훅이나 `reviewgraph-daemon`이 그래프를 최신으로 유지합니다. |
 | `update --brief` | 변경 파일을 먼저 그래프에 다시 파싱한 다음 같은 패널을 출력합니다. | 리베이스 뒤, 변경 폭이 클 때, 그래프가 오래됐을 수 있을 때. |
 
 두 명령 중 아무 쪽에나 `--verify`를 붙이면 숫자를 OpenAI의 `cl100k_base` 토크나이저와 비교합니다(`pip install tiktoken` 필요). 합산 기준 추정값은 실제 토큰과 약 1% 이내로 일치합니다. [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)를 보세요.
@@ -396,25 +396,25 @@ JSON 내보내기는 로컬 그래프 데이터 디렉터리에 기록되며, �
 <summary><strong>다중 저장소 데몬</strong></summary>
 <br>
 
-편집기가 훅을 지원하지 않거나(예: Cursor, OpenCode) 편집기 연동 없이 그래프를 최신으로 두고 싶다면, 데몬이 저장소를 감시하며 그래프를 갱신합니다. `code-review-graph`에 함께 들어 있어 따로 설치할 필요가 없습니다.
+편집기가 훅을 지원하지 않거나(예: Cursor, OpenCode) 편집기 연동 없이 그래프를 최신으로 두고 싶다면, 데몬이 저장소를 감시하며 그래프를 갱신합니다. `reviewgraph`에 함께 들어 있어 따로 설치할 필요가 없습니다.
 
 ```bash
 # 1. Register the repos to watch
-crg-daemon add ~/project-a --alias proj-a
-crg-daemon add ~/project-b
+reviewgraph-daemon add ~/project-a --alias proj-a
+reviewgraph-daemon add ~/project-b
 
 # 2. Start the daemon (runs in the background)
-crg-daemon start
+reviewgraph-daemon start
 
 # 3. Check on it
-crg-daemon status                 # daemon and per-repo watcher status
-crg-daemon logs --repo proj-a -f  # tail logs for one repo
-crg-daemon stop                   # stop the daemon and all watchers
+reviewgraph-daemon status                 # daemon and per-repo watcher status
+reviewgraph-daemon logs --repo proj-a -f  # tail logs for one repo
+reviewgraph-daemon stop                   # stop the daemon and all watchers
 ```
 
-`code-review-graph daemon start|stop|status|...`로도 쓸 수 있습니다.
+`reviewgraph daemon start|stop|status|...`로도 쓸 수 있습니다.
 
-`crg-daemon add`는 `~/.code-review-graph/watch.toml`에 기록하며, 이 파일은 직접 편집해도 됩니다.
+`reviewgraph-daemon add`는 `~/.code-review-graph/watch.toml`에 기록하며, 이 파일은 직접 편집해도 됩니다.
 
 ```toml
 [[repos]]
@@ -428,7 +428,7 @@ alias = "project-b"
 
 데몬은 이 파일을 감시하며 저장소가 추가되거나 빠질 때 감시 프로세스를 켜고 끕니다. 30초마다 도는 헬스 체크가 죽은 감시 프로세스를 다시 띄웁니다.
 
-전체 설정 레퍼런스는 [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-crg-daemon)를 보세요.
+전체 설정 레퍼런스는 [docs/COMMANDS.md](docs/COMMANDS.md#standalone-daemon-cli-reviewgraph-daemon)를 보세요.
 
 </details>
 
@@ -494,13 +494,13 @@ git 저장소에서는 추적되는 파일만 색인하므로(`git ls-files`) gi
 선택적 의존성 그룹:
 
 ```bash
-pip install "code-review-graph[embeddings]"          # Local vector embeddings (sentence-transformers)
-pip install "code-review-graph[google-embeddings]"   # Google Gemini embeddings
-pip install "code-review-graph[communities]"         # Community detection (igraph)
-pip install "code-review-graph[enrichment]"          # Python call-resolution enrichment (Jedi)
-pip install "code-review-graph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
-pip install "code-review-graph[wiki]"                # ollama client (not used by the current wiki generator)
-pip install "code-review-graph[all]"                 # All optional dependencies
+pip install "reviewgraph[embeddings]"          # Local vector embeddings (sentence-transformers)
+pip install "reviewgraph[google-embeddings]"   # Google Gemini embeddings
+pip install "reviewgraph[communities]"         # Community detection (igraph)
+pip install "reviewgraph[enrichment]"          # Python call-resolution enrichment (Jedi)
+pip install "reviewgraph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
+pip install "reviewgraph[wiki]"                # ollama client (not used by the current wiki generator)
+pip install "reviewgraph[all]"                 # All optional dependencies
 ```
 
 ### 환경 변수
@@ -562,12 +562,12 @@ Voyage 임베딩에도 추가 설치가 필요 없습니다. `VOYAGE_API_KEY`를
 ```bash
 export VOYAGE_API_KEY=pa-...
 export CRG_ACCEPT_CLOUD_EMBEDDINGS=1
-code-review-graph embed --provider voyage --model voyage-code-3
+reviewgraph embed --provider voyage --model voyage-code-3
 ```
 
 > **모델 선택.** 오래 유지할 색인이라면 `-preview`, `-beta`, `-exp` 모델 ID는 피하세요. 프리뷰 모델은 가중치가 바뀌거나(차원이 달라지면 전체를 다시 임베딩해야 합니다) 내려갈 수 있습니다. `text-embedding-3-small` / `text-embedding-3-large`(OpenAI), `Qwen/Qwen3-Embedding-8B`(자체 호스팅 vLLM 또는 LocalAI), `gemini-embedding-001`(`GOOGLE_API_KEY`가 필요한 네이티브 Gemini 제공자) 같은 정식 출시 모델을 쓰세요.
 >
-> 임베딩 텍스트는 식별자, 시그니처, 구조 맥락, 그리고 길이를 제한한 첫 문단의 docstring이나 문서 주석 요약입니다. 함수 본문은 보내지 않습니다. 문서 추출 기능이 들어오기 전에 만든 그래프는 다시 임베딩하기 전에 `code-review-graph build`를 한 번 완전히 돌려야 합니다. 일반 빌드는 임베딩을 갱신하지 않습니다. 빌드 뒤에 갱신하려면 `--embedding-provider`와 `--embedding-model`을 모두 넘기세요. 클라우드 제공자는 이 소스 기반 텍스트를 받고 그에 대해 요금을 매길 수 있습니다.
+> 임베딩 텍스트는 식별자, 시그니처, 구조 맥락, 그리고 길이를 제한한 첫 문단의 docstring이나 문서 주석 요약입니다. 함수 본문은 보내지 않습니다. 문서 추출 기능이 들어오기 전에 만든 그래프는 다시 임베딩하기 전에 `reviewgraph build`를 한 번 완전히 돌려야 합니다. 일반 빌드는 임베딩을 갱신하지 않습니다. 빌드 뒤에 갱신하려면 `--embedding-provider`와 `--embedding-model`을 모두 넘기세요. 클라우드 제공자는 이 소스 기반 텍스트를 받고 그에 대해 요금을 매길 수 있습니다.
 
 #### 도구 필터링
 
@@ -575,10 +575,10 @@ CRG는 기본으로 MCP 도구 30개를 노출합니다. 서버를 일부로 제
 
 ```bash
 # CLI flag
-code-review-graph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
+reviewgraph serve --tools query_graph_tool,semantic_search_nodes_tool,detect_changes_tool
 
 # Environment variable
-CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
+CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ```
 
 플래그가 환경 변수보다 우선합니다. 둘 다 설정하지 않으면 모든 도구를 쓸 수 있습니다. MCP 클라이언트 설정에서는 이렇게 씁니다.
@@ -586,8 +586,8 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool code-review-graph serve
 ```json
 {
   "mcpServers": {
-    "code-review-graph": {
-      "command": "code-review-graph",
+    "reviewgraph": {
+      "command": "reviewgraph",
       "args": ["serve", "--tools", "query_graph_tool,semantic_search_nodes_tool,detect_changes_tool,get_review_context_tool"]
     }
   }
@@ -622,11 +622,11 @@ Windows/WSL을 포함한 더 많은 사례는 [docs/TROUBLESHOOTING.md](docs/TRO
 2. 내려받는 방식이 다른 [uv](https://docs.astral.sh/uv/)로 체크아웃에서 설치하세요.
 
    ```bash
-   cd /path/to/code-review-graph
+   cd /path/to/reviewgraph
    uv tool install . --force
    ```
 
-3. 클론에서 개발할 때는 `uv sync`와 `uv run code-review-graph ...`를 쓰세요.
+3. 클론에서 개발할 때는 `uv sync`와 `uv run reviewgraph ...`를 쓰세요.
 
 원인을 가리려면 `python3 scripts/diagnose_pypi_connectivity.py`를 실행하세요. `FAILED`가 나오면 문제는 패키지 이름이 아니라 네트워크 환경입니다.
 
@@ -635,8 +635,8 @@ Windows/WSL을 포함한 더 많은 사례는 [docs/TROUBLESHOOTING.md](docs/TRO
 Claude Code 설정에서 `cmd /c` 래퍼를 쓰지 마세요. `~/.claude.json`이 `.exe`를 바로 가리키게 하고 UTF-8은 설정으로 넘기세요.
 
 ```json
-"code-review-graph": {
-  "command": "C:\\path\\to\\your\\venv\\Scripts\\code-review-graph.exe",
+"reviewgraph": {
+  "command": "C:\\path\\to\\your\\venv\\Scripts\\reviewgraph.exe",
   "args": ["serve", "--repo", "C:\\path\\to\\your\\project"],
   "env": { "PYTHONUTF8": "1" }
 }
@@ -648,14 +648,14 @@ Claude Code 설정에서 `cmd /c` 래퍼를 쓰지 마세요. `~/.claude.json`�
 git clone https://github.com/borg0ai/dx-reviewgraph.git
 cd dx-reviewgraph
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --group dev
 pytest
 ```
 
 기능 및 수정 풀 리퀘스트는 `main`으로 바로 보내 주세요. 릴리스는 `main`에서 태그합니다. 전체 흐름은
 [CONTRIBUTING.md](CONTRIBUTING.md#branching)를 보세요.
 
-내장 언어를 추가하려면 `code_review_graph/parser.py`를 고치세요. 확장자를 `EXTENSION_TO_LANGUAGE`에, 노드 타입 매핑을 `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES`, `_CALL_TYPES`에 추가하면 됩니다. 테스트 픽스처를 함께 넣어 PR을 보내 주세요. 저장소 하나에서만 필요한 언어라면 대신 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)을 쓰세요.
+내장 언어를 추가하려면 `modules/code-review/graph_engine/parser.py`를 고치세요. 확장자를 `EXTENSION_TO_LANGUAGE`에, 노드 타입 매핑을 `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES`, `_CALL_TYPES`에 추가하면 됩니다. 테스트 픽스처를 함께 넣어 PR을 보내 주세요. 저장소 하나에서만 필요한 언어라면 대신 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)을 쓰세요.
 
 ## 라이선스
 
@@ -663,5 +663,5 @@ MIT. [LICENSE](LICENSE)를 보세요.
 
 <p align="center">
 <br>
-<code>pip install code-review-graph && code-review-graph install</code>
+<code>pip install reviewgraph && reviewgraph install</code>
 </p>

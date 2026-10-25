@@ -25,7 +25,7 @@ Type `clear`
 Enter
 Show
 
-Type `# code-review-graph — estimated context savings (v2.3.4)`
+Type `# reviewgraph — estimated context savings (v2.3.4)`
 Enter
 Sleep 700ms
 Type `# flask @ a29f88ce — 4-file docs commit`
@@ -39,21 +39,21 @@ Sleep 1800ms
 Type `# Surface 1: detect-changes --brief`
 Enter
 Sleep 400ms
-Type `uv run --project ../../.. code-review-graph detect-changes --brief 2>/dev/null`
+Type `uv run --project ../../.. reviewgraph detect-changes --brief 2>/dev/null`
 Enter
 Sleep 4000ms
 
 Type `# Surface 2: update --brief (same brief summary after incremental update)`
 Enter
 Sleep 400ms
-Type `uv run --project ../../.. code-review-graph update --brief 2>/dev/null`
+Type `uv run --project ../../.. reviewgraph update --brief 2>/dev/null`
 Enter
 Sleep 4500ms
 
 Type `# Prove the estimate is real with --verify (cross-checks tiktoken cl100k_base)`
 Enter
 Sleep 400ms
-Type `uv run --project ../../.. code-review-graph detect-changes --brief --verify 2>/dev/null`
+Type `uv run --project ../../.. reviewgraph detect-changes --brief --verify 2>/dev/null`
 Enter
 Sleep 5500ms
 

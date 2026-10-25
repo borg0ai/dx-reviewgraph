@@ -17,9 +17,9 @@ body no test executes.
 import tempfile
 from pathlib import Path
 
-from code_review_graph.changes import analyze_changes
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
+from graph_engine.changes import analyze_changes
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
 
 
 class _Fixture:
@@ -463,7 +463,7 @@ class TestReviewGuidanceAgrees(_Fixture):
     """
 
     def test_guidance_splits_the_same_way_detect_changes_does(self):
-        from code_review_graph.tools.review import _generate_review_guidance
+        from graph_engine.tools.review import _generate_review_guidance
 
         helper = self._add_func("helper", line_start=1, line_end=10)
         public = self._add_func("public", line_start=20, line_end=30)
@@ -499,7 +499,7 @@ class TestReviewGuidanceAgrees(_Fixture):
         assert "orphan" in unreached_line
 
     def test_guidance_without_a_store_still_avoids_the_absolute_claim(self):
-        from code_review_graph.tools.review import _generate_review_guidance
+        from graph_engine.tools.review import _generate_review_guidance
 
         orphan = self._add_func("orphan", line_start=40, line_end=50)
         impact = {

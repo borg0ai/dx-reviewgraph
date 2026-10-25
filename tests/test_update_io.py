@@ -5,8 +5,8 @@ from __future__ import annotations
 import pathlib
 import subprocess
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, get_db_path, incremental_update
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, get_db_path, incremental_update
 
 
 def test_noop_update_opens_each_indexed_file_at_most_once(tmp_path, monkeypatch):

@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import NodeInfo, EdgeInfo
-from code_review_graph.communities import store_communities
-from code_review_graph.flows import store_flows
+from graph_engine.graph import GraphStore
+from graph_engine.parser import NodeInfo, EdgeInfo
+from graph_engine.communities import store_communities
+from graph_engine.flows import store_flows
 
 @pytest.fixture
 def store():

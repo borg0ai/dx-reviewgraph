@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "code-review-graph": {
+    "reviewgraph": {
       "command": "uvx",
-      "args": ["code-review-graph", "serve"]
+      "args": ["reviewgraph", "serve"]
     }
   }
 }

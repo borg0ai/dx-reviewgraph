@@ -4,9 +4,9 @@ import sqlite3
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.tools.query import query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.tools.query import query_graph
 
 
 def function(path, name, *, parent=None, params=""):

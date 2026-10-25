@@ -15,8 +15,8 @@ if sys.version_info >= (3, 11):
 else:  # pragma: no cover - Python 3.10 backport
     import tomli as tomllib
 
-from code_review_graph import skills as skills_module
-from code_review_graph.skills import (
+from graph_engine import skills as skills_module
+from graph_engine.skills import (
     _CLAUDE_MD_SECTION_MARKER,
     PLATFORMS,
     _copilot_vscode_detected,
@@ -147,7 +147,7 @@ class TestGenerateSkills:
     def test_skill_frontmatter_names_match_lowercase_directories(self, tmp_path):
         """Generated and bundled skills use the discovery-safe name format."""
         generated = generate_skills(tmp_path)
-        bundled = Path(__file__).parents[1] / "skills"
+        bundled = Path(__file__).parents[1] / "modules" / "code-review" / "skills"
 
         for skill_name in (
             "debug-issue",
@@ -180,7 +180,7 @@ class TestGenerateSkills:
 
     def test_skill_templates_use_exported_tool_names(self, tmp_path):
         generated = generate_skills(tmp_path)
-        bundled = Path(__file__).parents[1] / "skills"
+        bundled = Path(__file__).parents[1] / "modules" / "code-review" / "skills"
 
         expected_tools = {
             "explore-codebase": [
@@ -281,7 +281,7 @@ class TestGenerateHooksConfig:
         for hook_type, entries in config["hooks"].items():
             for entry in entries:
                 for hook in entry["hooks"]:
-                    assert "command -v code-review-graph" in hook["command"], (
+                    assert "command -v reviewgraph" in hook["command"], (
                         f"{hook_type} hook missing PATH guard — will fail noisily"
                         " when binary is not on PATH (e.g. project venv)"
                     )
@@ -413,7 +413,7 @@ class TestInstallGitHook:
         assert os.access(hook_path, os.X_OK)
         content = hook_path.read_text()
         assert content.startswith("#!/")
-        assert "code-review-graph detect-changes" in content
+        assert "reviewgraph detect-changes" in content
 
     def test_appends_to_existing_hook(self, tmp_path):
         repo = self._make_git_repo(tmp_path)
@@ -423,14 +423,14 @@ class TestInstallGitHook:
         install_git_hook(repo)
         content = hook_path.read_text()
         assert "existing-command" in content
-        assert "code-review-graph detect-changes" in content
+        assert "reviewgraph detect-changes" in content
 
     def test_idempotent(self, tmp_path):
         repo = self._make_git_repo(tmp_path)
         install_git_hook(repo)
         install_git_hook(repo)
         content = (repo / ".git" / "hooks" / "pre-commit").read_text()
-        assert content.count("code-review-graph detect-changes") == 1
+        assert content.count("reviewgraph detect-changes") == 1
 
     def test_no_git_dir_returns_none(self, tmp_path):
         assert install_git_hook(tmp_path) is None
@@ -443,7 +443,7 @@ class TestInstallGitHook:
         expected = repo / ".git" / "hooks" / "pre-commit"
         assert hook_path.resolve() == expected.resolve()
         assert os.access(hook_path, os.X_OK)
-        assert "code-review-graph detect-changes" in hook_path.read_text()
+        assert "reviewgraph detect-changes" in hook_path.read_text()
 
     def test_respects_core_hooks_path(self, tmp_path):
         """core.hooksPath (husky-style): the hook must land where git runs it."""
@@ -454,7 +454,7 @@ class TestInstallGitHook:
         expected = repo / ".husky" / "pre-commit"
         assert hook_path.resolve() == expected.resolve()
         assert os.access(hook_path, os.X_OK)
-        assert "code-review-graph detect-changes" in hook_path.read_text()
+        assert "reviewgraph detect-changes" in hook_path.read_text()
         # The default location must NOT be used — git would never run it.
         assert not (repo / ".git" / "hooks" / "pre-commit").exists()
 
@@ -475,7 +475,7 @@ class TestInstallGitHook:
             "rev-parse", "--git-path", "hooks", cwd=worktree
         )
         assert hook_path.resolve() == (git_hooks_dir / "pre-commit").resolve()
-        assert "code-review-graph detect-changes" in hook_path.read_text()
+        assert "reviewgraph detect-changes" in hook_path.read_text()
 
 
 class TestInstallHooks:
@@ -534,7 +534,7 @@ class TestGenerateCodexHooksConfig:
         assert inner["type"] == "command"
         assert "update" in inner["command"]
         assert inner["command"].startswith("cat >/dev/null || true; ")
-        assert inner["statusMessage"] == "Updating code-review-graph"
+        assert inner["statusMessage"] == "Updating reviewgraph"
 
     def test_has_session_start(self, tmp_path):
         config = generate_codex_hooks_config(tmp_path)
@@ -545,7 +545,7 @@ class TestGenerateCodexHooksConfig:
         assert inner["type"] == "command"
         assert "status" in inner["command"]
         assert inner["command"].startswith("cat >/dev/null || true; ")
-        assert inner["statusMessage"] == "Checking code-review-graph status"
+        assert inner["statusMessage"] == "Checking reviewgraph status"
 
 
     def test_post_tool_use_command_handles_large_stdin_payload(self, tmp_path):
@@ -581,14 +581,14 @@ class TestGenerateCodexHooksConfig:
         session_cmd = config["hooks"]["SessionStart"][0]["hooks"][0]["command"]
         assert "--repo" not in post_cmd
         assert "--repo" not in session_cmd
-        assert "code-review-graph update --skip-flows" in post_cmd
-        assert "code-review-graph status" in session_cmd
+        assert "reviewgraph update --skip-flows" in post_cmd
+        assert "reviewgraph status" in session_cmd
 
 
 class TestInstallCodexHooks:
     def test_creates_hooks_file(self, tmp_path, monkeypatch):
         # Path.home() ignores HOME on Windows; patch it like the cursor tests do.
-        monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
+        monkeypatch.setattr("graph_engine.skills.Path.home", lambda: tmp_path)
         hooks_path = install_codex_hooks(tmp_path / "repo")
         assert hooks_path == tmp_path / ".codex" / "hooks.json"
         assert hooks_path.exists()
@@ -599,7 +599,7 @@ class TestInstallCodexHooks:
 
     def test_merges_with_existing(self, tmp_path, monkeypatch):
         # Path.home() ignores HOME on Windows; patch it like the cursor tests do.
-        monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
+        monkeypatch.setattr("graph_engine.skills.Path.home", lambda: tmp_path)
         codex_dir = tmp_path / ".codex"
         codex_dir.mkdir(parents=True)
         existing = {
@@ -620,7 +620,7 @@ class TestInstallCodexHooks:
 
     def test_creates_hooks_backup(self, tmp_path, monkeypatch):
         # Path.home() ignores HOME on Windows; patch it like the cursor tests do.
-        monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
+        monkeypatch.setattr("graph_engine.skills.Path.home", lambda: tmp_path)
         codex_dir = tmp_path / ".codex"
         codex_dir.mkdir(parents=True)
         existing = {"hooks": {"Stop": []}}
@@ -636,7 +636,7 @@ class TestInstallCodexHooks:
 
     def test_idempotent_by_command(self, tmp_path, monkeypatch):
         # Path.home() ignores HOME on Windows; patch it like the cursor tests do.
-        monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
+        monkeypatch.setattr("graph_engine.skills.Path.home", lambda: tmp_path)
         repo_root = tmp_path / "repo"
         install_codex_hooks(repo_root)
         install_codex_hooks(repo_root)
@@ -866,8 +866,8 @@ class TestInjectPlatformInstructionsFiltering:
         updated = inject_platform_instructions(tmp_path, target="all")
         assert set(updated) == {
             "AGENTS.md", "GEMINI.md", ".cursorrules", ".windsurfrules",
-            "QODER.md", ".kiro/steering/code-review-graph.md",
-            ".github/instructions/code-review-graph.instructions.md",
+            "QODER.md", ".kiro/steering/graph_engine.md",
+            ".github/instructions/graph_engine.instructions.md",
             "CODEBUDDY.md",
         }
 
@@ -875,8 +875,8 @@ class TestInjectPlatformInstructionsFiltering:
         updated = inject_platform_instructions(tmp_path)
         assert set(updated) == {
             "AGENTS.md", "GEMINI.md", ".cursorrules", ".windsurfrules",
-            "QODER.md", ".kiro/steering/code-review-graph.md",
-            ".github/instructions/code-review-graph.instructions.md",
+            "QODER.md", ".kiro/steering/graph_engine.md",
+            ".github/instructions/graph_engine.instructions.md",
             "CODEBUDDY.md",
         }
 
@@ -892,7 +892,7 @@ class TestInjectPlatformInstructionsFiltering:
             tmp_path
             / ".github"
             / "instructions"
-            / "code-review-graph.instructions.md"
+            / "graph_engine.instructions.md"
         ).exists()
 
     def test_cursor_writes_only_cursor_files(self, tmp_path):
@@ -1046,7 +1046,7 @@ class TestCodeBuddyPlatform:
         data = json.loads(skills_module._strip_jsonc(written))
         assert data["dashboard"] == "https://example.test/a,b"
         assert data["mcpServers"]["existing"]["command"] == "existing"
-        assert data["mcpServers"]["code-review-graph"]["type"] == "stdio"
+        assert data["mcpServers"]["reviewgraph"]["type"] == "stdio"
 
     def test_all_dedupes_only_claude_and_codebuddy_shared_contract(
         self, tmp_path, capsys
@@ -1073,8 +1073,8 @@ class TestCodeBuddyPlatform:
 
         assert configured == ["Claude Code", "CodeBuddy Code", "Other shared client"]
         data = json.loads(shared_path.read_text(encoding="utf-8"))
-        assert "code-review-graph" in data["mcpServers"]
-        assert "code-review-graph" in data["servers"]
+        assert "reviewgraph" in data["mcpServers"]
+        assert "reviewgraph" in data["servers"]
         # Claude and CodeBuddy share one exact contract/write. A different
         # contract that happens to share the path must still be processed.
         assert capsys.readouterr().out.count(f"configured {shared_path}") == 2
@@ -1099,7 +1099,7 @@ class TestCodeBuddyPlatform:
         assert "skipping to avoid data loss" in capsys.readouterr().out
 
     def test_project_skills_use_uppercase_skill_file(self, tmp_path):
-        from code_review_graph.skills import install_codebuddy_skills
+        from graph_engine.skills import install_codebuddy_skills
 
         skills_root = install_codebuddy_skills(tmp_path)
 
@@ -1120,7 +1120,7 @@ class TestCodeBuddyPlatform:
     def test_project_hooks_preserve_user_settings_and_resolve_repo_at_runtime(
         self, tmp_path
     ):
-        from code_review_graph.skills import install_codebuddy_hooks
+        from graph_engine.skills import install_codebuddy_hooks
 
         repo_root = tmp_path / "repo with spaces"
         settings_path = repo_root / ".codebuddy" / "settings.json"
@@ -1151,19 +1151,19 @@ class TestCodeBuddyPlatform:
             for entries in data["hooks"].values()
             for entry in entries
             for hook in entry["hooks"]
-            if "code-review-graph" in hook.get("command", "")
+            if "reviewgraph" in hook.get("command", "")
         ]
         assert installed
         for hook in installed:
             command = hook["command"]
-            assert "command -v code-review-graph" in command
+            assert "command -v reviewgraph" in command
             assert "git rev-parse --show-toplevel" in command
             assert str(repo_root) not in command
 
         crg_entry = next(
             entry
             for entry in data["hooks"]["PostToolUse"]
-            if any("code-review-graph" in hook.get("command", "") for hook in entry["hooks"])
+            if any("reviewgraph" in hook.get("command", "") for hook in entry["hooks"])
         )
         assert crg_entry["matcher"] == "Edit|Write|Bash"
 
@@ -1189,7 +1189,7 @@ class TestInstallPlatformConfigs:
             configured = install_platform_configs(tmp_path, target="codex")
         assert "Codex" in configured
         data = tomllib.loads(codex_config.read_text())
-        entry = data["mcp_servers"]["code-review-graph"]
+        entry = data["mcp_servers"]["reviewgraph"]
         assert entry["type"] == "stdio"
         assert "serve" in entry["args"]
 
@@ -1216,7 +1216,7 @@ class TestInstallPlatformConfigs:
         assert data["model"] == "gpt-5.4"
         assert data["mcp_servers"]["other"]["command"] == "other"
         expected_cmd, _ = _detect_serve_command()
-        assert data["mcp_servers"]["code-review-graph"]["command"] == expected_cmd
+        assert data["mcp_servers"]["reviewgraph"]["command"] == expected_cmd
 
     def test_install_codex_no_duplicate(self, tmp_path):
         codex_config = tmp_path / ".codex" / "config.toml"
@@ -1226,7 +1226,7 @@ class TestInstallPlatformConfigs:
                 [
                     "[mcp_servers.code-review-graph]",
                     'command = "uvx"',
-                    'args = ["code-review-graph", "serve"]',
+                    'args = ["reviewgraph", "serve"]',
                     'type = "stdio"',
                     "",
                 ]
@@ -1244,7 +1244,7 @@ class TestInstallPlatformConfigs:
             },
         ):
             install_platform_configs(tmp_path, target="codex")
-        assert codex_config.read_text().count("[mcp_servers.code-review-graph]") == 1
+        assert codex_config.read_text().count("[mcp_servers.reviewgraph]") == 1
 
     def test_install_cursor_config(self, tmp_path):
         with patch.dict(
@@ -1258,8 +1258,8 @@ class TestInstallPlatformConfigs:
         config_path = tmp_path / ".cursor" / "mcp.json"
         assert config_path.exists()
         data = json.loads(config_path.read_text())
-        assert "code-review-graph" in data["mcpServers"]
-        assert data["mcpServers"]["code-review-graph"]["type"] == "stdio"
+        assert "reviewgraph" in data["mcpServers"]
+        assert data["mcpServers"]["reviewgraph"]["type"] == "stdio"
 
     def test_install_windsurf_config(self, tmp_path):
         windsurf_dir = tmp_path / ".codeium" / "windsurf"
@@ -1278,7 +1278,7 @@ class TestInstallPlatformConfigs:
             configured = install_platform_configs(tmp_path, target="windsurf")
         assert "Windsurf" in configured
         data = json.loads(config_path.read_text())
-        entry = data["mcpServers"]["code-review-graph"]
+        entry = data["mcpServers"]["reviewgraph"]
         assert "type" not in entry
         expected_cmd, _ = _detect_serve_command()
         assert entry["command"] == expected_cmd
@@ -1300,7 +1300,7 @@ class TestInstallPlatformConfigs:
         assert "Zed" in configured
         data = json.loads(zed_settings.read_text())
         assert "context_servers" in data
-        assert "code-review-graph" in data["context_servers"]
+        assert "reviewgraph" in data["context_servers"]
 
     def test_install_continue_config(self, tmp_path):
         continue_dir = tmp_path / ".continue"
@@ -1320,7 +1320,7 @@ class TestInstallPlatformConfigs:
         assert "Continue" in configured
         data = json.loads(config_path.read_text())
         assert isinstance(data["mcpServers"], list)
-        assert data["mcpServers"][0]["name"] == "code-review-graph"
+        assert data["mcpServers"][0]["name"] == "reviewgraph"
         assert data["mcpServers"][0]["type"] == "stdio"
 
     def test_install_opencode_config(self, tmp_path):
@@ -1328,7 +1328,7 @@ class TestInstallPlatformConfigs:
         assert "OpenCode" in configured
         config_path = tmp_path / "opencode.jsonc"
         data = json.loads(config_path.read_text())
-        entry = data["mcp"]["code-review-graph"]
+        entry = data["mcp"]["reviewgraph"]
         command, args = _detect_serve_command()
         assert entry == {
             "type": "local",
@@ -1352,7 +1352,7 @@ class TestInstallPlatformConfigs:
         assert "// keep this server" in written
         data = json.loads(skills_module._strip_jsonc(written))
         assert "other" in data["mcp"]
-        assert "code-review-graph" in data["mcp"]
+        assert "reviewgraph" in data["mcp"]
         assert (tmp_path / "opencode.json").read_text(encoding="utf-8") == "{}"
 
     def test_install_opencode_uses_existing_json(self, tmp_path):
@@ -1363,13 +1363,13 @@ class TestInstallPlatformConfigs:
 
         data = json.loads(config_path.read_text(encoding="utf-8"))
         assert "other" in data["mcp"]
-        assert "code-review-graph" in data["mcp"]
+        assert "reviewgraph" in data["mcp"]
         assert not (tmp_path / "opencode.jsonc").exists()
 
     def test_install_opencode_warns_about_legacy_dotfile(self, tmp_path, capsys):
         legacy = tmp_path / ".opencode.json"
         legacy.write_text(
-            json.dumps({"mcpServers": {"code-review-graph": {"command": "uvx"}}}),
+            json.dumps({"mcpServers": {"reviewgraph": {"command": "uvx"}}}),
             encoding="utf-8",
         )
 
@@ -1396,7 +1396,7 @@ class TestInstallPlatformConfigs:
             configured = install_platform_configs(tmp_path, target="gemini-cli")
         assert "Gemini CLI" in configured
         data = json.loads(gemini_config.read_text())
-        entry = data["mcpServers"]["code-review-graph"]
+        entry = data["mcpServers"]["reviewgraph"]
         assert "type" not in entry
         assert entry["args"][-1] == "serve"
 
@@ -1416,7 +1416,7 @@ class TestInstallPlatformConfigs:
             configured = install_platform_configs(tmp_path, target="qwen")
         assert "Qwen Code" in configured
         data = json.loads(qwen_config.read_text())
-        entry = data["mcpServers"]["code-review-graph"]
+        entry = data["mcpServers"]["reviewgraph"]
         assert entry["type"] == "stdio"
         assert entry["args"][-1] == "serve"
 
@@ -1441,7 +1441,7 @@ class TestInstallPlatformConfigs:
             install_platform_configs(tmp_path, target="qwen")
         data = json.loads(qwen_config.read_text())
         assert "other-server" in data["mcpServers"]
-        assert "code-review-graph" in data["mcpServers"]
+        assert "reviewgraph" in data["mcpServers"]
 
     def test_install_all_detected(self, tmp_path):
         """Installing 'all' configures auto-detected platforms."""
@@ -1464,7 +1464,7 @@ class TestInstallPlatformConfigs:
                 "gemini-cli": {**PLATFORMS["gemini-cli"], "detect": lambda: False},
             },
         ):
-            with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+            with patch("graph_engine.skills.Path.home", return_value=tmp_path):
                 configured = install_platform_configs(tmp_path, target="all")
         assert "Codex" in configured
         assert "Claude Code" in configured
@@ -1481,7 +1481,7 @@ class TestInstallPlatformConfigs:
         install_platform_configs(tmp_path, target="claude")
         data = json.loads(mcp_path.read_text())
         assert "other-server" in data["mcpServers"]
-        assert "code-review-graph" in data["mcpServers"]
+        assert "reviewgraph" in data["mcpServers"]
 
     def test_dry_run_no_write(self, tmp_path):
         configured = install_platform_configs(tmp_path, target="claude", dry_run=True)
@@ -1497,7 +1497,7 @@ class TestInstallPlatformConfigs:
         config_path = tmp_path / ".continue" / "config.json"
         config_path.parent.mkdir(parents=True)
         existing = {
-            "mcpServers": [{"name": "code-review-graph", "command": "uvx", "args": ["serve"]}]
+            "mcpServers": [{"name": "reviewgraph", "command": "uvx", "args": ["serve"]}]
         }
         config_path.write_text(json.dumps(existing))
         with patch.dict(
@@ -1530,10 +1530,10 @@ class TestInstallPlatformConfigs:
         assert "Qoder" in configured
         data = json.loads(qoder_config.read_text())
         assert "mcpServers" in data
-        assert "code-review-graph" in data["mcpServers"]
-        assert data["mcpServers"]["code-review-graph"]["type"] == "stdio"
+        assert "reviewgraph" in data["mcpServers"]
+        assert data["mcpServers"]["reviewgraph"]["type"] == "stdio"
         expected_cmd, _ = _detect_serve_command()
-        assert data["mcpServers"]["code-review-graph"]["command"] == expected_cmd
+        assert data["mcpServers"]["reviewgraph"]["command"] == expected_cmd
 
 
 class TestGeminiCLIInstall:
@@ -1647,22 +1647,22 @@ class TestCursorHookScripts:
 
     def test_update_script_runs_update(self):
         scripts = _cursor_hook_scripts()
-        assert "code-review-graph update --skip-flows" in scripts["crg-update.sh"]
+        assert "reviewgraph update --skip-flows" in scripts["crg-update.sh"]
 
     def test_session_start_script_runs_status(self):
         scripts = _cursor_hook_scripts()
-        assert "code-review-graph status" in scripts["crg-session-start.sh"]
+        assert "reviewgraph status" in scripts["crg-session-start.sh"]
 
     def test_pre_commit_script_runs_detect_changes(self):
         scripts = _cursor_hook_scripts()
-        assert "code-review-graph detect-changes --brief" in scripts["crg-pre-commit.sh"]
+        assert "reviewgraph detect-changes --brief" in scripts["crg-pre-commit.sh"]
 
 
 class TestInstallCursorHooks:
     """Tests for install_cursor_hooks()."""
 
     def test_creates_hooks_json(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             result = install_cursor_hooks()
         hooks_json = tmp_path / ".cursor" / "hooks.json"
         assert hooks_json.exists()
@@ -1672,7 +1672,7 @@ class TestInstallCursorHooks:
         assert "afterFileEdit" in data["hooks"]
 
     def test_creates_hook_scripts(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_cursor_hooks()
         hooks_dir = tmp_path / ".cursor" / "hooks"
         assert (hooks_dir / "crg-update.sh").exists()
@@ -1681,7 +1681,7 @@ class TestInstallCursorHooks:
 
     @pytest.mark.skipif(sys.platform == "win32", reason="POSIX exec bits")
     def test_scripts_are_executable(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_cursor_hooks()
         hooks_dir = tmp_path / ".cursor" / "hooks"
         for script in hooks_dir.iterdir():
@@ -1701,7 +1701,7 @@ class TestInstallCursorHooks:
         }
         (cursor_dir / "hooks.json").write_text(json.dumps(existing))
 
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_cursor_hooks()
 
         data = json.loads((cursor_dir / "hooks.json").read_text())
@@ -1714,7 +1714,7 @@ class TestInstallCursorHooks:
         assert "stop" in data["hooks"]
 
     def test_no_duplicate_on_reinstall(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_cursor_hooks()
             install_cursor_hooks()
 
@@ -1729,7 +1729,7 @@ class TestInstallCursorHooks:
         cursor_dir.mkdir(parents=True)
         (cursor_dir / "hooks.json").write_text("not valid json{{{")
 
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             result = install_cursor_hooks()
 
         assert result.exists()
@@ -1756,12 +1756,12 @@ class TestKiroPlatform:
         config_path = tmp_path / ".kiro" / "settings" / "mcp.json"
         assert config_path.exists()
         data = json.loads(config_path.read_text())
-        assert "code-review-graph" in data["mcpServers"]
-        entry = data["mcpServers"]["code-review-graph"]
+        assert "reviewgraph" in data["mcpServers"]
+        entry = data["mcpServers"]["reviewgraph"]
         assert entry["type"] == "stdio"
 
     def test_install_kiro_preserves_existing_servers(self, tmp_path):
-        """Existing mcpServers entries are preserved when adding code-review-graph."""
+        """Existing mcpServers entries are preserved when adding graph_engine."""
         config_path = tmp_path / ".kiro" / "settings" / "mcp.json"
         config_path.parent.mkdir(parents=True)
         config_path.write_text(
@@ -1771,10 +1771,10 @@ class TestKiroPlatform:
         install_platform_configs(tmp_path, target="kiro")
         data = json.loads(config_path.read_text())
         assert "other-server" in data["mcpServers"]
-        assert "code-review-graph" in data["mcpServers"]
+        assert "reviewgraph" in data["mcpServers"]
 
     def test_install_kiro_no_duplicate(self, tmp_path):
-        """Second install skips when code-review-graph already exists."""
+        """Second install skips when reviewgraph already exists."""
         install_platform_configs(tmp_path, target="kiro")
         config_path = tmp_path / ".kiro" / "settings" / "mcp.json"
         first_content = config_path.read_text()
@@ -1782,13 +1782,13 @@ class TestKiroPlatform:
         second_content = config_path.read_text()
         assert first_content == second_content
         data = json.loads(second_content)
-        assert list(data["mcpServers"].keys()).count("code-review-graph") == 1
+        assert list(data["mcpServers"].keys()).count("reviewgraph") == 1
 
     def test_kiro_steering_file_written(self, tmp_path):
-        """inject_platform_instructions creates .kiro/steering/code-review-graph.md."""
+        """inject_platform_instructions creates .kiro/steering/graph_engine.md."""
         updated = inject_platform_instructions(tmp_path, target="kiro")
-        assert ".kiro/steering/code-review-graph.md" in updated
-        steering = tmp_path / ".kiro" / "steering" / "code-review-graph.md"
+        assert ".kiro/steering/graph_engine.md" in updated
+        steering = tmp_path / ".kiro" / "steering" / "graph_engine.md"
         assert steering.exists()
         content = steering.read_text()
         assert _CLAUDE_MD_SECTION_MARKER in content
@@ -1796,9 +1796,9 @@ class TestKiroPlatform:
     def test_kiro_steering_idempotent(self, tmp_path):
         """Running inject twice produces identical content."""
         inject_platform_instructions(tmp_path, target="kiro")
-        first = (tmp_path / ".kiro" / "steering" / "code-review-graph.md").read_text()
+        first = (tmp_path / ".kiro" / "steering" / "graph_engine.md").read_text()
         inject_platform_instructions(tmp_path, target="kiro")
-        second = (tmp_path / ".kiro" / "steering" / "code-review-graph.md").read_text()
+        second = (tmp_path / ".kiro" / "steering" / "graph_engine.md").read_text()
         assert first == second
 
     def test_kiro_included_in_all_when_detected(self, tmp_path):
@@ -1807,7 +1807,7 @@ class TestKiroPlatform:
         # Mock Path.home() to a dir without .kiro so only workspace detection fires
         fake_home = tmp_path / "fakehome"
         fake_home.mkdir()
-        with patch("code_review_graph.skills.Path.home", return_value=fake_home):
+        with patch("graph_engine.skills.Path.home", return_value=fake_home):
             configured = install_platform_configs(tmp_path, target="all")
         assert "Kiro" in configured
 
@@ -1816,7 +1816,7 @@ class TestKiroPlatform:
         (tmp_path / ".kiro").mkdir()
         fake_home = tmp_path / "fakehome"
         fake_home.mkdir()
-        with patch("code_review_graph.skills.Path.home", return_value=fake_home):
+        with patch("graph_engine.skills.Path.home", return_value=fake_home):
             configured = install_platform_configs(tmp_path, target="all")
         assert "Kiro" in configured
         config_path = tmp_path / ".kiro" / "settings" / "mcp.json"
@@ -1849,13 +1849,13 @@ class TestCopilotPlatform:
         config_path = tmp_path / ".vscode" / "mcp.json"
         assert config_path.exists()
         data = json.loads(config_path.read_text())
-        assert "code-review-graph" in data["servers"]
-        entry = data["servers"]["code-review-graph"]
+        assert "reviewgraph" in data["servers"]
+        entry = data["servers"]["reviewgraph"]
         assert entry["type"] == "stdio"
         assert "serve" in entry["args"]
 
     def test_install_copilot_preserves_existing_servers(self, tmp_path):
-        """Existing server entries are preserved when adding code-review-graph."""
+        """Existing server entries are preserved when adding graph_engine."""
         config_path = tmp_path / ".vscode" / "mcp.json"
         config_path.parent.mkdir(parents=True)
         config_path.write_text(
@@ -1865,10 +1865,10 @@ class TestCopilotPlatform:
         install_platform_configs(tmp_path, target="copilot")
         data = json.loads(config_path.read_text())
         assert "other-server" in data["servers"]
-        assert "code-review-graph" in data["servers"]
+        assert "reviewgraph" in data["servers"]
 
     def test_install_copilot_no_duplicate(self, tmp_path):
-        """Second install skips when code-review-graph already exists."""
+        """Second install skips when reviewgraph already exists."""
         install_platform_configs(tmp_path, target="copilot")
         config_path = tmp_path / ".vscode" / "mcp.json"
         first_content = config_path.read_text()
@@ -1876,12 +1876,12 @@ class TestCopilotPlatform:
         second_content = config_path.read_text()
         assert first_content == second_content
         data = json.loads(second_content)
-        assert list(data["servers"].keys()).count("code-review-graph") == 1
+        assert list(data["servers"].keys()).count("reviewgraph") == 1
 
     def test_copilot_instructions_file_written(self, tmp_path):
         """Copilot instructions use VS Code's auto-loaded workspace path."""
         updated = inject_platform_instructions(tmp_path, target="copilot")
-        expected = ".github/instructions/code-review-graph.instructions.md"
+        expected = ".github/instructions/graph_engine.instructions.md"
         assert updated == [expected]
         instructions = tmp_path / expected
         assert instructions.exists()
@@ -1894,7 +1894,7 @@ class TestCopilotPlatform:
             tmp_path
             / ".github"
             / "instructions"
-            / "code-review-graph.instructions.md"
+            / "graph_engine.instructions.md"
         )
         inject_platform_instructions(tmp_path, target="copilot")
         first = instructions.read_text()
@@ -1913,7 +1913,7 @@ class TestCopilotPlatform:
         """inject_platform_instructions with target='copilot' writes only copilot file."""
         updated = inject_platform_instructions(tmp_path, target="copilot")
         assert updated == [
-            ".github/instructions/code-review-graph.instructions.md"
+            ".github/instructions/graph_engine.instructions.md"
         ]
         assert not (tmp_path / "AGENTS.md").exists()
         assert not (tmp_path / "GEMINI.md").exists()
@@ -1928,9 +1928,9 @@ class TestCopilotPlatform:
             parents=True
         )
         with (
-            patch("code_review_graph.skills.Path.home", return_value=fake_home),
-            patch("code_review_graph.skills.platform.system", return_value="Unknown"),
-            patch("code_review_graph.skills.shutil.which", return_value=None),
+            patch("graph_engine.skills.Path.home", return_value=fake_home),
+            patch("graph_engine.skills.platform.system", return_value="Unknown"),
+            patch("graph_engine.skills.shutil.which", return_value=None),
         ):
             configured = install_platform_configs(tmp_path, target="all")
         assert "GitHub Copilot" in configured
@@ -1955,8 +1955,8 @@ class TestCopilotPlatform:
             return str(code_cli) if command == "code" else None
 
         with (
-            patch("code_review_graph.skills.Path.home", return_value=fake_home),
-            patch("code_review_graph.skills.shutil.which", side_effect=_which),
+            patch("graph_engine.skills.Path.home", return_value=fake_home),
+            patch("graph_engine.skills.shutil.which", side_effect=_which),
         ):
             assert _copilot_vscode_detected() is True
 
@@ -1967,9 +1967,9 @@ class TestCopilotPlatform:
             parents=True
         )
         with (
-            patch("code_review_graph.skills.Path.home", return_value=fake_home),
-            patch("code_review_graph.skills.platform.system", return_value="Unknown"),
-            patch("code_review_graph.skills.shutil.which", return_value=None),
+            patch("graph_engine.skills.Path.home", return_value=fake_home),
+            patch("graph_engine.skills.platform.system", return_value="Unknown"),
+            patch("graph_engine.skills.shutil.which", return_value=None),
         ):
             configured = install_platform_configs(tmp_path, target="all")
         assert "GitHub Copilot" not in configured
@@ -2011,14 +2011,14 @@ class TestCopilotCLIPlatform:
         assert config_path.exists()
         data = json.loads(config_path.read_text())
         assert "servers" not in data
-        entry = data["mcpServers"]["code-review-graph"]
+        entry = data["mcpServers"]["reviewgraph"]
         assert entry["type"] == "local"
         assert entry["tools"] == ["*"]
         assert entry["cwd"] == str(tmp_path)
         assert "serve" in entry["args"]
 
     def test_install_copilot_cli_preserves_existing_servers(self, tmp_path):
-        """Existing server entries are preserved when adding code-review-graph."""
+        """Existing server entries are preserved when adding graph_engine."""
         fake_home = tmp_path / "fakehome"
         config_path = fake_home / ".copilot" / "mcp-config.json"
         config_path.parent.mkdir(parents=True)
@@ -2044,7 +2044,7 @@ class TestCopilotCLIPlatform:
             install_platform_configs(tmp_path, target="copilot-cli")
         data = json.loads(config_path.read_text())
         assert data["mcpServers"]["other-server"] == {"command": "other"}
-        assert "code-review-graph" in data["mcpServers"]
+        assert "reviewgraph" in data["mcpServers"]
         assert data["theme"] == "dark"
 
     def test_install_copilot_cli_migrates_empty_legacy_entry(self, tmp_path):
@@ -2058,7 +2058,7 @@ class TestCopilotCLIPlatform:
                         "current-server": {"command": "keep-current"},
                     },
                     "servers": {
-                        "code-review-graph": {},
+                        "reviewgraph": {},
                         "legacy-server": {"command": "keep-legacy"},
                     },
                     "theme": "dark",
@@ -2082,7 +2082,7 @@ class TestCopilotCLIPlatform:
         assert data["mcpServers"]["current-server"] == {
             "command": "keep-current",
         }
-        entry = data["mcpServers"]["code-review-graph"]
+        entry = data["mcpServers"]["reviewgraph"]
         assert entry["type"] == "local"
         assert entry["tools"] == ["*"]
         assert data["servers"] == {
@@ -2095,7 +2095,7 @@ class TestCopilotCLIPlatform:
         config_path = tmp_path / "fakehome" / ".copilot" / "mcp-config.json"
         config_path.parent.mkdir(parents=True)
         config_path.write_text(
-            json.dumps({"servers": {"code-review-graph": {}}}),
+            json.dumps({"servers": {"reviewgraph": {}}}),
             encoding="utf-8",
         )
         with patch.dict(
@@ -2112,7 +2112,7 @@ class TestCopilotCLIPlatform:
 
         data = json.loads(config_path.read_text(encoding="utf-8"))
         assert "servers" not in data
-        assert "code-review-graph" in data["mcpServers"]
+        assert "reviewgraph" in data["mcpServers"]
 
     def test_install_copilot_cli_reinstall_is_byte_for_byte_idempotent(
         self, tmp_path
@@ -2139,7 +2139,7 @@ class TestCopilotCLIPlatform:
     def test_copilot_cli_writes_only_copilot_instructions(self, tmp_path):
         """Copilot CLI injection writes its GitHub instruction file."""
         updated = inject_platform_instructions(tmp_path, target="copilot-cli")
-        expected = ".github/instructions/code-review-graph.instructions.md"
+        expected = ".github/instructions/graph_engine.instructions.md"
         assert updated == [expected]
         instructions = tmp_path / expected
         assert instructions.exists()
@@ -2150,7 +2150,7 @@ class TestCopilotCLIPlatform:
         self, tmp_path
     ):
         """Reinstall removes only CRG content from the superseded path."""
-        legacy = tmp_path / ".github" / "code-review-graph.instruction.md"
+        legacy = tmp_path / ".github" / "graph_engine.instruction.md"
         legacy.parent.mkdir(parents=True)
         legacy.write_text(
             "# User notes\n\n" + skills_module._COPILOT_SECTION,
@@ -2164,7 +2164,7 @@ class TestCopilotCLIPlatform:
             tmp_path
             / ".github"
             / "instructions"
-            / "code-review-graph.instructions.md"
+            / "graph_engine.instructions.md"
         )
         assert current.exists()
 
@@ -2172,7 +2172,7 @@ class TestCopilotCLIPlatform:
         self, tmp_path
     ):
         """A legacy file containing only the generated section is removed."""
-        legacy = tmp_path / ".github" / "code-review-graph.instruction.md"
+        legacy = tmp_path / ".github" / "graph_engine.instruction.md"
         legacy.parent.mkdir(parents=True)
         legacy.write_text(skills_module._COPILOT_SECTION, encoding="utf-8")
 
@@ -2184,7 +2184,7 @@ class TestCopilotCLIPlatform:
         self, tmp_path
     ):
         """A user-authored file without the CRG marker is never rewritten."""
-        legacy = tmp_path / ".github" / "code-review-graph.instruction.md"
+        legacy = tmp_path / ".github" / "graph_engine.instruction.md"
         legacy.parent.mkdir(parents=True)
         legacy.write_text("# User instructions\n", encoding="utf-8")
 
@@ -2233,34 +2233,34 @@ class TestDetectServeCommand:
         monkeypatch.setenv("POETRY_ACTIVE", "1")
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/poetry" if x == "poetry" else None,
         )
         cmd, args = _detect_serve_command()
         assert cmd == "poetry"
-        assert args == ["run", "code-review-graph", "serve"]
+        assert args == ["run", "reviewgraph", "serve"]
 
     def test_virtual_env_pypoetry_returns_poetry_run(self, monkeypatch):
         """VIRTUAL_ENV with 'pypoetry' (poetry run) → 'poetry run' invocation."""
         monkeypatch.delenv("POETRY_ACTIVE", raising=False)
         monkeypatch.setenv("VIRTUAL_ENV", "/home/user/.cache/pypoetry/virtualenvs/proj-abc123")
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/poetry" if x == "poetry" else None,
         )
         cmd, args = _detect_serve_command()
         assert cmd == "poetry"
-        assert args == ["run", "code-review-graph", "serve"]
+        assert args == ["run", "reviewgraph", "serve"]
 
     def test_poetry_env_without_poetry_on_path_falls_through(self, monkeypatch):
         """If poetry venv is detected but poetry binary is missing, fall through."""
         monkeypatch.setenv("POETRY_ACTIVE", "1")
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
         monkeypatch.delenv("UV_PROJECT_ENVIRONMENT", raising=False)
-        monkeypatch.setattr("code_review_graph.skills._in_uv_project", lambda: False)
+        monkeypatch.setattr("graph_engine.skills._in_uv_project", lambda: False)
         # poetry not on PATH → should fall through to uvx
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/uvx" if x == "uvx" else None,
         )
         cmd, _ = _detect_serve_command()
@@ -2272,12 +2272,12 @@ class TestDetectServeCommand:
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
         monkeypatch.setenv("UV_PROJECT_ENVIRONMENT", "/some/.venv")
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/uv" if x == "uv" else None,
         )
         cmd, args = _detect_serve_command()
         assert cmd == "uv"
-        assert args == ["run", "code-review-graph", "serve"]
+        assert args == ["run", "reviewgraph", "serve"]
 
     def test_uv_lock_detection_returns_uv_run(self, monkeypatch, tmp_path):
         """uv.lock alongside sys.executable → detected as a uv project."""
@@ -2289,40 +2289,40 @@ class TestDetectServeCommand:
         (tmp_path / "uv.lock").write_text("")
         fake_python = venv / "python"
         fake_python.write_text("")
-        monkeypatch.setattr("code_review_graph.skills.sys.executable", str(fake_python))
+        monkeypatch.setattr("graph_engine.skills.sys.executable", str(fake_python))
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/uv" if x == "uv" else None,
         )
         assert _in_uv_project() is True
         cmd, args = _detect_serve_command()
         assert cmd == "uv"
-        assert args == ["run", "code-review-graph", "serve"]
+        assert args == ["run", "reviewgraph", "serve"]
 
     def test_uvx_fallback(self, monkeypatch):
         """Not in Poetry/uv but uvx available → use uvx (original behaviour)."""
         monkeypatch.delenv("POETRY_ACTIVE", raising=False)
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
         monkeypatch.delenv("UV_PROJECT_ENVIRONMENT", raising=False)
-        monkeypatch.setattr("code_review_graph.skills._in_uv_project", lambda: False)
+        monkeypatch.setattr("graph_engine.skills._in_uv_project", lambda: False)
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/uvx" if x == "uvx" else None,
         )
         cmd, args = _detect_serve_command()
         assert cmd == "uvx"
-        assert args == ["code-review-graph", "serve"]
+        assert args == ["reviewgraph", "serve"]
 
     def test_sys_executable_fallback(self, monkeypatch):
         """Nothing else available → fall back to sys.executable -m."""
         monkeypatch.delenv("POETRY_ACTIVE", raising=False)
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
         monkeypatch.delenv("UV_PROJECT_ENVIRONMENT", raising=False)
-        monkeypatch.setattr("code_review_graph.skills._in_uv_project", lambda: False)
-        monkeypatch.setattr("code_review_graph.skills.shutil.which", lambda _: None)
+        monkeypatch.setattr("graph_engine.skills._in_uv_project", lambda: False)
+        monkeypatch.setattr("graph_engine.skills.shutil.which", lambda _: None)
         cmd, args = _detect_serve_command()
         assert cmd == sys.executable
-        assert args == ["-m", "code_review_graph", "serve"]
+        assert args == ["-m", "reviewgraph", "serve"]
 
     def test_poetry_takes_priority_over_uv(self, monkeypatch):
         """Poetry detection wins even when UV_PROJECT_ENVIRONMENT is also set."""
@@ -2330,7 +2330,7 @@ class TestDetectServeCommand:
         monkeypatch.delenv("VIRTUAL_ENV", raising=False)
         monkeypatch.setenv("UV_PROJECT_ENVIRONMENT", "/some/.venv")
         monkeypatch.setattr(
-            "code_review_graph.skills.shutil.which",
+            "graph_engine.skills.shutil.which",
             lambda x: "/usr/bin/poetry" if x == "poetry" else None,
         )
         cmd, _ = _detect_serve_command()
@@ -2341,8 +2341,8 @@ class TestDetectServeCommand:
         fake_python = tmp_path / "bin" / "python"
         fake_python.parent.mkdir(parents=True)
         fake_python.write_text("")
-        monkeypatch.setattr("code_review_graph.skills.sys.executable", str(fake_python))
-        monkeypatch.setattr("code_review_graph.skills.Path.home", staticmethod(lambda: tmp_path))
+        monkeypatch.setattr("graph_engine.skills.sys.executable", str(fake_python))
+        monkeypatch.setattr("graph_engine.skills.Path.home", staticmethod(lambda: tmp_path))
         assert _in_uv_project() is False
 
 
@@ -2366,17 +2366,17 @@ class TestOpenCodePluginContent:
     def test_hooks_file_edited_event(self):
         content = _opencode_plugin_content()
         assert '"file.edited"' in content
-        assert "code-review-graph update --skip-flows" in content
+        assert "reviewgraph update --skip-flows" in content
 
     def test_hooks_session_created_event(self):
         content = _opencode_plugin_content()
         assert '"session.created"' in content
-        assert "code-review-graph status" in content
+        assert "reviewgraph status" in content
 
     def test_hooks_tool_execute_before_event(self):
         content = _opencode_plugin_content()
         assert '"tool.execute.before"' in content
-        assert "code-review-graph detect-changes --brief" in content
+        assert "reviewgraph detect-changes --brief" in content
 
     def test_has_git_commit_detection(self):
         """Pre-commit hook should match git commit commands."""
@@ -2395,21 +2395,21 @@ class TestInstallOpenCodePlugin:
     """Tests for install_opencode_plugin()."""
 
     def test_creates_plugin_file(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             result = install_opencode_plugin()
         plugin_path = tmp_path / ".config" / "opencode" / "plugins" / "crg-plugin.ts"
         assert plugin_path.exists()
         assert result == plugin_path
 
     def test_plugin_file_has_correct_content(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             result = install_opencode_plugin()
         content = result.read_text(encoding="utf-8")
         assert "export default" in content
         assert "file.edited" in content
 
     def test_creates_parent_directories(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_opencode_plugin()
         plugins_dir = tmp_path / ".config" / "opencode" / "plugins"
         assert plugins_dir.is_dir()
@@ -2420,7 +2420,7 @@ class TestInstallOpenCodePlugin:
         old_plugin = plugins_dir / "crg-plugin.ts"
         old_plugin.write_text("// old version")
 
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_opencode_plugin()
 
         content = old_plugin.read_text()
@@ -2428,7 +2428,7 @@ class TestInstallOpenCodePlugin:
         assert "export default" in content
 
     def test_idempotent(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_opencode_plugin()
             result = install_opencode_plugin()
         content = result.read_text()
@@ -2437,7 +2437,7 @@ class TestInstallOpenCodePlugin:
         assert content.count("export default") == 1
 
     def test_plugin_is_typescript(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             result = install_opencode_plugin()
         assert result.suffix == ".ts"
 
@@ -2447,14 +2447,14 @@ class TestInstallOpenCodePlugin:
         other_plugin = plugins_dir / "other-plugin.ts"
         other_plugin.write_text("// other plugin")
 
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             install_opencode_plugin()
 
         assert other_plugin.exists()
         assert other_plugin.read_text() == "// other plugin"
 
     def test_file_is_utf8(self, tmp_path):
-        with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+        with patch("graph_engine.skills.Path.home", return_value=tmp_path):
             result = install_opencode_plugin()
         # Should be readable as UTF-8 without errors
         content = result.read_text(encoding="utf-8")
@@ -2537,7 +2537,7 @@ class TestInstallConfigDataLoss:
 
         assert "Zed" in configured
         data = json.loads(settings.read_text(encoding="utf-8"))
-        assert "code-review-graph" in data["context_servers"]
+        assert "reviewgraph" in data["context_servers"]
 
     def test_jsonc_comments_still_supported(self, tmp_path):
         """Guard: the empty-file / array checks must not regress main's
@@ -2560,7 +2560,7 @@ class TestInstallConfigDataLoss:
         data = json.loads(skills_module._strip_jsonc(written))
         # User's existing setting preserved AND our server added.
         assert data["theme"] == "One Dark"
-        assert "code-review-graph" in data["context_servers"]
+        assert "reviewgraph" in data["context_servers"]
 
     def test_array_platform_preserves_wrong_typed_server_collection(
         self, tmp_path, capsys
@@ -2610,7 +2610,7 @@ class TestGeneratedHooksGuardGitRepo:
         # Must short-circuit on the git check before calling update.
         assert "git rev-parse --git-dir" in cmd
         idx_guard = cmd.index("git rev-parse --git-dir")
-        idx_update = cmd.index("code-review-graph update")
+        idx_update = cmd.index("reviewgraph update")
         assert idx_guard < idx_update, "git guard must precede the update call"
 
     def test_session_start_command_guarded_by_git_check(self):
@@ -2618,7 +2618,7 @@ class TestGeneratedHooksGuardGitRepo:
         cmd = config["hooks"]["SessionStart"][0]["hooks"][0]["command"]
         assert "git rev-parse --git-dir" in cmd
         idx_guard = cmd.index("git rev-parse --git-dir")
-        idx_status = cmd.index("code-review-graph status")
+        idx_status = cmd.index("reviewgraph status")
         assert idx_guard < idx_status
 
 
@@ -2632,7 +2632,7 @@ class TestInstallSkillsRespectTargetPlatform:
     def _run_install(self, tmp_path, platform: str) -> bool:
         import argparse
 
-        from code_review_graph import cli as crg_cli
+        from reviewgraph import cli as crg_cli
 
         args = argparse.Namespace(
             command="install",
@@ -2645,7 +2645,7 @@ class TestInstallSkillsRespectTargetPlatform:
             no_instructions=True,
         )
         with patch("builtins.input", return_value="n"):
-            with patch("code_review_graph.skills.Path.home", return_value=tmp_path):
+            with patch("graph_engine.skills.Path.home", return_value=tmp_path):
                 crg_cli._handle_init(args)
         return (tmp_path / ".claude" / "skills").is_dir()
 
@@ -2697,7 +2697,7 @@ class TestNonAsciiConfigPreservation:
         assert "\\u" not in raw
 
     def test_install_codex_hooks_preserves_non_ascii_field(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
+        monkeypatch.setattr("graph_engine.skills.Path.home", lambda: tmp_path)
         codex_dir = tmp_path / ".codex"
         codex_dir.mkdir()
         (codex_dir / "hooks.json").write_text(
@@ -2724,7 +2724,7 @@ class TestNonAsciiConfigPreservation:
         assert "\\u" not in raw
 
     def test_install_cursor_hooks_preserves_non_ascii_field(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
+        monkeypatch.setattr("graph_engine.skills.Path.home", lambda: tmp_path)
         cursor_dir = tmp_path / ".cursor"
         cursor_dir.mkdir()
         (cursor_dir / "hooks.json").write_text(

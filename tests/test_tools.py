@@ -8,14 +8,14 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import code_review_graph.tools._common as common_module
-import code_review_graph.tools.analysis_tools as analysis_module
-import code_review_graph.tools.docs as docs_module
-import code_review_graph.tools.query as query_module
-from code_review_graph.graph import GraphStore, _sanitize_name, node_to_dict
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.tools import (
+import graph_engine.tools._common as common_module
+import graph_engine.tools.analysis_tools as analysis_module
+import graph_engine.tools.docs as docs_module
+import graph_engine.tools.query as query_module
+from graph_engine.graph import GraphStore, _sanitize_name, node_to_dict
+from graph_engine.incremental import full_build
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.tools import (
     _validate_repo_root,
     get_affected_flows_func,
     get_architecture_overview_func,
@@ -154,9 +154,9 @@ class TestTools:
 
     def test_search_mode_fts(self, monkeypatch, tmp_path):
         """semantic_search_nodes reports search_mode='fts' when only FTS contributes."""
-        import code_review_graph.tools.query as query_mod
-        from code_review_graph.search import rebuild_fts_index
-        from code_review_graph.tools.query import semantic_search_nodes
+        import graph_engine.tools.query as query_mod
+        from graph_engine.search import rebuild_fts_index
+        from graph_engine.tools.query import semantic_search_nodes
 
         tmp_db = tmp_path / "test.db"
         store = GraphStore(tmp_db)
@@ -908,7 +908,7 @@ class TestQueryGraphTestsFor:
         # _validate_repo_root requires .git or .code-review-graph.
         (self.repo_root / ".code-review-graph").mkdir()
         # find_project_root / get_db_path look here for the DB.
-        from code_review_graph.incremental import get_db_path
+        from graph_engine.incremental import get_db_path
         self.db_path = get_db_path(self.repo_root)
         self.store = GraphStore(str(self.db_path))
         self._seed_graph()
@@ -972,7 +972,7 @@ class TestQueryGraphTestsFor:
         self.store.close()
 
     def test_query_graph_tests_for_finds_direct_edge(self):
-        from code_review_graph.tools import query_graph
+        from graph_engine.tools import query_graph
         result = query_graph(
             pattern="tests_for",
             target="/src/calc.py::combine",
@@ -992,7 +992,7 @@ class TestQueryGraphTestsFor:
         }
 
     def test_query_graph_marks_naming_only_test_as_inferred(self):
-        from code_review_graph.tools import query_graph
+        from graph_engine.tools import query_graph
 
         result = query_graph(
             pattern="tests_for",
@@ -1004,7 +1004,7 @@ class TestQueryGraphTestsFor:
         assert match["inferred_by"] == "naming_convention"
 
     def test_query_graph_tests_for_finds_one_hop_indirect_test(self):
-        from code_review_graph.tools import query_graph
+        from graph_engine.tools import query_graph
 
         result = query_graph(
             pattern="tests_for",
@@ -1029,7 +1029,7 @@ class TestQueryGraphTestsFor:
         assert minimal["results"][0]["indirect"] is True
 
     def test_query_graph_tests_for_keeps_ambiguous_target_explicit(self):
-        from code_review_graph.tools import query_graph
+        from graph_engine.tools import query_graph
 
         result = query_graph(
             pattern="tests_for",
@@ -1089,7 +1089,7 @@ class TestGetDocsSection:
         assert len(result["content"]) > 0
 
     def test_packaged_docs_lookup_from_outside_repo(self, tmp_path, monkeypatch):
-        package_dir = tmp_path / "site-packages" / "code_review_graph"
+        package_dir = tmp_path / "site-packages" / "graph_engine"
         tools_dir = package_dir / "tools"
         docs_dir = package_dir / "docs"
         tools_dir.mkdir(parents=True)
@@ -1315,7 +1315,7 @@ class TestSanitizeName:
 
     def test_node_to_dict_uses_sanitize(self):
         """Verify that node_to_dict actually calls _sanitize_name."""
-        from code_review_graph.graph import GraphNode
+        from graph_engine.graph import GraphNode
         node = GraphNode(
             id=1, kind="Function", name="evil\x00name",
             qualified_name="/test.py::evil\x00name", file_path="/test.py",
@@ -1407,7 +1407,7 @@ class TestFlowTools:
 
     def _build_flows(self):
         """Trace and store flows."""
-        from code_review_graph.flows import store_flows, trace_flows
+        from graph_engine.flows import store_flows, trace_flows
         flows = trace_flows(self.store)
         store_flows(self.store, flows)
 
@@ -1682,7 +1682,7 @@ class TestCommunityTools:
 
     def _build_communities(self):
         """Detect and store communities."""
-        from code_review_graph.communities import detect_communities, store_communities
+        from graph_engine.communities import detect_communities, store_communities
         comms = detect_communities(self.store)
         store_communities(self.store, comms)
 
@@ -1849,10 +1849,10 @@ class TestBuildPostprocess:
     def test_postprocess_none_produces_nodes_no_flows(self):
         from unittest.mock import patch
 
-        from code_review_graph.tools.build import build_or_update_graph
+        from graph_engine.tools.build import build_or_update_graph
 
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["sample.py"],
         ):
             result = build_or_update_graph(
@@ -1869,10 +1869,10 @@ class TestBuildPostprocess:
     def test_postprocess_minimal_has_fts_no_flows(self, capsys):
         from unittest.mock import patch
 
-        from code_review_graph.tools.build import build_or_update_graph
+        from graph_engine.tools.build import build_or_update_graph
 
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["sample.py"],
         ):
             result = build_or_update_graph(
@@ -1895,10 +1895,10 @@ class TestBuildPostprocess:
     def test_postprocess_full_matches_default(self, capsys):
         from unittest.mock import patch
 
-        from code_review_graph.tools.build import build_or_update_graph
+        from graph_engine.tools.build import build_or_update_graph
 
         with patch(
-            "code_review_graph.incremental.get_all_tracked_files",
+            "graph_engine.incremental.get_all_tracked_files",
             return_value=["sample.py"],
         ):
             result = build_or_update_graph(
@@ -1983,7 +1983,7 @@ class TestBuildPostprocessResolvesBareEndpoints:
         return row["source_qualified"]
 
     def test_minimal_build_postprocess_resolves(self):
-        from code_review_graph.tools.build import _run_postprocess
+        from graph_engine.tools.build import _run_postprocess
 
         result: dict = {}
         warnings = _run_postprocess(self.store, result, "minimal")
@@ -1993,7 +1993,7 @@ class TestBuildPostprocessResolvesBareEndpoints:
         assert self._tested_by_source(self.store) == "/repo/src/app.py::parse"
 
     def test_none_build_postprocess_skips_resolution(self):
-        from code_review_graph.tools.build import _run_postprocess
+        from graph_engine.tools.build import _run_postprocess
 
         result: dict = {}
         _run_postprocess(self.store, result, "none")
@@ -2002,7 +2002,7 @@ class TestBuildPostprocessResolvesBareEndpoints:
         assert self._tested_by_source(self.store) == "parse"
 
     def test_manual_run_postprocess_resolves(self, monkeypatch):
-        import code_review_graph.tools.build as build_module
+        import graph_engine.tools.build as build_module
 
         monkeypatch.setattr(
             build_module,
@@ -2024,7 +2024,7 @@ class TestBuildPostprocessResolvesBareEndpoints:
             reopened.close()
 
     def _stored_build_state(self) -> str | None:
-        from code_review_graph.tools.build import BUILD_STATE_KEY
+        from graph_engine.tools.build import BUILD_STATE_KEY
 
         reopened = GraphStore(self.db_path)
         try:
@@ -2040,9 +2040,9 @@ class TestBuildPostprocessResolvesBareEndpoints:
         Leaving the marker set after a successful repair would promote every
         later update to a full rebuild of a graph that is already right.
         """
-        import code_review_graph.tools.build as build_module
-        from code_review_graph.build_state import POSTPROCESS_PENDING
-        from code_review_graph.tools.build import BUILD_COMPLETE, BUILD_STATE_KEY
+        import graph_engine.tools.build as build_module
+        from graph_engine.build_state import POSTPROCESS_PENDING
+        from graph_engine.tools.build import BUILD_COMPLETE, BUILD_STATE_KEY
 
         self.store.set_metadata(BUILD_STATE_KEY, POSTPROCESS_PENDING)
         monkeypatch.setattr(
@@ -2070,8 +2070,8 @@ class TestBuildPostprocessResolvesBareEndpoints:
         can notice the files the dead build never parsed. Clearing the marker
         there hands back a half-built graph labelled healthy.
         """
-        import code_review_graph.tools.build as build_module
-        from code_review_graph.tools.build import BUILD_IN_PROGRESS, BUILD_STATE_KEY
+        import graph_engine.tools.build as build_module
+        from graph_engine.tools.build import BUILD_IN_PROGRESS, BUILD_STATE_KEY
 
         self.store.set_metadata(BUILD_STATE_KEY, BUILD_IN_PROGRESS)
         monkeypatch.setattr(
@@ -2229,7 +2229,7 @@ class TestComputeSummaries:
         """risk_index rows must match per-node caller counts, test
         coverage, security flag, and risk scores derived from the
         seeded graph."""
-        from code_review_graph.tools.build import _compute_summaries
+        from graph_engine.tools.build import _compute_summaries
 
         _compute_summaries(self.store)
 
@@ -2293,7 +2293,7 @@ class TestComputeSummaries:
         symbols, size, and dominant language."""
         import json as _json
 
-        from code_review_graph.tools.build import _compute_summaries
+        from graph_engine.tools.build import _compute_summaries
 
         _compute_summaries(self.store)
 
@@ -2350,7 +2350,7 @@ class TestComputeSummaries:
         """
         import re
 
-        from code_review_graph.tools.build import _compute_summaries
+        from graph_engine.tools.build import _compute_summaries
 
         conn = self.store._conn
         per_row_selects: list[str] = []
@@ -2422,7 +2422,7 @@ class TestGetMinimalContext:
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_returns_required_keys(self):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         result = get_minimal_context(
             task="explore codebase", repo_root=str(self.root),
@@ -2441,14 +2441,14 @@ class TestGetMinimalContext:
         discover_review_changes call replaces all of them, and the base it
         resolves is the one the analysis is scored against.
         """
-        import code_review_graph.tools.context as context_module
+        import graph_engine.tools.context as context_module
 
         discover = MagicMock(return_value=(["app.py"], "merge-base-sha"))
         resolve = MagicMock(return_value="unused")
         analyze = MagicMock(return_value={"risk_score": 0.2, "changed_functions": []})
         monkeypatch.setattr(context_module, "discover_review_changes", discover)
         monkeypatch.setattr(context_module, "resolve_review_base", resolve)
-        monkeypatch.setattr("code_review_graph.changes.analyze_changes", analyze)
+        monkeypatch.setattr("graph_engine.changes.analyze_changes", analyze)
 
         result = context_module.get_minimal_context(
             task="review changes",
@@ -2471,8 +2471,8 @@ class TestGetMinimalContext:
         An agent acts on this response. "I could not determine the changes"
         must not render identically to "there are none".
         """
-        import code_review_graph.tools.context as context_module
-        from code_review_graph.errors import ChangeDiscoveryError
+        import graph_engine.tools.context as context_module
+        from graph_engine.errors import ChangeDiscoveryError
 
         monkeypatch.setattr(
             context_module, "discover_review_changes",
@@ -2494,7 +2494,7 @@ class TestGetMinimalContext:
 
     def test_explicit_changed_files_skip_discovery_entirely(self, monkeypatch):
         """A caller that already knows the files spends no git budget on them."""
-        import code_review_graph.tools.context as context_module
+        import graph_engine.tools.context as context_module
 
         discover = MagicMock()
         monkeypatch.setattr(context_module, "discover_review_changes", discover)
@@ -2503,7 +2503,7 @@ class TestGetMinimalContext:
             MagicMock(return_value="merge-base-sha"),
         )
         monkeypatch.setattr(
-            "code_review_graph.changes.analyze_changes",
+            "graph_engine.changes.analyze_changes",
             MagicMock(return_value={"risk_score": 0.2, "changed_functions": []}),
         )
 
@@ -2518,7 +2518,7 @@ class TestGetMinimalContext:
         discover.assert_not_called()
 
     def test_missing_graph_returns_not_ready_without_creating_database(self, tmp_path):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         repo = tmp_path / "cold-worktree"
         repo.mkdir()
@@ -2537,7 +2537,7 @@ class TestGetMinimalContext:
     def test_mcp_wrapper_reports_missing_graph_without_creating_state(self, tmp_path):
         import asyncio
 
-        from code_review_graph.main import get_minimal_context_tool
+        from graph_engine.main import get_minimal_context_tool
 
         repo = tmp_path / "cold-worktree"
         repo.mkdir()
@@ -2555,7 +2555,7 @@ class TestGetMinimalContext:
         assert not (repo / ".code-review-graph").exists()
 
     def test_missing_graph_does_not_create_external_data_dir(self, tmp_path, monkeypatch):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         repo = tmp_path / "repo"
         repo.mkdir()
@@ -2574,7 +2574,7 @@ class TestGetMinimalContext:
     ):
         import json
 
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         repo = tmp_path / "repo"
         repo.mkdir()
@@ -2594,7 +2594,7 @@ class TestGetMinimalContext:
         assert not external_data.exists()
 
     def test_empty_graph_returns_not_ready(self, tmp_path):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         repo = tmp_path / "empty-graph"
         repo.mkdir()
@@ -2611,7 +2611,7 @@ class TestGetMinimalContext:
         assert result["next_tool_suggestions"] == ["build_or_update_graph"]
 
     def test_graph_built_at_another_commit_returns_not_ready(self, monkeypatch):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         db_path = self.root / ".code-review-graph" / "graph.db"
         store = GraphStore(db_path)
@@ -2629,7 +2629,7 @@ class TestGetMinimalContext:
     def test_output_is_compact(self):
         import json
 
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         result = get_minimal_context(
             task="review changes", repo_root=str(self.root),
@@ -2638,7 +2638,7 @@ class TestGetMinimalContext:
         assert len(serialized) < 800
 
     def test_task_routing_review(self):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         result = get_minimal_context(
             task="review PR #42", repo_root=str(self.root),
@@ -2646,7 +2646,7 @@ class TestGetMinimalContext:
         assert "detect_changes" in result["next_tool_suggestions"]
 
     def test_task_routing_debug(self):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         result = get_minimal_context(
             task="debug login bug", repo_root=str(self.root),
@@ -2654,7 +2654,7 @@ class TestGetMinimalContext:
         assert "semantic_search_nodes" in result["next_tool_suggestions"]
 
     def test_task_routing_refactor(self):
-        from code_review_graph.tools.context import get_minimal_context
+        from graph_engine.tools.context import get_minimal_context
 
         result = get_minimal_context(
             task="refactor auth module", repo_root=str(self.root),
@@ -2856,7 +2856,7 @@ class TestGraphProvenance:
     def test_registered_tool_preserves_existing_fields(self, tmp_path):
         import asyncio
 
-        from code_review_graph.main import list_graph_stats_tool
+        from graph_engine.main import list_graph_stats_tool
 
         repo = self._make_repo(tmp_path, {
             "last_updated": "2000-01-02T03:04:05",

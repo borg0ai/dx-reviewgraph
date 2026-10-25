@@ -51,11 +51,11 @@ from typing import Any
 
 import pytest
 
-from code_review_graph import main as crg_main
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.tools import analysis_tools, community_tools, query, review
-from code_review_graph.tools import refactor_tools as refactor_mod
+from graph_engine import main as crg_main
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.tools import analysis_tools, community_tools, query, review
+from graph_engine.tools import refactor_tools as refactor_mod
 
 try:  # pragma: no cover - exercised only when tiktoken is installed
     import tiktoken
@@ -187,7 +187,7 @@ def count_tokens(value: Any) -> int:
 # A sentinel that pushes any result cap past its hard ceiling.
 HUGE = 10**6
 
-# Tools whose result lists live in code_review_graph/tools/query.py. That
+# Tools whose result lists live in modules/code-review/graph_engine/tools/query.py. That
 # module is owned elsewhere and its unbounded worst cases are reported, not
 # fixed, by this change:
 #   * find_large_functions -- limit is neither validated nor capped
@@ -318,7 +318,7 @@ BUDGETS: dict[str, dict[str, Any]] = {
     },
     "get_docs_section_tool": {
         "default": {"section_name": "usage"},
-        "worst": {"section_name": "commands"},
+        "worst": {"section_name": "reviewgraph"},
         "default_max": 4_000,
         "worst_max": 4_000,
     },
@@ -524,7 +524,7 @@ def _register_fixture(repo: dict[str, Any]) -> None:
     registry tool called from here otherwise returns the "no repositories
     registered" short-circuit and measures none of its own bounds.
     """
-    from code_review_graph.registry import Registry
+    from graph_engine.registry import Registry
 
     Registry().register(repo["root"], alias=_FIXTURE_ALIAS)
 
@@ -652,7 +652,7 @@ def test_worst_case_args_stay_in_budget(name, repo):
     spec = BUDGETS[name]
     if spec["worst_max"] is None:
         pytest.skip(
-            f"{name} is bounded in code_review_graph/tools/query.py, which "
+            f"{name} is bounded in modules/code-review/graph_engine/tools/query.py, which "
             "this change does not own; its unbounded worst case is reported "
             "rather than fixed (see QUERY_OWNED_UNBOUNDED)."
         )

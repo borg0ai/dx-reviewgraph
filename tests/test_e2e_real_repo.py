@@ -32,15 +32,15 @@ from typing import Any, Iterator
 
 import pytest
 
-from code_review_graph.communities import detect_communities, store_communities
-from code_review_graph.flows import store_flows, trace_flows
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import (
+from graph_engine.communities import detect_communities, store_communities
+from graph_engine.flows import store_flows, trace_flows
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import (
     collect_all_files,
     full_build,
     incremental_update,
 )
-from code_review_graph.search import hybrid_search, rebuild_fts_index
+from graph_engine.search import hybrid_search, rebuild_fts_index
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = REPO_ROOT / "tests" / "fixtures"
@@ -58,10 +58,10 @@ pytestmark = [
     ),
 ]
 
-PACKAGE = REPO_ROOT / "code_review_graph"
+PACKAGE = REPO_ROOT / "modules" / "code-review" / "graph_engine"
 INCREMENTAL_PY = PACKAGE / "incremental.py"
 GRAPH_PY = PACKAGE / "graph.py"
-CLI_PY = PACKAGE / "cli.py"
+CLI_PY = REPO_ROOT / "apps" / "cli" / "reviewgraph" / "cli.py"
 TEST_GRAPH_PY = REPO_ROOT / "tests" / "test_graph.py"
 
 # ``file_path`` and the path half of a qualified name are POSIX-normalised
@@ -282,7 +282,7 @@ def test_incremental_update_calls_should_ignore(repo_graph: BuiltGraph) -> None:
 def test_repository_local_python_import_resolves_to_the_imported_file(
     repo_graph: BuiltGraph,
 ) -> None:
-    """``from code_review_graph.graph import GraphStore`` becomes a file edge.
+    """``from graph_engine.graph import GraphStore`` becomes a file edge.
 
     Only absolute repository-local imports resolve to a file today: the
     parser reads the first ``dotted_name`` child of an
@@ -298,7 +298,7 @@ def test_repository_local_python_import_resolves_to_the_imported_file(
     }
 
     assert GRAPH_ID in targets, (
-        "no IMPORTS_FROM edge from tests/test_graph.py to code_review_graph/graph.py"
+        "no IMPORTS_FROM edge from tests/test_graph.py to modules/code-review/graph_engine/graph.py"
     )
 
 
@@ -375,7 +375,7 @@ def test_a_flow_starts_at_a_cli_entry_point(repo_graph: BuiltGraph) -> None:
         if flow["entry_point"].startswith(f"{CLI_ID}::")
     }
 
-    assert cli_flows, "no execution flow starts in code_review_graph/cli.py"
+    assert cli_flows, "no execution flow starts in apps/cli/reviewgraph/cli.py"
     main_flow = cli_flows.get(f"{CLI_ID}::main")
     assert main_flow is not None, (
         f"cli.py::main is not a flow entry point; found {sorted(cli_flows)}"
@@ -397,7 +397,8 @@ def test_hybrid_search_ranks_impact_radius_nodes_first(repo_graph: BuiltGraph) -
         f"{[r['name'] for r in results]}"
     )
     assert any(
-        r["name"] == "get_impact_radius" and r["file_path"] == GRAPH_ID
+        r["name"] == "get_impact_radius"
+        and r["file_path"].endswith("/tools/query.py")
         for r in results
     ), f"graph.get_impact_radius missing from the top 10: {[r['name'] for r in results]}"
 

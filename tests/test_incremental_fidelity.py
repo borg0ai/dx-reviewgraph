@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.eval.benchmarks import incremental_fidelity as fidelity
+from graph_engine.eval.benchmarks import incremental_fidelity as fidelity
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -111,7 +111,7 @@ def _build_db(tree: Path, db_path: Path) -> None:
 def test_incremental_fidelity_registered_in_the_runner():
     """A benchmark nothing dispatches to never runs."""
     yaml = pytest.importorskip("yaml")  # noqa: F841
-    from code_review_graph.eval.runner import BENCHMARK_REGISTRY
+    from graph_engine.eval.runner import BENCHMARK_REGISTRY
 
     assert "incremental_fidelity" in BENCHMARK_REGISTRY
     assert BENCHMARK_REGISTRY["incremental_fidelity"] is fidelity.run
@@ -119,7 +119,7 @@ def test_incremental_fidelity_registered_in_the_runner():
 
 def test_incremental_fidelity_rendered_by_the_full_report(tmp_path):
     """The reporter must emit the benchmark's rows like the existing seven."""
-    from code_review_graph.eval.reporter import generate_full_report
+    from graph_engine.eval.reporter import generate_full_report
 
     csv_path = tmp_path / "mock_incremental_fidelity_2026-01-01.csv"
     csv_path.write_text(
@@ -133,7 +133,7 @@ def test_incremental_fidelity_rendered_by_the_full_report(tmp_path):
 
 
 def test_incremental_fidelity_rendered_by_the_readme_tables(tmp_path):
-    from code_review_graph.eval.reporter import generate_readme_tables
+    from graph_engine.eval.reporter import generate_readme_tables
 
     csv_path = tmp_path / "mock_incremental_fidelity_2026-01-01.csv"
     csv_path.write_text(
@@ -266,7 +266,7 @@ def _mock_run(tmp_path_factory):
     root = tmp_path_factory.mktemp("fidelity")
     tree = _mock_repo(root / "repo")
     config = {"name": "mock"}
-    from code_review_graph.graph import GraphStore
+    from graph_engine.graph import GraphStore
 
     store = GraphStore(root / "outer.db")
     try:
@@ -339,7 +339,7 @@ def test_known_failures_only_names_real_edit_kinds():
 def test_incremental_update_leaves_no_dangling_flow_memberships(tmp_path):
     import sqlite3
 
-    from code_review_graph.eval.benchmarks import incremental_fidelity as f
+    from graph_engine.eval.benchmarks import incremental_fidelity as f
 
     tree = _mock_repo(tmp_path / "repo")
     db = tmp_path / "graph.db"
@@ -374,7 +374,7 @@ def test_incremental_update_leaves_no_dangling_flow_memberships(tmp_path):
 def test_reparsed_nodes_keep_a_community_assignment(tmp_path):
     import sqlite3
 
-    from code_review_graph.eval.benchmarks import incremental_fidelity as f
+    from graph_engine.eval.benchmarks import incremental_fidelity as f
 
     tree = _mock_repo(tmp_path / "repo")
     db = tmp_path / "graph.db"

@@ -6,8 +6,8 @@ import pytest
 from watchdog.events import FileModifiedEvent
 from watchdog.observers.polling import PollingObserver
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import (
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import (
     _WATCH_SPLIT_MIN_DIRS,
     _create_watch_handler,
     _load_ignore_patterns,
@@ -107,7 +107,7 @@ def test_polling_observer_delivers_subsequent_deep_edit_after_rule_relaxation(
     monkeypatch,
 ):
     config, source = excluded_tree(tmp_path)
-    monkeypatch.setattr("code_review_graph.incremental._DEBOUNCE_SECONDS", 0.02)
+    monkeypatch.setattr("graph_engine.incremental._DEBOUNCE_SECONDS", 0.02)
     observer = PollingObserver(timeout=0.02)
     delivered = threading.Event()
     updated = threading.Event()

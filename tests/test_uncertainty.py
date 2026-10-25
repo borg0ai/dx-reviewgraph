@@ -21,15 +21,15 @@ from pathlib import Path
 
 import pytest
 
-import code_review_graph.uncertainty as uncertainty
-from code_review_graph.graph import GraphStore
-from code_review_graph.parser import CodeParser, EdgeInfo, NodeInfo
-from code_review_graph.tools.query import (
+import graph_engine.uncertainty as uncertainty
+from graph_engine.graph import GraphStore
+from graph_engine.parser import CodeParser, EdgeInfo, NodeInfo
+from graph_engine.tools.query import (
     get_impact_radius,
     query_graph,
     semantic_search_nodes,
 )
-from code_review_graph.uncertainty import (
+from graph_engine.uncertainty import (
     LANGUAGE_GAPS,
     MAX_CONFIDENCE_CHARS,
     empty_query_confidence,
@@ -305,7 +305,7 @@ def test_stale_commit_is_detected(repo, monkeypatch):
 
     assert result["result_count"] == 0
     assert "stale" in result["confidence"]
-    assert "code-review-graph update" in result["confidence"]
+    assert "reviewgraph update" in result["confidence"]
 
 
 def test_matching_commit_is_not_reported_stale(repo, monkeypatch):

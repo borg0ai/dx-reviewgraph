@@ -5,7 +5,7 @@
 ```bash
 git clone https://github.com/borg0ai/dx-reviewgraph.git
 cd dx-reviewgraph
-uv sync --extra dev                  # requires uv
+uv sync --group dev                  # requires uv
 uv run pytest tests/ --tb=short -q   # check the setup
 ```
 
@@ -13,7 +13,7 @@ uv run pytest tests/ --tb=short -q   # check the setup
 
 ```bash
 uv run pytest tests/ --tb=short -q                                                    # all tests
-uv run pytest --cov=code_review_graph --cov-report=term-missing --cov-fail-under=65   # with the CI coverage gate
+uv run pytest --cov=graph_engine --cov-report=term-missing --cov-fail-under=65   # with the CI coverage gate
 uv run pytest tests/test_parser.py -v                                                 # one file
 ```
 
@@ -27,11 +27,11 @@ checks configured dispatch names; language fixtures still verify extraction beha
 ## Linting and Type Checking
 
 ```bash
-uv run ruff check code_review_graph/
-uv run mypy code_review_graph/ --ignore-missing-imports --no-strict-optional
+uv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/
+uv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional
 ```
 
-CI also runs `bandit -r code_review_graph/ -c pyproject.toml`.
+CI also runs `bandit -r modules/code-review/graph_engine/ -c pyproject.toml`.
 
 ## Code Style
 
@@ -72,13 +72,13 @@ workflow summary and a `release-gate` issue; it does not open or merge pull requ
 The module list is in the Architecture section of `CLAUDE.md`. In outline:
 
 ```
-code_review_graph/         # core package: parser, graph store, incremental update, MCP server, CLI
-  tools/                   # MCP tool implementations
-  eval/                    # benchmark runner
-tests/                     # pytest suite
-  fixtures/                # sample files per language
-docs/                      # user documentation
-skills/                    # shipped agent skills, bundled into the wheel
+apps/cli/pyproject.toml                 # CLI application package and entry points
+apps/cli/reviewgraph/               # reviewgraph and reviewgraph-daemon commands
+modules/code-review/pyproject.toml       # reusable core module package
+modules/code-review/graph_engine/        # core library, MCP server, tools and eval
+modules/code-review/skills/             # skills bundled into the core wheel
+tests/                                  # pytest suite and language fixtures
+docs/                                   # user documentation
 ```
 
 ## Adding Language Support
@@ -98,12 +98,12 @@ Start with a platform request issue (https://github.com/borg0ai/dx-reviewgraph/i
 
 1. A link to the platform's official MCP configuration documentation. Blog posts, forum replies and screenshots of a settings dialog are not enough.
 2. The exact config file path and the exact schema of a server entry: which top-level key holds the servers, whether that value is an object or an array, and whether a `type` field is required.
-3. The entry added through the existing `PLATFORMS` table in `code_review_graph/skills.py`, plus `_PLATFORM_CHOICES` in `code_review_graph/cli.py`. Use the fields already there: `name`, `config_path`, `key`, `detect`, `format`, `needs_type`, and where needed `legacy_keys`, `server_type`, `entry_fields`. If the client needs something the table cannot express, say so in the pull request and explain why, rather than adding a separate code path beside it.
-4. Preservation of unrelated user settings. Install must merge only the `code-review-graph` server entry and leave every other server, key and top-level setting intact. If the file cannot be parsed, install must skip it rather than rewrite it.
+3. The entry added through the existing `PLATFORMS` table in `modules/code-review/graph_engine/skills.py`, plus `_PLATFORM_CHOICES` in `apps/cli/reviewgraph/cli.py`. Use the fields already there: `name`, `config_path`, `key`, `detect`, `format`, `needs_type`, and where needed `legacy_keys`, `server_type`, `entry_fields`. If the client needs something the table cannot express, say so in the pull request and explain why, rather than adding a separate code path beside it.
+4. Preservation of unrelated user settings. Install must merge only the `reviewgraph` server entry and leave every other server, key and top-level setting intact. If the file cannot be parsed, install must skip it rather than rewrite it.
 5. A byte-idempotent reinstall. Running install twice must leave the config file and any generated instruction file byte for byte identical.
-6. A working uninstall in `code_review_graph/uninstall.py` that removes only what install added, including any legacy keys, and leaves the rest of the file untouched.
+6. A working uninstall in `modules/code-review/graph_engine/uninstall.py` that removes only what install added, including any legacy keys, and leaves the rest of the file untouched.
 7. Lifecycle tests matching the existing ones: an install, reinstall and uninstall test in `tests/test_cli_install.py` shaped like `test_copilot_cli_install_reinstall_uninstall_lifecycle`, and a passing run of the all-platforms sweep in `tests/test_uninstall.py` (`test_uninstall_removes_mcp_entry_for_every_current_platform_spec`), which covers every new entry automatically.
-8. Evidence from a real released client: a screenshot or transcript of a session in that client where a code-review-graph tool is invoked and returns a result. A rendered image of text, a mockup or a description of what should happen is not evidence.
+8. Evidence from a real released client: a screenshot or transcript of a session in that client where a reviewgraph tool is invoked and returns a result. A rendered image of text, a mockup or a description of what should happen is not evidence.
 
 If no maintainer can install and run the client, the request may be declined or left open until someone who uses it is willing to own it and respond when it breaks. An existing target may also be removed if it breaks and nobody steps up to fix it.
 

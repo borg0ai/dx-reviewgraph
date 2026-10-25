@@ -14,9 +14,9 @@ generator.
 **Fix.**
 
 ```bash
-pip install --upgrade code-review-graph
+pip install --upgrade reviewgraph
 cd /path/to/your/project
-code-review-graph install
+reviewgraph install
 ```
 
 `install` merges its entries into the existing `hooks` block and does not
@@ -25,8 +25,8 @@ remove them from `.claude/settings.json` by hand (`install` writes a backup to
 `.claude/settings.json.bak` first), then run `install` again.
 
 The generated config uses two events: `PostToolUse` (runs
-`code-review-graph update --skip-flows` after Edit/Write) and `SessionStart`
-(runs `code-review-graph status`). Pre-commit checks live in a git hook, not in
+`reviewgraph update --skip-flows` after Edit/Write) and `SessionStart`
+(runs `reviewgraph status`). Pre-commit checks live in a git hook, not in
 Claude Code settings.
 
 #### The git pre-commit hook
@@ -38,8 +38,8 @@ appended to, not overwritten. If husky or pre-commit manages your hooks, you
 can add the two commands there instead:
 
 ```sh
-code-review-graph update
-code-review-graph detect-changes --brief
+reviewgraph update
+reviewgraph detect-changes --brief
 ```
 
 The hook skips linked worktrees, so a commit there cannot silently build a
@@ -49,7 +49,7 @@ that directory marks a linked worktree. It then prints this on stderr and lets
 the commit continue:
 
 ```
-code-review-graph: skipping automatic checks in a linked worktree; set CRG_HOOK_WORKTREES=1 to keep a graph for this worktree too.
+reviewgraph: skipping automatic checks in a linked worktree; set CRG_HOOK_WORKTREES=1 to keep a graph for this worktree too.
 ```
 
 Set `CRG_HOOK_WORKTREES=1` to run the checks in a worktree. If Git cannot
@@ -59,7 +59,7 @@ commit proceeds.
 Re-running `install` upgrades the exact hook block written by older releases.
 A block you have edited is left alone; update it by hand.
 
-### 2. `code-review-graph: command not found` after `pip install`
+### 2. `reviewgraph: command not found` after `pip install`
 
 **Cause.** `pip` put the console script in a `bin/` directory that is not on
 your `PATH`.
@@ -69,8 +69,8 @@ your `PATH`.
 1. Install with `pipx`:
 
    ```bash
-   pip uninstall code-review-graph
-   pipx install code-review-graph
+   pip uninstall reviewgraph
+   pipx install reviewgraph
    ```
 
    If the command is still not found, run `pipx ensurepath` and open a new
@@ -79,18 +79,18 @@ your `PATH`.
 2. Run it with `uvx` (no install):
 
    ```bash
-   uvx code-review-graph install
-   uvx code-review-graph build
+   uvx reviewgraph install
+   uvx reviewgraph build
    ```
 
 3. Run it as a module with the interpreter you installed into:
 
    ```bash
-   python -m code_review_graph install
-   python -m code_review_graph build
+   python -m reviewgraph install
+   python -m reviewgraph build
    ```
 
-4. Add the script directory to `PATH`. `pip show code-review-graph | grep Location`
+4. Add the script directory to `PATH`. `pip show reviewgraph | grep Location`
    prints the `site-packages` directory; the scripts are in the sibling `bin/`
    (on macOS user installs, typically `~/Library/Python/3.X/bin`):
 
@@ -99,7 +99,7 @@ your `PATH`.
    source ~/.zshrc
    ```
 
-### 3. Is code-review-graph project-scoped or user-scoped?
+### 3. Is reviewgraph project-scoped or user-scoped?
 
 Both. The pieces are scoped differently:
 
@@ -111,7 +111,7 @@ Both. The pieces are scoped differently:
 | Multi-repo registry | User | `~/.code-review-graph/registry.json` (or under `$CRG_HOME`) |
 
 Install the package once, then run
-`code-review-graph install && code-review-graph build` in each project.
+`reviewgraph install && reviewgraph build` in each project.
 
 ### 4. Installed in a virtual environment? Re-run `install` from inside it
 
@@ -120,16 +120,16 @@ after you moved the package into a venv.
 
 **Cause.** `install` records a launcher at install time: `uvx`, `uv run` or
 `poetry run` when it detects them, otherwise the absolute path of the running
-interpreter with `-m code_review_graph serve`. An entry written outside the
+interpreter with `-m reviewgraph serve`. An entry written outside the
 venv points at the wrong interpreter. The Claude Code hooks store no path; they
-run `code-review-graph` from `PATH` and exit silently when it is not found, so
+run `reviewgraph` from `PATH` and exit silently when it is not found, so
 they do nothing in a session where the venv is not activated.
 
 **Fix.** Activate the venv and run `install` again:
 
 ```bash
 source .venv/bin/activate
-code-review-graph install
+reviewgraph install
 ```
 
 The fallback entry looks like this:
@@ -137,9 +137,9 @@ The fallback entry looks like this:
 ```json
 {
   "mcpServers": {
-    "code-review-graph": {
+    "reviewgraph": {
       "command": "/path/to/.venv/bin/python",
-      "args": ["-m", "code_review_graph", "serve"],
+      "args": ["-m", "reviewgraph", "serve"],
       "cwd": "/path/to/your/project"
     }
   }
@@ -168,15 +168,15 @@ Checklist:
 
 ```bash
 cd /path/to/your/project
-code-review-graph status    # prints Nodes, Edges and Files for the graph
+reviewgraph status    # prints Nodes, Edges and Files for the graph
 ls .mcp.json                # must exist
-cat .mcp.json               # must contain a code-review-graph entry ending in "serve"
+cat .mcp.json               # must contain a reviewgraph entry ending in "serve"
 # then quit Claude Code and reopen it in this directory
 ```
 
-If `status` finds the graph but `/mcp` does not list `code-review-graph`,
+If `status` finds the graph but `/mcp` does not list `reviewgraph`,
 `.mcp.json` is not in the session's working directory. Run
-`code-review-graph install` from the project root.
+`reviewgraph install` from the project root.
 
 ---
 
@@ -188,7 +188,7 @@ The graph is SQLite in WAL mode. If you see `database is locked`:
 - Retry; the lock is usually another process that has just finished.
 - If the files are corrupt, stop every process that uses the graph, delete
   `.code-review-graph/graph.db`, `graph.db-wal` and `graph.db-shm`, and run
-  `code-review-graph build`.
+  `reviewgraph build`.
 
 ## Large repositories
 
@@ -214,7 +214,7 @@ The graph is SQLite in WAL mode. If you see `database is locked`:
 - Check the file is tracked by git and not matched by `.code-review-graphignore`
   or the nested build-output detection described below.
 - Look for a parse warning (next entry) after `update`.
-- Run `code-review-graph build`, or the MCP tool `build_or_update_graph_tool`
+- Run `reviewgraph build`, or the MCP tool `build_or_update_graph_tool`
   with `full_rebuild=True`, to re-parse everything.
 
 ## `Warning: N file(s) failed to parse and were not updated`
@@ -240,13 +240,13 @@ Current behaviour:
   `dead-code` do not create a database. Without one they exit with:
 
   ```
-  No graph found at <path>. Run `code-review-graph build` first.
+  No graph found at <path>. Run `reviewgraph build` first.
   ```
 
 - `update` on a missing or zero-node graph runs a full build and prints
   `Full rebuild (no usable incremental base): ...`.
 
-**Fix.** Run `code-review-graph build`. It always re-parses the whole tree;
+**Fix.** Run `reviewgraph build`. It always re-parses the whole tree;
 there is no `--force` flag. After that, `update`, hooks and `watch` stay
 incremental.
 
@@ -256,17 +256,17 @@ Every command that opens the graph reports an unusable database in one line
 and exits 1, instead of raising a SQLite traceback:
 
 ```
-Error: the graph database at <path> is unreadable (file is not a database). Run `code-review-graph build` to rebuild it from scratch.
-Error: <path> is a SQLite database but not a code-review-graph graph (it holds invoices). Point --data-dir somewhere else, or delete the file and run `code-review-graph build`.
-Error: the graph database at <path> was written by a newer code-review-graph (schema v99; this build understands v13). Upgrade code-review-graph, or delete the file and run `code-review-graph build`.
-Error: the graph at <path> was built for a different repository root: none of its 12 file(s), such as /other/repo/lib.py, are under /this/repo. Run `code-review-graph build` here, or point --repo at the root it was built for.
+Error: the graph database at <path> is unreadable (file is not a database). Run `reviewgraph build` to rebuild it from scratch.
+Error: <path> is a SQLite database but not a reviewgraph graph (it holds invoices). Point --data-dir somewhere else, or delete the file and run `reviewgraph build`.
+Error: the graph database at <path> was written by a newer reviewgraph (schema v99; this build understands v13). Upgrade reviewgraph, or delete the file and run `reviewgraph build`.
+Error: the graph at <path> was built for a different repository root: none of its 12 file(s), such as /other/repo/lib.py, are under /this/repo. Run `reviewgraph build` here, or point --repo at the root it was built for.
 ```
 
 The last one is the case that used to be silent: a `graph.db` copied between
 checkouts, or a CI cache restored into the wrong repository, answered every
 question with the other repository's symbols and paths.
 
-**Fix.** Run `code-review-graph build`. For the first case (an unreadable
+**Fix.** Run `reviewgraph build`. For the first case (an unreadable
 file, including a valid SQLite file whose tables are the wrong shape) `build`
 discards the unusable database and its `-wal`/`-shm` sidecars itself, and
 logs one warning saying so; this is what lets the GitHub Action recover from
@@ -331,14 +331,14 @@ on first use. Nothing else is needed.
 - With hooks installed, `update --skip-flows` runs after each Edit/Write and
   the pre-commit hook runs `update` before each commit (not in linked
   worktrees; see above).
-- Run `code-review-graph update`, or `/code-review-graph:build-graph` in Claude
+- Run `reviewgraph update`, or `/reviewgraph:build-graph` in Claude
   Code, to catch up.
-- Check `.claude/settings.json` still has the hooks; `code-review-graph install`
+- Check `.claude/settings.json` still has the hooks; `reviewgraph install`
   rewrites them.
 
 ## Watcher is running but the graph stopped updating
 
-`crg-daemon status` has a `Watcher` column next to the process `Status`, plus
+`reviewgraph-daemon status` has a `Watcher` column next to the process `Status`, plus
 the age of the last event each watcher processed:
 
 ```
@@ -348,7 +348,7 @@ the age of the last event each watcher processed:
 
 - `ok`: the filesystem observer is running and publishing a heartbeat.
 - `stalled`: the process is up but its observer threads are not, so nothing is
-  indexed. Check `crg-daemon logs --repo ALIAS`, then `crg-daemon restart`.
+  indexed. Check `reviewgraph-daemon logs --repo ALIAS`, then `reviewgraph-daemon restart`.
 - `partial`: the watcher ran out of watch slots and fell back to one recursive
   watch. Still complete, but ignored trees are watched again. Raise
   `CRG_MAX_WATCH_SCHEDULES` to get the filtering back.
@@ -380,7 +380,7 @@ Older builds recorded a C++ file that failed to parse as pending an identity
 migration. If you then added the file to `.code-review-graphignore`, every
 `update` reported this error and `watch` refused to start until a full rebuild.
 Current releases drop the pending entry when the file has no rows in the graph.
-If you still see the message, upgrade, or run `code-review-graph build` once.
+If you still see the message, upgrade, or run `reviewgraph build` once.
 
 ## A directory disappeared from the graph
 
@@ -407,8 +407,8 @@ off for the whole repository.
 
 ## Embeddings not working
 
-- Install the local provider: `pip install "code-review-graph[embeddings]"`.
-- Run `code-review-graph embed`, or the `embed_graph_tool` MCP tool.
+- Install the local provider: `pip install "reviewgraph[embeddings]"`.
+- Run `reviewgraph embed`, or the `embed_graph_tool` MCP tool.
 - The first local run downloads the `all-MiniLM-L6-v2` model.
 - Cloud providers (`--provider openai|google|minimax|voyage`) read their key
   from `CRG_OPENAI_API_KEY`, `GOOGLE_API_KEY`, `MINIMAX_API_KEY` or
@@ -418,14 +418,14 @@ off for the whole repository.
 ## MCP server won't start
 
 - Run the command from your MCP config by hand, for example
-  `uvx code-review-graph serve`, and read the error.
-- `install` writes one of `uvx code-review-graph serve`,
-  `uv run code-review-graph serve`, `poetry run code-review-graph serve` or
-  `<python> -m code_review_graph serve`, depending on what it detects. If the
+  `uvx reviewgraph serve`, and read the error.
+- `install` writes one of `uvx reviewgraph serve`,
+  `uv run reviewgraph serve`, `poetry run reviewgraph serve` or
+  `<python> -m reviewgraph serve`, depending on what it detects. If the
   launcher it chose is missing, install it (`pip install uv` or `brew install uv`)
-  or re-run `code-review-graph install` from the environment you want to use.
+  or re-run `reviewgraph install` from the environment you want to use.
 - You can edit the entry yourself, for example
-  `uv run --project /path/to/checkout code-review-graph serve` when the server
+  `uv run --project /path/to/checkout reviewgraph serve` when the server
   lives outside the project you are editing. A later `install` leaves a
   hand-edited entry exactly as you wrote it and says so; it only replaces
   entries whose command line it recognises as one it wrote itself. The same
@@ -439,13 +439,13 @@ off for the whole repository.
 - In WSL, install `uv` inside WSL, not the Windows build:
   `curl -LsSf https://astral.sh/uv/install.sh | sh`. If `uv` is not found
   afterwards, add the directory the installer reports to your `PATH`.
-- File watching (`code-review-graph watch`) may lag on WSL1; use WSL2.
+- File watching (`reviewgraph watch`) may lag on WSL1; use WSL2.
 - On native Windows, long paths may need enabling:
   `git config --system core.longpaths true`.
 
 ## Community detection requires igraph
 
-- Install with `pip install "code-review-graph[communities]"`.
+- Install with `pip install "reviewgraph[communities]"`.
 - Without igraph, community detection falls back to file-based grouping, which
   is coarser.
 
@@ -453,17 +453,17 @@ off for the whole repository.
 
 If a tool returns an ImportError, install the relevant group:
 
-- `pip install "code-review-graph[embeddings]"`: local semantic search
+- `pip install "reviewgraph[embeddings]"`: local semantic search
   (sentence-transformers).
-- `pip install "code-review-graph[google-embeddings]"`: Google Gemini embeddings.
+- `pip install "reviewgraph[google-embeddings]"`: Google Gemini embeddings.
   OpenAI-compatible, MiniMax and Voyage AI embeddings use the standard library
   HTTP client and need only their environment variables.
-- `pip install "code-review-graph[communities]"`: igraph-based community
+- `pip install "reviewgraph[communities]"`: igraph-based community
   detection.
-- `pip install "code-review-graph[enrichment]"`: Python call-resolution
+- `pip install "reviewgraph[enrichment]"`: Python call-resolution
   enrichment through Jedi.
-- `pip install "code-review-graph[eval]"`: evaluation benchmarks (matplotlib,
+- `pip install "reviewgraph[eval]"`: evaluation benchmarks (matplotlib,
   PyYAML).
-- `pip install "code-review-graph[wiki]"`: installs the `ollama` client. The
+- `pip install "reviewgraph[wiki]"`: installs the `ollama` client. The
   current wiki generator is structural only and does not call it.
-- `pip install "code-review-graph[all]"`: everything above.
+- `pip install "reviewgraph[all]"`: everything above.

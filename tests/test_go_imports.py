@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from code_review_graph.parser import CodeParser, normalize_file_path
+from graph_engine.parser import CodeParser, normalize_file_path
 
 
 def _write(root: Path, rel: str, text: str) -> Path:

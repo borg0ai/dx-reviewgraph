@@ -3,10 +3,10 @@
 import shutil
 from pathlib import Path
 
-from code_review_graph import parser as parser_module
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.parser import CodeParser
+from graph_engine import parser as parser_module
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.parser import CodeParser
 
 FIXTURES = Path(__file__).parent / "fixtures" / "cpp_qt_headers"
 

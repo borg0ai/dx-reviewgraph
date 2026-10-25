@@ -21,7 +21,12 @@ ROOT = Path(__file__).parents[1]
 
 
 def _pyproject() -> dict:
-    with (ROOT / "pyproject.toml").open("rb") as f:
+    with (ROOT / "modules" / "code-review" / "pyproject.toml").open("rb") as f:
+        return tomllib.load(f)
+
+
+def _app_pyproject() -> dict:
+    with (ROOT / "apps" / "cli" / "pyproject.toml").open("rb") as f:
         return tomllib.load(f)
 
 
@@ -43,7 +48,7 @@ def test_all_extra_covers_every_optional_group():
     referenced = {
         req.split("[", 1)[1].rstrip("]")
         for req in optional["all"]
-        if req.startswith("code-review-graph[")
+        if req.startswith("code-review-engine[")
     }
     expected = set(optional) - {"all"} - CONTRIBUTOR_EXTRAS
     assert referenced == expected
@@ -52,9 +57,10 @@ def test_all_extra_covers_every_optional_group():
 def test_all_extra_excludes_contributor_only_extras():
     """Installing [all] must never pull in the test toolchains."""
     optional = _pyproject()["project"]["optional-dependencies"]
+    app_optional = _app_pyproject()["project"]["optional-dependencies"]
     for extra in CONTRIBUTOR_EXTRAS:
-        assert extra in optional, f"{extra} extra is missing from pyproject.toml"
-        assert f"code-review-graph[{extra}]" not in optional["all"]
+        assert extra in app_optional, f"{extra} extra is missing from CLI app metadata"
+        assert f"code-review-engine[{extra}]" not in optional["all"]
 
 
 def test_all_extra_contains_only_self_referential_extras():
@@ -62,7 +68,7 @@ def test_all_extra_contains_only_self_referential_extras():
     resolve it against this same distribution."""
     optional = _pyproject()["project"]["optional-dependencies"]
     for req in optional["all"]:
-        assert req.startswith("code-review-graph["), req
+        assert req.startswith("code-review-engine["), req
         assert req.endswith("]"), req
 
 
@@ -108,7 +114,7 @@ def test_lock_requires_dist_matches_pyproject():
     crg = next(
         pkg
         for pkg in lock["package"]
-        if pkg["name"] == "code-review-graph"
+        if pkg["name"] == "code-review-engine"
     )
     requires = crg["metadata"]["requires-dist"]
     google = [r for r in requires if r["name"] == "google-genai"]
@@ -119,7 +125,7 @@ def test_lock_requires_dist_matches_pyproject():
     all_extras = [
         r["extras"]
         for r in requires
-        if r["name"] == "code-review-graph" and r.get("marker") == "extra == 'all'"
+        if r["name"] == "code-review-engine" and r.get("marker") == "extra == 'all'"
     ]
     assert ["google-embeddings"] in all_extras
 
@@ -127,7 +133,7 @@ def test_lock_requires_dist_matches_pyproject():
 def test_import_error_names_current_sdk_and_quotes_extra(monkeypatch):
     """When google-genai is missing, the guidance must name the current SDK
     and quote the extra so zsh-style shells do not glob the brackets."""
-    from code_review_graph.embeddings import GoogleEmbeddingProvider
+    from graph_engine.embeddings import GoogleEmbeddingProvider
 
     real_import = builtins.__import__
 
@@ -146,7 +152,7 @@ def test_import_error_names_current_sdk_and_quotes_extra(monkeypatch):
     message = str(excinfo.value)
     assert "google-genai" in message
     assert "google-generativeai" not in message.replace("google-genai", "")
-    assert '"code-review-graph[google-embeddings]"' in message
+    assert '"reviewgraph[google-embeddings]"' in message
 
 
 def test_no_stale_sdk_references_outside_lock():

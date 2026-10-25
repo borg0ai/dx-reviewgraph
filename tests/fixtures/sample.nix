@@ -1,5 +1,5 @@
 {
-  description = "Sample flake fixture for code-review-graph tests";
+  description = "Sample flake fixture for reviewgraph tests";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

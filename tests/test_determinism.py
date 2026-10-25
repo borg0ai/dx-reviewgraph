@@ -76,7 +76,7 @@ RUNNER = Path(__file__).resolve().parent / "determinism_build_runner.py"
 # cover the Python package under test plus the multi-language fixture tree,
 # which is what makes the parse wide enough for this gate to mean something.
 CORPUS_SOURCES = (
-    ("code_review_graph", "code_review_graph"),
+    ("reviewgraph", "reviewgraph"),
     ("tests/fixtures", "fixtures"),
     ("scripts", "scripts"),
 )
@@ -84,7 +84,7 @@ CORPUS_SOURCES = (
 BUILD_TIMEOUT = 900
 
 try:
-    from code_review_graph.communities import IGRAPH_AVAILABLE
+    from graph_engine.communities import IGRAPH_AVAILABLE
 except ImportError:  # pragma: no cover - the package is always importable here
     IGRAPH_AVAILABLE = False
 
@@ -572,7 +572,7 @@ def test_file_order_does_not_change_community_summaries(
 )
 def test_non_git_file_inventory_is_ordered(tmp_path: Path) -> None:
     """A tree with no VCS must still yield a deterministic file inventory."""
-    from code_review_graph.incremental import collect_all_files
+    from graph_engine.incremental import collect_all_files
 
     tree = tmp_path / "no-vcs"
     (tree / "pkg").mkdir(parents=True)

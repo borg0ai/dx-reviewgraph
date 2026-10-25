@@ -48,23 +48,23 @@ from pathlib import Path
 import pytest
 import yaml
 
-from code_review_graph.exports import (
+from graph_engine.exports import (
     _cypher_props,
     export_graphml,
     export_json,
     export_neo4j_cypher,
     export_obsidian_vault,
 )
-from code_review_graph.graph import GraphStore, _sanitize_name
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.visualization import (
+from graph_engine.graph import GraphStore, _sanitize_name
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.visualization import (
     D3_CDN_URL,
     D3_LOCAL_FILENAME,
     D3_SRI_HASH,
     export_graph_data,
     generate_html,
 )
-from code_review_graph.wiki import _generate_community_page, generate_wiki
+from graph_engine.wiki import _generate_community_page, generate_wiki
 
 pytestmark = pytest.mark.exports
 
@@ -371,8 +371,8 @@ def corpus(tmp_path_factory) -> Corpus:
         monkey.setenv("HERMES_HOME", str(base / "hermes-home"))
         (base / "home").mkdir()
 
-        from code_review_graph.incremental import full_build
-        from code_review_graph.postprocessing import run_post_processing
+        from graph_engine.incremental import full_build
+        from graph_engine.postprocessing import run_post_processing
 
         repo = base / "repo"
         repo.mkdir()
@@ -1028,7 +1028,7 @@ def test_cypher_boolean_branch_is_reachable_and_wins_over_int():
            "one statement spills across lines",
 )
 def test_cypher_escapes_control_whitespace_in_literals():
-    from code_review_graph.exports import _cypher_escape
+    from graph_engine.exports import _cypher_escape
 
     assert _cypher_escape("a\nb") == "a\\nb"
     assert _cypher_escape("a\tb") == "a\\tb"
@@ -1223,7 +1223,7 @@ def _require_matplotlib():
 def svg_pair(corpus: Corpus, tmp_path_factory) -> tuple[Path, Path]:
     """Two independent SVG exports of the same graph."""
     _require_matplotlib()
-    from code_review_graph.exports import export_svg
+    from graph_engine.exports import export_svg
 
     out = tmp_path_factory.mktemp("svg")
     first, second = out / "a.svg", out / "b.svg"
@@ -1281,7 +1281,7 @@ def test_svg_truncates_a_label_at_its_first_newline(svg_pair, corpus: Corpus):
 
 def test_svg_survives_a_name_that_looks_like_mathtext(corpus: Corpus, tmp_path):
     _require_matplotlib()
-    from code_review_graph.exports import export_svg
+    from graph_engine.exports import export_svg
 
     store = GraphStore(tmp_path / "math.db")
     for index, name in enumerate([r"$\qqq$", "plain_function"]):
@@ -1304,7 +1304,7 @@ def test_svg_draws_a_mathtext_shaped_name_literally(
     typeset must still reach the picture as ordinary text.
     """
     _require_matplotlib()
-    from code_review_graph.exports import export_svg
+    from graph_engine.exports import export_svg
 
     store = GraphStore(tmp_path / "math2.db")
     store.upsert_node(NodeInfo(
@@ -1519,7 +1519,7 @@ def _table_rows(text: str, header: str) -> list[list[str]]:
 
 
 def test_wiki_index_covers_every_community_and_links_resolve(corpus: Corpus):
-    from code_review_graph.communities import get_communities
+    from graph_engine.communities import get_communities
 
     wiki = _wiki(corpus)
     index = (wiki / "index.md").read_text(encoding="utf-8")
@@ -1615,7 +1615,7 @@ def test_wiki_pipe_and_newline_names_are_on_the_page_and_in_one_row(
 
 
 def test_wiki_lists_every_member_of_every_community(corpus: Corpus):
-    from code_review_graph.communities import get_communities
+    from graph_engine.communities import get_communities
 
     by_name = {c["name"]: c for c in get_communities(corpus.store)}
     checked = 0
@@ -1645,7 +1645,7 @@ def test_wiki_documents_the_control_character_node(corpus: Corpus):
     key store.get_node() understands. The node is still a member; the page
     has to find it anyway.
     """
-    from code_review_graph.communities import get_communities
+    from graph_engine.communities import get_communities
 
     sanitised_qn = corpus.qn("control_chars")
     assert sanitised_qn.endswith("::ctrlname")
@@ -1718,7 +1718,7 @@ def test_wiki_community_name_survives_escaping_readably(corpus: Corpus):
 
 
 def test_wiki_hostile_member_names_are_sanitised(corpus: Corpus):
-    from code_review_graph.wiki import _md_cell
+    from graph_engine.wiki import _md_cell
 
     pages = sorted(_wiki(corpus).glob("*.md"))
     joined = "\n".join(p.read_text(encoding="utf-8") for p in pages)
@@ -1835,7 +1835,7 @@ def test_cli_visualize_writes_the_artefact_for_every_format(
     (tmp_path / "home").mkdir(exist_ok=True)
     result = subprocess.run(
         [
-            sys.executable, "-m", "code_review_graph", "visualize",
+            sys.executable, "-m", "reviewgraph", "visualize",
             "--repo", str(corpus.repo), "--data-dir", str(data_dir),
             "--format", fmt,
         ],
@@ -1862,7 +1862,7 @@ def test_cli_wiki_writes_pages(corpus: Corpus, tmp_path):
     (tmp_path / "home").mkdir(exist_ok=True)
     result = subprocess.run(
         [
-            sys.executable, "-m", "code_review_graph", "wiki",
+            sys.executable, "-m", "reviewgraph", "wiki",
             "--repo", str(corpus.repo), "--data-dir", str(data_dir),
             "--force",
         ],

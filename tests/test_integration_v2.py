@@ -8,28 +8,28 @@ generate_wiki, and the Registry API.
 import tempfile
 from pathlib import Path
 
-from code_review_graph.changes import analyze_changes
-from code_review_graph.communities import (
+from graph_engine.changes import analyze_changes
+from graph_engine.communities import (
     detect_communities,
     get_architecture_overview,
     get_communities,
     store_communities,
 )
-from code_review_graph.flows import (
+from graph_engine.flows import (
     get_affected_flows,
     get_flow_by_id,
     get_flows,
     store_flows,
     trace_flows,
 )
-from code_review_graph.graph import GraphStore
-from code_review_graph.hints import generate_hints, get_session, reset_session
-from code_review_graph.parser import EdgeInfo, NodeInfo
-from code_review_graph.prompts import review_changes_prompt
-from code_review_graph.refactor import find_dead_code, rename_preview
-from code_review_graph.registry import Registry
-from code_review_graph.search import hybrid_search, rebuild_fts_index
-from code_review_graph.wiki import generate_wiki
+from graph_engine.graph import GraphStore
+from graph_engine.hints import generate_hints, get_session, reset_session
+from graph_engine.parser import EdgeInfo, NodeInfo
+from graph_engine.prompts import review_changes_prompt
+from graph_engine.refactor import find_dead_code, rename_preview
+from graph_engine.registry import Registry
+from graph_engine.search import hybrid_search, rebuild_fts_index
+from graph_engine.wiki import generate_wiki
 
 
 class TestV2Integration:

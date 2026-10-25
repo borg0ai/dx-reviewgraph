@@ -1,4 +1,4 @@
--- Sample SQL fixture for code-review-graph parser tests
+-- Sample SQL fixture for reviewgraph parser tests
 
 CREATE TABLE users (
     id       INTEGER PRIMARY KEY,

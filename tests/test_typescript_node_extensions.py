@@ -2,10 +2,10 @@
 
 import pytest
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build
-from code_review_graph.tools.query import query_graph
-from code_review_graph.tools.review import get_review_context
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build
+from graph_engine.tools.query import query_graph
+from graph_engine.tools.review import get_review_context
 
 
 @pytest.mark.parametrize("specifier,extension", [(".mjs", ".mts"), (".cjs", ".cts")])

@@ -12,10 +12,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from code_review_graph.graph import GraphStore
-from code_review_graph.incremental import full_build, incremental_update
-from code_review_graph.scoped_resolver import _path_tokens, resolve_scoped_calls
-from code_review_graph.tools.query import get_impact_radius, query_graph
+from graph_engine.graph import GraphStore
+from graph_engine.incremental import full_build, incremental_update
+from graph_engine.scoped_resolver import _path_tokens, resolve_scoped_calls
+from graph_engine.tools.query import get_impact_radius, query_graph
 
 
 def _build(tmp_path: Path, files: dict[str, str]) -> GraphStore:
@@ -642,7 +642,7 @@ def test_incremental_update_reresolves_scoped_call(tmp_path: Path) -> None:
 
 
 def test_resolver_is_idempotent(tmp_path: Path) -> None:
-    from code_review_graph.scoped_resolver import resolve_scoped_calls
+    from graph_engine.scoped_resolver import resolve_scoped_calls
 
     store = _build(
         tmp_path,
