@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Run one promotion-gate check, then collate every check into one report.
+"""Run one release-gate check, then collate every check into one report.
 
-``.github/workflows/promotion-gate.yml`` calls this twice per run:
+``.github/workflows/release-gate.yml`` calls this twice per run:
 
 ``run``
     Wraps a single pytest invocation. It runs pytest with ``--junitxml``,
@@ -16,12 +16,10 @@
 Why a wrapper instead of a bare ``pytest`` step:
 
 * A check that is selected but silently skipped is the failure mode this
-  whole gate exists to prevent. Three of the four release checks are opt-in
-  through a ``pytest_collection_modifyitems`` hook in ``tests/conftest.py``,
-  and those hooks arrive on four separate branches that overwrite one
-  another on merge. A bare ``pytest -m corpus`` step exits 0 when every
-  corpus test was skipped by a clobbered hook. ``run`` fails instead, and
-  says which reason the skip carried.
+  whole gate exists to prevent. Release checks are opt-in through a
+  ``pytest_collection_modifyitems`` hook in ``tests/conftest.py``. A bare
+  ``pytest -m corpus`` step exits 0 when every corpus test was skipped by a
+  clobbered hook. ``run`` fails instead, and says which reason the skip carried.
 * A check whose test module never landed on the branch is likewise a green
   step and no coverage at all. ``run`` asserts the module is on disk first.
 * The report has to say *what moved*, not just that something did. The
@@ -30,7 +28,7 @@ Why a wrapper instead of a bare ``pytest`` step:
   the property, the baseline, the measurement and the delta.
 
 The blocking policy lives in ``CHECKS`` below and nowhere else, so the
-workflow cannot disagree with the report and ``tests/test_promotion_gate.py``
+workflow cannot disagree with the report and ``tests/test_release_gate.py``
 can assert on it directly.
 
 Exit codes for both subcommands: 0 when nothing blocking failed, 1 when
@@ -147,7 +145,7 @@ CHECKS: dict[str, Check] = {
         policy=(
             "Blocks. The same suite and the same 65% coverage floor the "
             "pull-request CI enforces, re-run across 3.10 to 3.13 against the "
-            "merged state of testing, which no single pull request ever tested."
+            "merged state before release."
         ),
         min_tests=2500,
         min_passed=2500,
@@ -479,7 +477,7 @@ def run(args: argparse.Namespace) -> int:
         f"in {duration:.0f}s"
     )
     for problem in canaries:
-        print(f"::error title=promotion gate canary::{label}: {problem}")
+        print(f"::error title=release gate canary::{label}: {problem}")
     if status == FAILED:
         for line in result["moved"]:
             print("  " + line.replace("\n", "\n  "))
@@ -584,14 +582,13 @@ def render_summary(results: list[dict[str, Any]], context: dict[str, str]) -> st
         entry for entry in ordered if not entry.get("blocking") and entry.get("status") != PASSED
     ]
 
-    lines: list[str] = ["<!-- promotion-gate-report -->", "## Promotion gate", ""]
+    lines: list[str] = ["<!-- release-gate-report -->", "## Release gate", ""]
     if ok:
         lines.append(
-            "**Every blocking check passed.** `testing` is clear to be promoted to "
-            "`main` by hand."
+            "**Every blocking check passed.** Release checks are clear."
         )
     else:
-        lines.append("**Do not promote.** Blocking check(s) failed: " + ", ".join(reasons) + ".")
+        lines.append("**Do not cut the release.** Blocking check(s) failed: " + ", ".join(reasons) + ".")
     if reporting_failed:
         lines.append("")
         labels = sorted(
@@ -645,8 +642,7 @@ def render_summary(results: list[dict[str, Any]], context: dict[str, str]) -> st
         lines.append(f"- **{check.key}** ({verb}): {check.policy}")
     lines.append("")
     lines.append(
-        "Promotion to `main` stays a manual step. This gate opens no pull request "
-        "and merges nothing."
+        "Release tagging stays a manual step. This gate opens no pull request and merges nothing."
     )
     return "\n".join(lines) + "\n"
 
@@ -677,7 +673,7 @@ def summarize(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="promotion gate runner and reporter")
+    parser = argparse.ArgumentParser(description="release gate runner and reporter")
     sub = parser.add_subparsers(dest="command", required=True)
 
     runner = sub.add_parser("run", help="run one check and write its verdict")

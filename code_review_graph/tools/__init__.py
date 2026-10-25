@@ -1,4 +1,4 @@
-"""MCP tool definitions for the Code Review Graph server.
+"""MCP tool definitions for the ReviewGraph server.
 
 Exposes 30 tools (each registered in main.py with a ``_tool`` suffix):
 1. build_or_update_graph  - full or incremental build

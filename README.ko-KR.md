@@ -1,15 +1,5 @@
-<h1 align="center">code-review-graph</h1>
+<h1 align="center">ReviewGraph</h1>
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/23329?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-23329"
-     target="_blank"
-     rel="noopener noreferrer">
-    <img src="https://trendshift.io/api/badge/repositories/23329"
-         alt="tirth8205%2Fcode-review-graph | Trendshift"
-         width="250"
-         height="55" />
-  </a>
-</p>
 
 <p align="center">
   <strong>MCP로 AI 코딩 도구에 정확한 리뷰 맥락을 전달하는 로컬 코드 지식 그래프.</strong>
@@ -25,12 +15,11 @@
 <p align="center">
   <a href="https://pypi.org/project/code-review-graph/"><img src="https://img.shields.io/pypi/v/code-review-graph?style=flat-square&color=blue" alt="PyPI"></a>
   <a href="https://pepy.tech/project/code-review-graph"><img src="https://img.shields.io/pepy/dt/code-review-graph?style=flat-square" alt="Downloads"></a>
-  <a href="https://github.com/tirth8205/code-review-graph/stargazers"><img src="https://img.shields.io/github/stars/tirth8205/code-review-graph?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/borg0ai/dx-reviewgraph/stargazers"><img src="https://img.shields.io/github/stars/borg0ai/dx-reviewgraph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
-  <a href="https://github.com/tirth8205/code-review-graph/actions/workflows/ci.yml"><img src="https://github.com/tirth8205/code-review-graph/actions/workflows/ci.yml/badge.svg?branch=staging" alt="CI"></a>
+  <a href="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml"><img src="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?style=flat-square" alt="Python 3.10+"></a>
   <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP-compatible-green.svg?style=flat-square" alt="MCP"></a>
-  <a href="https://code-review-graph.com"><img src="https://img.shields.io/badge/website-code--review--graph.com-blue?style=flat-square" alt="Website"></a>
   <a href="https://discord.gg/3p58KXqGFN"><img src="https://img.shields.io/badge/discord-join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
@@ -179,7 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: tirth8205/code-review-graph@v2.3.9
+      - uses: borg0ai/dx-reviewgraph@v2.3.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -656,16 +645,15 @@ Claude Code 설정에서 `cmd /c` 래퍼를 쓰지 마세요. `~/.claude.json`�
 ## 기여하기
 
 ```bash
-git clone https://github.com/tirth8205/code-review-graph.git
-cd code-review-graph
+git clone https://github.com/borg0ai/dx-reviewgraph.git
+cd dx-reviewgraph
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pytest
 ```
 
-풀 리퀘스트는 `staging`(기본 브랜치)으로 보내 주세요. 변경은
-`staging` → `testing` → `main` 순으로 올라가고, 릴리스는 `main`에서 태그합니다. 전체 흐름은
-[CONTRIBUTING.md](CONTRIBUTING.md#branching-and-promotion)를 보세요.
+기능 및 수정 풀 리퀘스트는 `main`으로 바로 보내 주세요. 릴리스는 `main`에서 태그합니다. 전체 흐름은
+[CONTRIBUTING.md](CONTRIBUTING.md#branching)를 보세요.
 
 내장 언어를 추가하려면 `code_review_graph/parser.py`를 고치세요. 확장자를 `EXTENSION_TO_LANGUAGE`에, 노드 타입 매핑을 `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES`, `_CALL_TYPES`에 추가하면 됩니다. 테스트 픽스처를 함께 넣어 PR을 보내 주세요. 저장소 하나에서만 필요한 언어라면 대신 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)을 쓰세요.
 
@@ -675,6 +663,5 @@ MIT. [LICENSE](LICENSE)를 보세요.
 
 <p align="center">
 <br>
-<a href="https://code-review-graph.com">code-review-graph.com</a><br><br>
 <code>pip install code-review-graph && code-review-graph install</code>
 </p>

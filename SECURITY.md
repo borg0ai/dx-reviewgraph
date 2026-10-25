@@ -9,7 +9,7 @@
 
 ## Reporting a Vulnerability
 
-Do not open a public GitHub issue. Use [GitHub private vulnerability reporting](https://github.com/tirth8205/code-review-graph/security/advisories/new) (the "Report a vulnerability" button under the repository's Security tab). Include a description, steps to reproduce, the likely impact and a suggested fix if you have one.
+Do not open a public GitHub issue. Use [GitHub private vulnerability reporting](https://github.com/borg0ai/dx-reviewgraph/security/advisories/new) (the "Report a vulnerability" button under the repository's Security tab). Include a description, steps to reproduce, the likely impact and a suggested fix if you have one.
 
 We aim to acknowledge reports within 48 hours and to release a fix for critical issues within 7 days.
 
@@ -17,7 +17,7 @@ We aim to acknowledge reports within 48 hours and to release a fix for critical 
 
 ### Threat Surface
 
-code-review-graph is a local development tool. It:
+ReviewGraph is a local development tool. It:
 
 - runs as a local MCP server over stdio, or over Streamable HTTP bound to localhost with `serve --http`;
 - stores data in a local SQLite database (`.code-review-graph/graph.db`);

@@ -5,7 +5,7 @@ name: PR Review
 
 on:
   pull_request:
-    branches: [main, testing, staging]
+    branches: [main]
 
 permissions:
   contents: read
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Run code-review-graph review
+      - name: Run ReviewGraph review
         id: review
         uses: ./
         with:

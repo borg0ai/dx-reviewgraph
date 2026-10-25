@@ -83,7 +83,7 @@ ACTION_DOC = REPO_ROOT / "docs" / "GITHUB_ACTION.md"
 RENDERER = REPO_ROOT / "scripts" / "render_pr_comment.py"
 
 MARKER = "<!-- code-review-graph-report -->"
-HEADING = "## code-review-graph review"
+HEADING = "## ReviewGraph review"
 
 # Step names in action.yml. Keeping them as constants makes a rename of a
 # step a loud KeyError here rather than a silently skipped check.
@@ -1063,7 +1063,7 @@ def test_comment_is_well_formed_markdown(happy: ActionRun):
     body = happy.comment
     assert body.splitlines()[2] == HEADING
     assert body.rstrip().endswith("*")
-    assert "*Powered by [code-review-graph]" in body
+    assert "*Powered by [ReviewGraph]" in body
     # Headings are ATX with a space, and no heading is left empty.
     for line in body.splitlines():
         if line.startswith("#"):
@@ -1206,7 +1206,7 @@ def test_hostile_symbol_is_neutralised(hostile_comment: str):
     assert "[click](https://attacker.invalid)" not in hostile_comment
     assert "\\[click\\](https://attacker.invalid)" in hostile_comment, "kept, inert"
     links = re.findall(r"(?<!\\)\[[^\]\\]+\]\(([^)]+)\)", hostile_comment)
-    assert links == ["https://github.com/tirth8205/code-review-graph"], links
+    assert links == ["https://github.com/borg0ai/dx-reviewgraph"], links
     # Backticks are escaped, so the injected command never becomes code.
     assert "`rm -rf /`" not in hostile_comment
     assert "\\`rm -rf /\\`" in hostile_comment
@@ -1459,7 +1459,7 @@ def test_pull_request_with_no_changed_files_degrades_cleanly(
     assert run.report is None, "detect-changes should not emit a JSON report"
     assert run.comment.count(MARKER) == 1
     assert "No analyzable code changes detected" in run.comment
-    assert "*Powered by [code-review-graph]" in run.comment
+    assert "*Powered by [ReviewGraph]" in run.comment
     for step in runner.steps_run:
         assert step.returncode == 0, (step.name, step.stderr)
 

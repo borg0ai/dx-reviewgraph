@@ -113,9 +113,9 @@ jobs:
           marker = os.environ["TRUSTED_MARKER"]
           text = text.replace(marker, "")
           text = text.replace("\r\n", "\n").replace("\r", "\n").lstrip("\n")
-          if not text.startswith("## code-review-graph review\n"):
+          if not text.startswith("## ReviewGraph review\n"):
               raise SystemExit("Report has an unexpected heading")
-          if "*Powered by [code-review-graph]" not in text:
+          if "*Powered by [ReviewGraph]" not in text:
               raise SystemExit("Report is missing its expected footer")
 
           # Prevent PR-controlled report text from creating GitHub mentions.

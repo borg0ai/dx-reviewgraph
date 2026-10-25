@@ -592,7 +592,7 @@ class TestLongRunningToolsAreAsync:
         default thread limiter (40 slots). Rewriting these tools as
         ``async def`` and threading them with ``asyncio.to_thread`` moves them
         onto its default executor, capped at ``min(32, cpu_count + 4)`` -- 8
-        slots on a 4-core Windows box. Queueing sooner than staging did would
+        slots on a 4-core Windows box. Queueing sooner than the old implementation did would
         be the opposite of the point of #262.
         """
         # The docstring explains the contrast, so read the code, not the prose.

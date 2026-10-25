@@ -78,13 +78,7 @@ def test_codebuddy_install_docs_cover_project_artifacts():
 
 
 def test_schema_version_is_current_everywhere_it_is_written_down():
-    """The places CI's schema-sync job does not reach.
-
-    schema-sync compares ``migrations.py`` against the VS Code extension only.
-    The schema version is also written down in prose that ships — ``docs/`` is
-    in the sdist — and in the Action's cache key, and each of those drifted
-    behind the migrations at least once.
-    """
+    """Keep schema versions in shipped docs and the Action cache current."""
     from code_review_graph.migrations import LATEST_VERSION
 
     schema_doc = (ROOT / "docs/schema.md").read_text(encoding="utf-8")

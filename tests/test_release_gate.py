@@ -1,4 +1,4 @@
-"""Tests for the promotion gate: scripts/promotion_gate.py and its workflow.
+"""Tests for the release gate: scripts/release_gate.py and its workflow.
 
 These are fast and always on. They are the teeth of the gate itself, which
 is otherwise a YAML file nothing exercises until a release is at stake:
@@ -23,15 +23,15 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = REPO_ROOT / "scripts" / "promotion_gate.py"
-WORKFLOW = REPO_ROOT / ".github" / "workflows" / "promotion-gate.yml"
+SCRIPT = REPO_ROOT / "scripts" / "release_gate.py"
+WORKFLOW = REPO_ROOT / ".github" / "workflows" / "release-gate.yml"
 
-_spec = importlib.util.spec_from_file_location("promotion_gate", SCRIPT)
+_spec = importlib.util.spec_from_file_location("release_gate", SCRIPT)
 assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 # @dataclass resolves annotations through sys.modules, so the module has to be
 # registered before it is executed.
-sys.modules["promotion_gate"] = gate
+sys.modules["release_gate"] = gate
 _spec.loader.exec_module(gate)
 
 
@@ -293,14 +293,14 @@ def test_a_windows_leg_that_never_reported_does_not_block():
 # ---------------------------------------------------------------------------
 
 
-def test_the_summary_says_do_not_promote_and_names_what_moved():
+def test_the_summary_says_do_not_release_and_names_what_moved():
     results = all_green()
     for entry in results:
         if entry["check"] == "determinism":
             entry["status"] = gate.FAILED
             entry["moved"] = ["test_repeat_build\n    2 section(s) differ: nodes, edges"]
-    body = gate.render_summary(results, {"sha": "abcdef1234567890", "ref": "testing"})
-    assert "Do not promote" in body
+    body = gate.render_summary(results, {"sha": "abcdef1234567890", "ref": "main"})
+    assert "Do not cut the release" in body
     assert "determinism failed" in body
     assert "2 section(s) differ: nodes, edges" in body
     assert "| determinism | blocks | FAIL |" in body
@@ -326,10 +326,10 @@ def test_a_failing_windows_leg_is_named_with_its_leg_not_just_its_check():
 
 
 def test_a_clean_run_reads_as_clean():
-    body = gate.render_summary(all_green(), {"ref": "testing"})
+    body = gate.render_summary(all_green(), {"ref": "main"})
     assert "Every blocking check passed" in body
     assert "### What moved" not in body
-    assert "Promotion to `main` stays a manual step" in body
+    assert "Release tagging stays a manual step" in body
 
 
 def test_the_summary_states_the_policy_for_every_check():
@@ -472,8 +472,7 @@ def test_the_gate_never_runs_on_pull_requests(workflow: dict):
     # Requirement, not taste: every job here takes minutes, and a contributor
     # must not wait for them.
     triggers = workflow.get("on", workflow.get(True))
-    assert set(triggers) == {"push", "workflow_dispatch"}
-    assert triggers["push"]["branches"] == ["testing"]
+    assert set(triggers) == {"workflow_dispatch"}
 
 
 def test_every_check_has_a_job_that_runs_it(workflow: dict):
@@ -524,4 +523,4 @@ def test_the_report_job_posts_to_the_job_summary_and_one_issue(workflow: dict):
     text = yaml.dump(workflow["jobs"]["report"])
     assert "GITHUB_STEP_SUMMARY" in text
     assert "gh issue" in text
-    assert "gh pr create" not in text, "the gate must not open a promotion pull request"
+    assert "gh pr create" not in text, "the gate must not open a release pull request"

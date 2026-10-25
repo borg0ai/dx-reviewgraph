@@ -708,7 +708,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code Review Graph</title>
+<title>ReviewGraph</title>
 __D3_SCRIPTS__
 __SIDECAR_SCRIPT__
 <style>
@@ -1941,7 +1941,7 @@ _AGGREGATED_HTML_TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code Review Graph (Aggregated)</title>
+<title>ReviewGraph (Aggregated)</title>
 __D3_SCRIPTS__
 __SIDECAR_SCRIPT__
 <style>

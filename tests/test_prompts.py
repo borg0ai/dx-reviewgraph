@@ -154,10 +154,10 @@ class TestPreMergeCheckPrompt:
         assert 'detect_changes_tool(base="HEAD~1", detail_level="minimal")' in content
 
     def test_custom_base(self):
-        content = _text(pre_merge_check_prompt(base="origin/develop")[0])
-        assert 'get_minimal_context_tool(task="pre-merge check", base="origin/develop")' in content
-        assert 'detect_changes_tool(base="origin/develop", detail_level="minimal")' in content
-        assert 'get_affected_flows_tool(base="origin/develop", detail_level="minimal")' in content
+        content = _text(pre_merge_check_prompt(base="origin/main")[0])
+        assert 'get_minimal_context_tool(task="pre-merge check", base="origin/main")' in content
+        assert 'detect_changes_tool(base="origin/main", detail_level="minimal")' in content
+        assert 'get_affected_flows_tool(base="origin/main", detail_level="minimal")' in content
 
     def test_mentions_risk_scoring(self):
         result = pre_merge_check_prompt()
