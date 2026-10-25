@@ -152,10 +152,7 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install dependencies
         run: pip install -e ".[dev]" pytest-cov
-      # The release checks are excluded by name rather than left to the opt-in
-      # hooks in tests/conftest.py. Four branches add one of those hooks each,
-      # and a merge that drops one would otherwise turn this job into an hour
-      # of cloning. They run in their own jobs above.
+      # Exclude slow checks by marker. Each runs in its own job above.
       - name: Run the full suite
         run: >-
           python scripts/release_gate.py run
