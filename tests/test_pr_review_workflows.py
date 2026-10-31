@@ -17,7 +17,8 @@ def test_analysis_workflow_is_unprivileged_and_exports_temp_artifact():
     assert 'comment: "false"' in workflow
     assert "id: review" in workflow
     assert "steps.review.outputs.comment-file" in workflow
-    assert "${{ runner.temp }}/crg-report" in workflow
+    assert "${{ runner.temp }}/reviewgraph-report" in workflow
+    assert "name: reviewgraph-report" in workflow
     assert "actions/upload-artifact@v7" in workflow
     assert "if-no-files-found: error" in workflow
     assert "retention-days: 1" in workflow
@@ -42,6 +43,7 @@ def test_privileged_workflow_has_minimal_permissions_and_source_gate():
     assert "workflow_run.event == 'pull_request'" in workflow
     assert "actions/checkout" not in workflow
     assert "uses: ./" not in workflow
+    assert '.name == "reviewgraph-report"' in workflow
 
 
 def test_privileged_workflow_confines_and_validates_untrusted_artifact():
@@ -50,7 +52,7 @@ def test_privileged_workflow_confines_and_validates_untrusted_artifact():
     assert "MAX_ARCHIVE_BYTES" in workflow
     assert "size_in_bytes" in workflow
     assert "artifact-ids: ${{ steps.artifact.outputs.artifact-id }}" in workflow
-    assert "path: ${{ runner.temp }}/crg-report-download" in workflow
+    assert "path: ${{ runner.temp }}/reviewgraph-report-download" in workflow
     assert "actions/download-artifact@v8" in workflow
     assert "MAX_REPORT_BYTES" in workflow
     assert "MAX_PR_NUMBER_BYTES" in workflow
@@ -68,7 +70,7 @@ def test_privileged_workflow_adds_its_own_marker_before_posting():
     assert 'text.replace(marker, "")' in workflow
     assert 'body = f"{marker}\\n\\n{text}"' in workflow
     assert '-F body=@"${COMMENT_BODY}"' in workflow
-    assert "-F body=@crg-comment.md" not in workflow
+    assert "-F body=@reviewgraph-comment.md" not in workflow
 
 
 def test_docs_recommend_the_split_workflow_instead_of_pull_request_target():

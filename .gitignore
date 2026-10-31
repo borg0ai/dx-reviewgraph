@@ -93,3 +93,4 @@ scratch/
 # Local tool configuration
 .codex/
 .serena/
+graphify-out
