@@ -26,7 +26,7 @@ def fresh_cache():
 
 
 def excluded_tree(root):
-    config = root / ".code-review-graphignore"
+    config = root / ".reviewgraphignore"
     config.write_text("generated/\n")
     for index in range(_WATCH_SPLIT_MIN_DIRS + 1):
         (root / "generated" / str(index)).mkdir(parents=True)

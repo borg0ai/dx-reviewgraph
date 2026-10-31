@@ -56,7 +56,7 @@ def _built_db(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
     (repo / "app.py").write_text("def handle():\n    return 1\n", encoding="utf-8")
-    db_path = repo / ".code-review-graph" / "graph.db"
+    db_path = repo / ".reviewgraph" / "graph.db"
     store = GraphStore(db_path)
     try:
         full_build(repo, store)
@@ -206,7 +206,7 @@ def test_a_failed_open_leaves_no_connection_behind(tmp_path):
 
 def _graph_of(repo: Path) -> GraphStore:
     (repo / ".git").mkdir(parents=True, exist_ok=True)
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     full_build(repo, store)
     return store
 
@@ -266,7 +266,7 @@ def test_a_relative_path_graph_carries_no_root_identity(tmp_path):
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     try:
         store.upsert_node(NodeInfo(
             kind="File", name="src/app.py", file_path="src/app.py",
@@ -283,7 +283,7 @@ def test_a_graph_of_files_not_on_this_machine_is_stale_not_foreign(tmp_path):
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     try:
         store.upsert_node(NodeInfo(
             kind="File", name="/nowhere/src/app.py", file_path="/nowhere/src/app.py",
@@ -380,7 +380,7 @@ def test_analyze_changes_degrades_rather_than_failing_on_a_partial_diff(tmp_path
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
     (repo / "app.py").write_text("def handle():\n    return 1\n", "utf-8")
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     try:
         full_build(repo, store)
         with patch(
@@ -407,7 +407,7 @@ def test_analyze_changes_refuses_when_there_is_nothing_else_to_go_on(tmp_path):
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     try:
         with patch(
             "graph_engine.changes.parse_diff_ranges",

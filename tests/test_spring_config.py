@@ -145,7 +145,7 @@ def test_consumers_query_matches_direct_and_prefix_dependencies(tmp_path: Path) 
     yaml_nodes, yaml_edges = CodeParser().parse_bytes(yaml_path, YAML_SOURCE)
     profile_nodes, profile_edges = CodeParser().parse_bytes(profile_path, YAML_SOURCE)
     java_nodes, java_edges = CodeParser().parse_bytes(java_path, JAVA_SOURCE)
-    graph_dir = tmp_path / ".code-review-graph"
+    graph_dir = tmp_path / ".reviewgraph"
     graph_dir.mkdir()
     with GraphStore(graph_dir / "graph.db") as store:
         store.store_file_nodes_edges(str(yaml_path), yaml_nodes, yaml_edges, "yaml")

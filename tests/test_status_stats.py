@@ -54,7 +54,7 @@ def _build_mixed_repo(tmp_path: Path) -> GraphStore:
     (tmp_path / "main.py").write_text(
         "def greet():\n    return 'hi'\n", encoding="utf-8",
     )
-    db_dir = tmp_path / ".code-review-graph"
+    db_dir = tmp_path / ".reviewgraph"
     db_dir.mkdir()
     store = GraphStore(db_dir / "graph.db")
     full_build(tmp_path, store)

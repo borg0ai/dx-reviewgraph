@@ -192,7 +192,7 @@ def test_read_only_commands_missing_graph_do_not_create_empty_db(
     err = capsys.readouterr().err
     assert "No graph found" in err
     assert not data_dir.exists()
-    assert not (repo / ".code-review-graph").exists()
+    assert not (repo / ".reviewgraph").exists()
 
 
 @pytest.mark.parametrize("command", ["visualize", "wiki", "watch", "status"])
@@ -233,7 +233,7 @@ def test_status_preserves_legacy_graph_migration(tmp_path, monkeypatch, capsys):
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / ".git").mkdir()
-    legacy_db = repo / ".code-review-graph.db"
+    legacy_db = repo / ".reviewgraph.db"
     with graph_engine.graph.GraphStore(legacy_db):
         pass
     monkeypatch.delenv("CRG_DATA_DIR", raising=False)
@@ -248,7 +248,7 @@ def test_status_preserves_legacy_graph_migration(tmp_path, monkeypatch, capsys):
 
     assert "Nodes: 0" in capsys.readouterr().out
     assert not legacy_db.exists()
-    assert (repo / ".code-review-graph" / "graph.db").exists()
+    assert (repo / ".reviewgraph" / "graph.db").exists()
 
 
 def test_status_external_data_dir_does_not_migrate_unrelated_legacy_graph(
@@ -257,7 +257,7 @@ def test_status_external_data_dir_does_not_migrate_unrelated_legacy_graph(
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / ".git").mkdir()
-    legacy_db = repo / ".code-review-graph.db"
+    legacy_db = repo / ".reviewgraph.db"
     with graph_engine.graph.GraphStore(legacy_db):
         pass
     data_dir = tmp_path / "external-data"
@@ -322,10 +322,10 @@ def test_status_default_data_dir_override_does_not_migrate_legacy_graph(
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / ".git").mkdir()
-    legacy_db = repo / ".code-review-graph.db"
+    legacy_db = repo / ".reviewgraph.db"
     with graph_engine.graph.GraphStore(legacy_db):
         pass
-    data_dir = repo / ".code-review-graph"
+    data_dir = repo / ".reviewgraph"
     monkeypatch.delenv("CRG_DATA_DIR", raising=False)
     argv = [
         "reviewgraph",

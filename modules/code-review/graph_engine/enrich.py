@@ -178,7 +178,7 @@ def enrich_search(pattern: str, repo_root: str) -> str:
     from .graph import GraphStore
     from .search import _fts_search
 
-    db_path = Path(repo_root) / ".code-review-graph" / "graph.db"
+    db_path = Path(repo_root) / ".reviewgraph" / "graph.db"
     if not db_path.exists():
         return ""
 
@@ -216,7 +216,7 @@ def enrich_file_read(file_path: str, repo_root: str) -> str:
     """Enrich a file read with structural context for functions in that file."""
     from .graph import GraphStore
 
-    db_path = Path(repo_root) / ".code-review-graph" / "graph.db"
+    db_path = Path(repo_root) / ".reviewgraph" / "graph.db"
     if not db_path.exists():
         return ""
 

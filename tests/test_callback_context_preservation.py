@@ -14,7 +14,7 @@ def test_value_callback_calls_remain_owned_by_enclosing_function(tmp_path):
         "export function setup(): number { "
         "const result = evaluate(() => compute()); return result; }\n"
     )
-    graph_dir = tmp_path / ".code-review-graph"
+    graph_dir = tmp_path / ".reviewgraph"
     graph_dir.mkdir()
     with GraphStore(graph_dir / "graph.db") as store:
         assert full_build(tmp_path, store)["errors"] == []

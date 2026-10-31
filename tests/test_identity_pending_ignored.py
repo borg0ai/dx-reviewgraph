@@ -35,7 +35,7 @@ def test_ignoring_a_never_stored_pending_file_clears_it(tmp_path, monkeypatch):
         built = full_build(repo, store)
         assert [e["file"] for e in built["errors"]] == ["third_party/broken.cpp"]
 
-        (repo / ".code-review-graphignore").write_text("third_party/\n")
+        (repo / ".reviewgraphignore").write_text("third_party/\n")
         reconciled = incremental_update(repo, store, changed_files=[])
         assert reconciled["errors"] == []
         pending = json.loads(store.get_metadata("cpp_identity_pending"))

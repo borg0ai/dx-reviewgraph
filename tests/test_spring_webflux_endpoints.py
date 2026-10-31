@@ -51,7 +51,7 @@ def test_webflux_routes_link_endpoints_to_actual_typed_handlers(tmp_path: Path) 
 def test_webflux_endpoint_queries_use_addressable_nodes(tmp_path: Path) -> None:
     path = tmp_path / "Routes.java"
     nodes, edges = _parsed(path)
-    graph_dir = tmp_path / ".code-review-graph"
+    graph_dir = tmp_path / ".reviewgraph"
     graph_dir.mkdir()
     with GraphStore(graph_dir / "graph.db") as store:
         store.store_file_nodes_edges(str(path), nodes, edges, "hash")

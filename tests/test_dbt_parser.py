@@ -126,7 +126,7 @@ def test_full_build_links_dbt_models_by_ref(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+    store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
     try:
         full_build(tmp_path, store)
 
@@ -167,7 +167,7 @@ def test_full_build_includes_dbt_model_without_jinja_dependencies(
         encoding="utf-8",
     )
 
-    store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+    store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
     try:
         full_build(tmp_path, store)
 

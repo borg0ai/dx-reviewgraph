@@ -370,7 +370,7 @@ def sandbox(tmp_path_factory, monkeypatch) -> Sandbox:
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("USERPROFILE", str(home))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
-    monkeypatch.setenv("CRG_HOME", str(home / ".code-review-graph"))
+    monkeypatch.setenv("CRG_HOME", str(home / ".reviewgraph"))
     monkeypatch.setenv("HERMES_HOME", str(hermes_home))
     monkeypatch.setattr(Path, "home", lambda: home)
 

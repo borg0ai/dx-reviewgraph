@@ -20,7 +20,7 @@ We aim to acknowledge reports within 48 hours and to release a fix for critical 
 ReviewGraph is a local development tool. It:
 
 - runs as a local MCP server over stdio, or over Streamable HTTP bound to localhost with `serve --http`;
-- stores data in a local SQLite database (`.code-review-graph/graph.db`);
+- stores data in a local SQLite database (`.reviewgraph/graph.db`);
 - makes no network calls during graph builds, updates and reviews;
 - reads source files only under the validated repository root.
 
@@ -29,7 +29,7 @@ ReviewGraph is a local development tool. It:
 | Vector | Mitigation |
 |--------|------------|
 | SQL injection | All queries use parameterised `?` placeholders |
-| Path traversal | `_validate_repo_root()` requires an existing directory containing `.git`, `.svn` or `.code-review-graph` |
+| Path traversal | `_validate_repo_root()` requires an existing directory containing `.git`, `.svn` or `.reviewgraph` |
 | Prompt injection | `_sanitize_name()` strips control characters and caps names at 256 characters |
 | XSS (visualization) | `escH()` escapes HTML entities; `</script>` is escaped inside embedded JSON |
 | Subprocess injection | No `shell=True`; git and svn are invoked with argument lists |

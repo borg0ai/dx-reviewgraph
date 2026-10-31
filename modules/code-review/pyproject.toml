@@ -93,9 +93,6 @@ include = [
     "LICENSE",
     "pyproject.toml",
 ]
-# Hatch always ships `.gitignore`; it cannot be excluded.
-exclude = [".beads/"]
-
 [tool.ruff]
 line-length = 100
 target-version = "py310"

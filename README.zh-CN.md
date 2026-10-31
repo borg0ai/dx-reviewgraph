@@ -136,7 +136,7 @@ Java 项目会得到 Spring 依赖注入的调用解析、请求端点与 WebFlu
 
 ### 添加你自己的语言
 
-如果你的仓库使用了解析器尚未覆盖的语言，在 `.code-review-graph/` 中添加一个 `languages.toml`，把文件扩展名映射到 `tree_sitter_language_pack` 中自带的任意语法，并给出函数、类、导入和调用的节点类型：
+如果你的仓库使用了解析器尚未覆盖的语言，在 `.reviewgraph/` 中添加一个 `languages.toml`，把文件扩展名映射到 `tree_sitter_language_pack` 中自带的任意语法，并给出函数、类、导入和调用的节点类型：
 
 ```toml
 [languages.erlang]
@@ -289,7 +289,7 @@ jobs:
 | **社区检测** | Leiden 聚类，分辨率随图谱规模调整 |
 | **架构概览** | 基于社区结构的架构图，附带耦合警告 |
 | **风险评分审查** | `detect_changes` 把 diff 映射到受影响的函数、执行流和测试缺口 |
-| **自定义语言** | 通过 `.code-review-graph/languages.toml` 添加新语言，无需 fork |
+| **自定义语言** | 通过 `.reviewgraph/languages.toml` 添加新语言，无需 fork |
 | **GitHub Action** | 在 CI 中发布常驻的风险评分 PR 审查评论，可选 `fail-on-risk` 合并门禁 |
 | **重构工具** | 重命名预览、框架感知的死代码检测、基于社区的建议 |
 | **Wiki 生成** | 从社区结构生成 Markdown Wiki |
@@ -297,7 +297,7 @@ jobs:
 | **多仓库守护进程** | `reviewgraph-daemon` 以子进程方式监视多个仓库，带健康检查和重启 |
 | **MCP 提示模板** | 5 个工作流模板：审查、架构、调试、入职、合并前检查 |
 | **全文搜索** | FTS5 混合搜索，结合关键词与向量相似度 |
-| **本地存储** | `.code-review-graph/` 中的一个 SQLite 文件；没有外部数据库或云服务 |
+| **本地存储** | `.reviewgraph/` 中的一个 SQLite 文件；没有外部数据库或云服务 |
 
 ---
 
@@ -414,7 +414,7 @@ reviewgraph-daemon stop                   # stop the daemon and all watchers
 
 也可以用 `reviewgraph daemon start|stop|status|...`。
 
-`reviewgraph-daemon add` 写入 `~/.code-review-graph/watch.toml`，你也可以直接编辑该文件：
+`reviewgraph-daemon add` 写入 `~/.reviewgraph/watch.toml`，你也可以直接编辑该文件：
 
 ```toml
 [[repos]]
@@ -480,7 +480,7 @@ alias = "project-b"
 <summary><strong>配置</strong></summary>
 <br>
 
-要把某些路径排除在索引之外，在仓库根目录创建 `.code-review-graphignore` 文件：
+要把某些路径排除在索引之外，在仓库根目录创建 `.reviewgraphignore` 文件：
 
 ```
 generated/**
@@ -489,7 +489,7 @@ vendor/**
 node_modules/**
 ```
 
-在 git 仓库中只索引被跟踪的文件（`git ls-files`），因此被 gitignore 的文件会跳过。用 `.code-review-graphignore` 来排除被跟踪的文件，或在没有 git 时使用。默认忽略列表见 [docs/USAGE.md](docs/USAGE.md#ignore-patterns)。
+在 git 仓库中只索引被跟踪的文件（`git ls-files`），因此被 gitignore 的文件会跳过。用 `.reviewgraphignore` 来排除被跟踪的文件，或在没有 git 时使用。默认忽略列表见 [docs/USAGE.md](docs/USAGE.md#ignore-patterns)。
 
 可选依赖组：
 

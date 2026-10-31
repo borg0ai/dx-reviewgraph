@@ -1,7 +1,7 @@
 """Config-driven custom language support ("bring your own language").
 
 Repos can teach the parser new tree-sitter languages without forking by
-dropping a ``languages.toml`` file into ``.code-review-graph/``::
+dropping a ``languages.toml`` file into ``.reviewgraph/``::
 
     [languages.erlang]
     extensions = [".erl", ".hrl"]
@@ -45,7 +45,7 @@ else:
 logger = logging.getLogger(__name__)
 
 #: Location of the config file, relative to the repo root.
-CONFIG_RELATIVE_PATH = Path(".code-review-graph") / "languages.toml"
+CONFIG_RELATIVE_PATH = Path(".reviewgraph") / "languages.toml"
 
 #: Hard cap on the number of custom languages loaded from a single config.
 MAX_CUSTOM_LANGUAGES = 20
@@ -113,13 +113,13 @@ def load_custom_languages(
     builtin_extensions: Mapping[str, str],
     builtin_languages: frozenset[str],
 ) -> dict[str, CustomLanguage]:
-    """Load and validate ``<repo_root>/.code-review-graph/languages.toml``.
+    """Load and validate ``<repo_root>/.reviewgraph/languages.toml``.
 
     Returns a mapping of custom language name -> :class:`CustomLanguage`.
     Always returns (possibly empty) — a broken config never raises.
 
     Args:
-        repo_root: Repository root containing ``.code-review-graph/``.
+        repo_root: Repository root containing ``.reviewgraph/``.
         builtin_extensions: The parser's built-in extension map; custom
             entries colliding with these are skipped (built-ins win).
         builtin_languages: All built-in language identifiers; custom names

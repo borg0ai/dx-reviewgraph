@@ -3,7 +3,7 @@
 Everything else in the suite exercises one process against one database. This
 module exercises the case the product actually ships into: a watch child, a
 pre-commit hook, an MCP server and a hand-run ``build`` all pointed at the same
-``.code-review-graph/graph.db`` at the same time, and processes that die in the
+``.reviewgraph/graph.db`` at the same time, and processes that die in the
 middle of writing it. That is where a persistent local database corrupts
 quietly.
 
@@ -149,7 +149,7 @@ def _isolated_env(home: Path, *, serial: bool = False, **extra: str) -> dict[str
     ``Exception`` per file and files it under "Error parsing". Several tests
     below exist only because of that difference.
     """
-    crg_home = home / ".code-review-graph"
+    crg_home = home / ".reviewgraph"
     crg_home.mkdir(parents=True, exist_ok=True)
     env = {
         **_git_env(),
@@ -192,7 +192,7 @@ def _daemon_cli(*args: str, env: dict[str, str]) -> subprocess.CompletedProcess:
 
 
 def _db_path(repo: Path) -> Path:
-    return repo / ".code-review-graph" / "graph.db"
+    return repo / ".reviewgraph" / "graph.db"
 
 
 def _seed_empty_db(repo: Path) -> Path:
@@ -427,7 +427,7 @@ class TestConcurrentAccess:
         No lock file, no PID file, no "build in progress" marker that a second
         process could notice before it starts writing.
         """
-        data_dir = tmp_path / ".code-review-graph"
+        data_dir = tmp_path / ".reviewgraph"
         store = GraphStore(data_dir / "graph.db")
         try:
             assert store._conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"

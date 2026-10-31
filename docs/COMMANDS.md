@@ -522,8 +522,8 @@ Notes:
   or when the graph may be stale.
 - `status`, `detect-changes`, `visualize`, `wiki`, `watch`, `forget` and
   `dead-code` exit 1 when no graph exists and do not create one. `forget` and
-  `dead-code` still move a legacy top-level `.code-review-graph.db` into
-  `.code-review-graph/graph.db` before running.
+  `dead-code` still move a legacy top-level `.reviewgraph.db` into
+  `.reviewgraph/graph.db` before running.
 - `visualize` without a seed exports the whole repository, and falls back to
   community (or file) bubbles once the rendered graph passes 3000 nodes or
   9000 edges. With `--seed-symbol`, `--seed-file`, `--seed-changed`,
@@ -582,12 +582,12 @@ reviewgraph-daemon remove <path_or_alias>     # Remove a repository from watch.t
 
 ### Configuration
 
-The daemon reads `~/.code-review-graph/watch.toml` (or `$CRG_HOME/watch.toml`):
+The daemon reads `~/.reviewgraph/watch.toml` (or `$CRG_HOME/watch.toml`):
 
 ```toml
 [daemon]
 session_name = "crg-watch"   # logical daemon name
-log_dir = "~/.code-review-graph/logs"
+log_dir = "~/.reviewgraph/logs"
 poll_interval = 2            # seconds between config file polls
 
 [[repos]]

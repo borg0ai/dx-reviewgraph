@@ -102,7 +102,7 @@ excluded from every aggregate. Regression tests for this are in `tests/test_eval
 
 Outputs:
 
-- `evaluate/test_repos/<name>/`, each with its own `.code-review-graph/graph.db`
+- `evaluate/test_repos/<name>/`, each with its own `.reviewgraph/graph.db`
 - `evaluate/results/<name>_<benchmark>_<date>.csv`
 
 ## Step 3: embeddings for the standalone benchmark
@@ -133,7 +133,7 @@ from graph_engine.token_benchmark import run_token_benchmark
 
 results = {}
 for repo in sorted(Path("evaluate/test_repos").iterdir()):
-    db = repo / ".code-review-graph" / "graph.db"
+    db = repo / ".reviewgraph" / "graph.db"
     if not db.exists():
         continue
     store = GraphStore(str(db))

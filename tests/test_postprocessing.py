@@ -274,9 +274,9 @@ class TestToolBuildUsesSharedPipeline:
         py_file = tmp_path / "sample.py"
         py_file.write_text("def hello():\n    pass\n")
         (tmp_path / ".git").mkdir()
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
 
-        db_path = tmp_path / ".code-review-graph" / "graph.db"
+        db_path = tmp_path / ".reviewgraph" / "graph.db"
         store = GraphStore(db_path)
         try:
             mock_target = "graph_engine.incremental.get_all_tracked_files"
@@ -310,7 +310,7 @@ class TestToolBuildUsesSharedPipeline:
             "    assert render_thing('bc') == 'BC'\n"
         )
         (tmp_path / ".git").mkdir()
-        graph_dir = tmp_path / ".code-review-graph"
+        graph_dir = tmp_path / ".reviewgraph"
         graph_dir.mkdir()
 
         store = GraphStore(graph_dir / "graph.db")
@@ -415,7 +415,7 @@ class TestToolBuildUsesSharedPipeline:
             "    assert render_thing('bc') == 'BC'\n"
         )
         (tmp_path / ".git").mkdir()
-        graph_dir = tmp_path / ".code-review-graph"
+        graph_dir = tmp_path / ".reviewgraph"
         graph_dir.mkdir()
         tracked = [
             *(path.relative_to(tmp_path).as_posix() for path in production_files),

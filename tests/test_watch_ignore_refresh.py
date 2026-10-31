@@ -62,7 +62,7 @@ def test_new_manifest_purges_previously_indexed_output_unless_kept(tmp_path, sto
     output = write_source(tmp_path / "module" / "target" / "generated.py")
     user = write_source(tmp_path / "module" / "src" / "user.py")
     if keep:
-        (tmp_path / ".code-review-graphignore").write_text("!module/target\n")
+        (tmp_path / ".reviewgraphignore").write_text("!module/target\n")
     incremental_update(tmp_path, store, changed_files=[str(output), str(user)])
     callback = Mock(return_value=None)
     handler = _create_watch_handler(tmp_path, store, callback)
@@ -86,7 +86,7 @@ def test_ignore_edit_purges_and_removal_indexes_without_source_event(tmp_path, s
     incremental_update(tmp_path, store, changed_files=[str(generated), str(user)])
     callback = Mock(return_value=None)
     handler = _create_watch_handler(tmp_path, store, callback)
-    config = tmp_path / ".code-review-graphignore"
+    config = tmp_path / ".reviewgraphignore"
     config.write_text("generated/\n")
 
     handler.process([FileModifiedEvent(str(config))])
@@ -105,7 +105,7 @@ def test_ignore_edit_purges_and_removal_indexes_without_source_event(tmp_path, s
 def test_removing_keep_purges_inferred_output(tmp_path, store):
     output = write_source(tmp_path / "module" / "target" / "user.py")
     (output.parent.parent / "pom.xml").write_text("<project/>")
-    config = tmp_path / ".code-review-graphignore"
+    config = tmp_path / ".reviewgraphignore"
     config.write_text("!module/target\n")
     incremental_update(tmp_path, store, changed_files=[output.relative_to(tmp_path).as_posix()])
     handler = _create_watch_handler(tmp_path, store, None)
@@ -146,7 +146,7 @@ def test_adding_keep_indexes_existing_output_without_source_event(tmp_path, stor
     assert store.get_all_files() == []
     callback = Mock(return_value=None)
     handler = _create_watch_handler(tmp_path, store, callback)
-    config = tmp_path / ".code-review-graphignore"
+    config = tmp_path / ".reviewgraphignore"
     config.write_text("!module/target\n")
 
     handler.process([FileCreatedEvent(str(config))])
@@ -171,7 +171,7 @@ def test_keep_does_not_override_explicit_exclusion(tmp_path, store):
     output = write_source(tmp_path / "module" / "target" / "user.py")
     (output.parent.parent / "pom.xml").write_text("<project/>")
     handler = _create_watch_handler(tmp_path, store, None)
-    config = tmp_path / ".code-review-graphignore"
+    config = tmp_path / ".reviewgraphignore"
     config.write_text("!module/target\nmodule/target/\n")
 
     handler.process([FileCreatedEvent(str(config))])
@@ -213,7 +213,7 @@ def test_ignore_purge_removes_exact_legacy_spelling(tmp_path, store):
     store._invalidate_cache()
     assert legacy in store.get_all_files()
     handler = _create_watch_handler(tmp_path, store, None)
-    config = tmp_path / ".code-review-graphignore"
+    config = tmp_path / ".reviewgraphignore"
     config.write_text("generated/\n")
 
     handler.process([FileCreatedEvent(str(config))])
@@ -235,7 +235,7 @@ def test_ignore_purge_refuses_partially_foreign_graph_before_mutation(tmp_path, 
     store.commit()
     before = store.get_all_files()
     handler = _create_watch_handler(tmp_path, store, None)
-    config = tmp_path / ".code-review-graphignore"
+    config = tmp_path / ".reviewgraphignore"
     config.write_text("generated/\n")
 
     handler.process([FileCreatedEvent(str(config))])
@@ -270,7 +270,7 @@ def test_new_source_file_at_inferred_output_root_is_indexed(
     module.mkdir()
     (module / "pom.xml").write_text("<project/>")
     if explicit_ignore:
-        (tmp_path / ".code-review-graphignore").write_text("module/target/\n")
+        (tmp_path / ".reviewgraphignore").write_text("module/target/\n")
     handler = _create_watch_handler(tmp_path, store, None)
     target = module / "target"
     source = module / "script" if event_type == "moved" else target

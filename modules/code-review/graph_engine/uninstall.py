@@ -845,7 +845,7 @@ def _remove_gitignore(
         if (
             lines[index].strip() == _GITIGNORE_BANNER
             and index + 1 < len(lines)
-            and lines[index + 1].strip() in {".code-review-graph", ".code-review-graph/"}
+            and lines[index + 1].strip() in {".reviewgraph", ".reviewgraph/"}
         ):
             changed = True
             index += 2
@@ -1043,10 +1043,10 @@ def _process_repo(
     )
 
     data_paths = [
-        (repo_root / ".code-review-graph", "tree"),
-        (repo_root / ".code-review-graph.db", "file"),
-        (repo_root / ".code-review-graph.db-wal", "file"),
-        (repo_root / ".code-review-graph.db-shm", "file"),
+        (repo_root / ".reviewgraph", "tree"),
+        (repo_root / ".reviewgraph.db", "file"),
+        (repo_root / ".reviewgraph.db-wal", "file"),
+        (repo_root / ".reviewgraph.db-shm", "file"),
     ]
     for path, kind in data_paths:
         if keep_data:
@@ -1159,7 +1159,7 @@ def _process_user(
         dry_run=dry_run,
     )
 
-    user_data = home / ".code-review-graph"
+    user_data = home / ".reviewgraph"
     if keep_data:
         if user_data.exists() or user_data.is_symlink():
             report.skipped_paths.append(f"{user_data} (kept by --keep-data)")
@@ -1206,7 +1206,7 @@ def _process_user(
 
 
 def _registry_repo_paths(home: Path, report: UninstallReport) -> list[Path]:
-    path = home / ".code-review-graph" / "registry.json"
+    path = home / ".reviewgraph" / "registry.json"
     if not path.exists() or not _safe_path(path, home, report):
         return []
     raw = _read_text(path, report)

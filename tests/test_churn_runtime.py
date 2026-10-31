@@ -67,8 +67,8 @@ def _repo_with_commits(root: Path, commits: int = 2) -> Path:
 
 
 def _seeded_graph(root: Path) -> None:
-    (root / ".code-review-graph").mkdir(parents=True, exist_ok=True)
-    with GraphStore(root / ".code-review-graph" / "graph.db") as store:
+    (root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
+    with GraphStore(root / ".reviewgraph" / "graph.db") as store:
         store.upsert_node(NodeInfo(
             kind="Function",
             name="handler",

@@ -531,7 +531,7 @@ class TestCliProcess:
             "XDG_DATA_HOME": str(home / ".local" / "share"),
             "XDG_CACHE_HOME": str(home / ".cache"),
             "APPDATA": str(home / "AppData"),
-            "CRG_HOME": str(home / ".code-review-graph"),
+            "CRG_HOME": str(home / ".reviewgraph"),
             "HF_HUB_OFFLINE": "1",
             "TRANSFORMERS_OFFLINE": "1",
             "CRG_SERIAL_PARSE": "1",

@@ -81,7 +81,7 @@ _FUNCS_PER_MODULE = 12
 
 def _write_fixture_repo(root: Path) -> list[str]:
     """Generate a deterministic multi-package Python repo. Returns rel paths."""
-    (root / ".code-review-graph").mkdir(parents=True, exist_ok=True)
+    (root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
     rel_paths: list[str] = []
 
     for pkg in range(_PACKAGES):
@@ -133,7 +133,7 @@ def graph_repo(tmp_path_factory) -> dict[str, Any]:
     root = tmp_path_factory.mktemp("token-budget-repo")
     rel_paths = _write_fixture_repo(root)
 
-    db_path = root / ".code-review-graph" / "graph.db"
+    db_path = root / ".reviewgraph" / "graph.db"
     # Serial parsing keeps the build deterministic and avoids spawning a
     # ProcessPoolExecutor inside the test session.
     os.environ["CRG_SERIAL_PARSE"] = "1"
@@ -509,7 +509,7 @@ def _pick_row(repo: dict[str, Any], sql: str, column: int) -> Any:
     communities tables with fresh ids, so ids captured once in the fixture
     go stale mid-module.
     """
-    with GraphStore(Path(repo["root"]) / ".code-review-graph" / "graph.db") as store:
+    with GraphStore(Path(repo["root"]) / ".reviewgraph" / "graph.db") as store:
         rows = store._conn.execute(sql).fetchall()
     return rows[0][column] if rows else None
 

@@ -106,9 +106,9 @@ Both. The pieces are scoped differently:
 | Piece | Scope | Where |
 |---|---|---|
 | Python package | User | Installed once with `pip`, `pipx` or `uvx` |
-| Graph database | Project | `.code-review-graph/graph.db` in each repository (or `--data-dir` / `CRG_DATA_DIR`) |
+| Graph database | Project | `.reviewgraph/graph.db` in each repository (or `--data-dir` / `CRG_DATA_DIR`) |
 | MCP server config (`.mcp.json` and platform equivalents) | Project | One server per project; the entry carries `cwd=<project>` |
-| Multi-repo registry | User | `~/.code-review-graph/registry.json` (or under `$CRG_HOME`) |
+| Multi-repo registry | User | `~/.reviewgraph/registry.json` (or under `$CRG_HOME`) |
 
 Install the package once, then run
 `reviewgraph install && reviewgraph build` in each project.
@@ -156,7 +156,7 @@ Likely causes, most common first:
 1. Claude Code was not restarted after `install`. It reads `.mcp.json` at
    startup.
 2. The new session's working directory is different. The server runs with
-   `cwd=<project>` and reads `.code-review-graph/graph.db` from there. A
+   `cwd=<project>` and reads `.reviewgraph/graph.db` from there. A
    session opened in a parent folder or another project will not find your
    graph.
 3. You ran `build` but not `install`. `build` writes `graph.db`; `install`
@@ -187,7 +187,7 @@ The graph is SQLite in WAL mode. If you see `database is locked`:
 - Run one `build`, `update` or `watch` at a time per repository.
 - Retry; the lock is usually another process that has just finished.
 - If the files are corrupt, stop every process that uses the graph, delete
-  `.code-review-graph/graph.db`, `graph.db-wal` and `graph.db-shm`, and run
+  `.reviewgraph/graph.db`, `graph.db-wal` and `graph.db-shm`, and run
   `reviewgraph build`.
 
 ## Large repositories
@@ -196,7 +196,7 @@ The graph is SQLite in WAL mode. If you see `database is locked`:
   files and their dependents.
 - Only files tracked by git are indexed, so anything in `.gitignore` is already
   skipped.
-- Exclude generated code and vendored dependencies in `.code-review-graphignore`:
+- Exclude generated code and vendored dependencies in `.reviewgraphignore`:
 
   ```
   generated/**
@@ -211,7 +211,7 @@ The graph is SQLite in WAL mode. If you see `database is locked`:
 
 - Check the file's language is supported (see [FEATURES.md](FEATURES.md)) or
   added through `languages.toml` (see [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md)).
-- Check the file is tracked by git and not matched by `.code-review-graphignore`
+- Check the file is tracked by git and not matched by `.reviewgraphignore`
   or the nested build-output detection described below.
 - Look for a parse warning (next entry) after `update`.
 - Run `reviewgraph build`, or the MCP tool `build_or_update_graph_tool`
@@ -285,7 +285,7 @@ discarded: the graph is healthy and the answer is to try again.
 Error: cannot open the graph database for writing at <path> (attempt to write a readonly database). Check the permissions on <dir>, or set CRG_DATA_DIR to a writable directory.
 ```
 
-**Fix.** Make `.code-review-graph/` writable by the user running the command,
+**Fix.** Make `.reviewgraph/` writable by the user running the command,
 or set `CRG_DATA_DIR` to a directory that is.
 
 ## `detect-changes` cannot read the diff
@@ -319,11 +319,11 @@ documented default is used and the variable is named once:
 WARNING: Ignoring invalid CRG_MAX_IMPACT_NODES='' (not a number); using the default 500.
 ```
 
-## Legacy `.code-review-graph.db` at the repository root
+## Legacy `.reviewgraph.db` at the repository root
 
-Very old releases stored the database as `.code-review-graph.db` in the
+Very old releases stored the database as `.reviewgraph.db` in the
 repository root. Every command that opens the graph at its default location,
-including `forget` and `dead-code`, moves it to `.code-review-graph/graph.db`
+including `forget` and `dead-code`, moves it to `.reviewgraph/graph.db`
 on first use. Nothing else is needed.
 
 ## Graph seems stale
@@ -377,7 +377,7 @@ Optional settings:
 ## `Identity migration pending for ignored file`
 
 Older builds recorded a C++ file that failed to parse as pending an identity
-migration. If you then added the file to `.code-review-graphignore`, every
+migration. If you then added the file to `.reviewgraphignore`, every
 `update` reported this error and `watch` refused to start until a full rebuild.
 Current releases drop the pending entry when the file has no rows in the graph.
 If you still see the message, upgrade, or run `reviewgraph build` once.
@@ -391,11 +391,11 @@ build output when a sibling manifest says so (`pom.xml`, `Cargo.toml`,
 
 ```
 Excluding 2 nested build-output directories (a sibling manifest marks them as
-build output; keep one with '!<path>' in .code-review-graphignore):
+build output; keep one with '!<path>' in .reviewgraphignore):
 moduleA/target, moduleB/target
 ```
 
-If one of those is source, keep it with a `!` line in `.code-review-graphignore`:
+If one of those is source, keep it with a `!` line in `.reviewgraphignore`:
 
 ```
 !moduleA/target

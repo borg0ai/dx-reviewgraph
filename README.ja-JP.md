@@ -136,7 +136,7 @@ Java プロジェクトでは、Spring の依存性注入による呼び出し�
 
 ### 独自の言語を追加する
 
-パーサーが未対応の言語をリポジトリで使っている場合は、`.code-review-graph/` に `languages.toml` を置き、ファイル拡張子を `tree_sitter_language_pack` に同梱された任意の文法に対応づけ、関数、クラス、インポート、呼び出しのノード型を指定します。
+パーサーが未対応の言語をリポジトリで使っている場合は、`.reviewgraph/` に `languages.toml` を置き、ファイル拡張子を `tree_sitter_language_pack` に同梱された任意の文法に対応づけ、関数、クラス、インポート、呼び出しのノード型を指定します。
 
 ```toml
 [languages.erlang]
@@ -289,7 +289,7 @@ jobs:
 | **コミュニティ検出** | グラフ規模に応じて解像度を調整する Leiden クラスタリング |
 | **アーキテクチャ概要** | コミュニティ構造に基づくアーキテクチャ図と結合の警告 |
 | **リスクスコア付きレビュー** | `detect_changes` が差分を、影響を受ける関数、フロー、テストの穴に対応づけ |
-| **カスタム言語** | `.code-review-graph/languages.toml` で新しい言語を追加。フォーク不要 |
+| **カスタム言語** | `.reviewgraph/languages.toml` で新しい言語を追加。フォーク不要 |
 | **GitHub Action** | CI でのリスクスコア付き PR レビューの固定コメント。任意の `fail-on-risk` マージ関門つき |
 | **リファクタリング支援** | リネームのプレビュー、フレームワークを理解するデッドコード検出、コミュニティに基づく提案 |
 | **Wiki 生成** | コミュニティ構造から Markdown の Wiki を生成 |
@@ -297,7 +297,7 @@ jobs:
 | **マルチリポジトリのデーモン** | `reviewgraph-daemon` が複数のリポジトリを子プロセスで監視。ヘルスチェックと再起動つき |
 | **MCP プロンプト** | 5 つのワークフローテンプレート: レビュー、アーキテクチャ、デバッグ、オンボーディング、マージ前チェック |
 | **全文検索** | キーワードとベクトル類似度を組み合わせた FTS5 のハイブリッド検索 |
-| **ローカル保存** | `.code-review-graph/` の SQLite ファイル 1 つ。外部データベースもクラウドサービスも不要 |
+| **ローカル保存** | `.reviewgraph/` の SQLite ファイル 1 つ。外部データベースもクラウドサービスも不要 |
 
 ---
 
@@ -414,7 +414,7 @@ reviewgraph-daemon stop                   # stop the daemon and all watchers
 
 `reviewgraph daemon start|stop|status|...` としても使えます。
 
-`reviewgraph-daemon add` は `~/.code-review-graph/watch.toml` に書き込みます。このファイルは直接編集してもかまいません。
+`reviewgraph-daemon add` は `~/.reviewgraph/watch.toml` に書き込みます。このファイルは直接編集してもかまいません。
 
 ```toml
 [[repos]]
@@ -480,7 +480,7 @@ alias = "project-b"
 <summary><strong>設定</strong></summary>
 <br>
 
-インデックスから除外したいパスがある場合は、リポジトリのルートに `.code-review-graphignore` を作ります。
+インデックスから除外したいパスがある場合は、リポジトリのルートに `.reviewgraphignore` を作ります。
 
 ```
 generated/**
@@ -489,7 +489,7 @@ vendor/**
 node_modules/**
 ```
 
-git リポジトリでは追跡されているファイルだけがインデックスされるので（`git ls-files`）、gitignore されたファイルは飛ばされます。追跡されているファイルを除外したいとき、あるいは git が使えないときに `.code-review-graphignore` を使ってください。既定の除外リストは [docs/USAGE.md](docs/USAGE.md#ignore-patterns) にあります。
+git リポジトリでは追跡されているファイルだけがインデックスされるので（`git ls-files`）、gitignore されたファイルは飛ばされます。追跡されているファイルを除外したいとき、あるいは git が使えないときに `.reviewgraphignore` を使ってください。既定の除外リストは [docs/USAGE.md](docs/USAGE.md#ignore-patterns) にあります。
 
 任意の依存グループ:
 

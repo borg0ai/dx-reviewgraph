@@ -34,7 +34,7 @@ def list_repos_func() -> dict[str, Any]:
     """List all registered repositories.
 
     [REGISTRY] Returns the list of repositories registered in the global
-    multi-repo registry at ``~/.code-review-graph/registry.json``.
+    multi-repo registry at ``~/.reviewgraph/registry.json``.
 
     Returns:
         List of registered repos with paths and aliases.

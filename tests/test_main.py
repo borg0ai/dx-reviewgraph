@@ -81,7 +81,7 @@ def test_docs_wrapper_falls_back_to_packaged_docs_with_resolved_repo(
     )
 
     repo_root = tmp_path / "repo"
-    (repo_root / ".code-review-graph").mkdir(parents=True)
+    (repo_root / ".reviewgraph").mkdir(parents=True)
     monkeypatch.setattr(docs_module, "__file__", str(tools_dir / "docs.py"))
     monkeypatch.setattr(crg_main, "_default_repo_root", str(repo_root))
     tool = getattr(crg_main.get_docs_section_tool, "fn", None)

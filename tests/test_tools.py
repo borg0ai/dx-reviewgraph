@@ -243,12 +243,12 @@ class TestQueryGraphCallTargetFallbacks:
         self.tmp_dir = tempfile.mkdtemp()
         self.root = Path(self.tmp_dir).resolve()
         (self.root / ".git").mkdir()
-        (self.root / ".code-review-graph").mkdir()
+        (self.root / ".reviewgraph").mkdir()
 
         self.target_file = (self.root / "target.m").as_posix()
         self.cross_file = (self.root / "cross.m").as_posix()
         self.dispatch_file = (self.root / "dispatch.m").as_posix()
-        self.db_path = str(self.root / ".code-review-graph" / "graph.db")
+        self.db_path = str(self.root / ".reviewgraph" / "graph.db")
         self._seed_data()
 
     def teardown_method(self):
@@ -565,7 +565,7 @@ class TestQueryGraphCallTargetFallbacks:
             "}\n",
             encoding="utf-8",
         )
-        graph_dir = tmp_path / ".code-review-graph"
+        graph_dir = tmp_path / ".reviewgraph"
         graph_dir.mkdir()
         monkeypatch.setenv("CRG_SERIAL_PARSE", "1")
         with GraphStore(graph_dir / "graph.db") as store:
@@ -587,9 +587,9 @@ class TestQueryGraphCallTargetFallbacks:
             path = tmp_path / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(source, encoding="utf-8")
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         monkeypatch.setenv("CRG_SERIAL_PARSE", "1")
-        with GraphStore(tmp_path / ".code-review-graph" / "graph.db") as store:
+        with GraphStore(tmp_path / ".reviewgraph" / "graph.db") as store:
             assert full_build(tmp_path, store)["errors"] == []
 
     @pytest.mark.parametrize(
@@ -769,7 +769,7 @@ class TestQueryGraphCallTargetFallbacks:
         })
         target = f"{(tmp_path / 'Solo.java').as_posix()}::Solo"
         if resolved:
-            with GraphStore(tmp_path / ".code-review-graph" / "graph.db") as store:
+            with GraphStore(tmp_path / ".reviewgraph" / "graph.db") as store:
                 store.upsert_node(NodeInfo(
                     kind="Class", name="Solo", file_path=(tmp_path / "Other.java").as_posix(),
                     language="java", line_start=1, line_end=1,
@@ -793,7 +793,7 @@ class TestQueryGraphCallTargetFallbacks:
 
 def _seed_repo_relative_graph(root: Path) -> None:
     """Seed graph data with cwd-relative paths, as eval repos currently do."""
-    graph_dir = root / ".code-review-graph"
+    graph_dir = root / ".reviewgraph"
     graph_dir.mkdir()
     store = GraphStore(graph_dir / "graph.db")
     stored_path = "fixtures/sample_repo/src/app.py"
@@ -891,7 +891,7 @@ class TestRepoRootValidation:
         assert _validate_repo_root(tmp_path) == tmp_path.resolve()
 
     def test_validate_repo_root_error_mentions_svn_marker(self, tmp_path):
-        with pytest.raises(ValueError, match=r"\.git, \.svn, or \.code-review-graph"):
+        with pytest.raises(ValueError, match=r"\.git, \.svn, or \.reviewgraph"):
             _validate_repo_root(tmp_path)
 
 
@@ -905,8 +905,8 @@ class TestQueryGraphTestsFor:
         import tempfile as _tempfile
         self._tmpdir = _tempfile.TemporaryDirectory()
         self.repo_root = Path(self._tmpdir.name)
-        # _validate_repo_root requires .git or .code-review-graph.
-        (self.repo_root / ".code-review-graph").mkdir()
+        # _validate_repo_root requires .git or .reviewgraph.
+        (self.repo_root / ".reviewgraph").mkdir()
         # find_project_root / get_db_path look here for the DB.
         from graph_engine.incremental import get_db_path
         self.db_path = get_db_path(self.repo_root)
@@ -1045,7 +1045,7 @@ class TestGetDocsSection:
     """Tests for the get_docs_section tool."""
 
     def test_explicit_repo_root_uses_that_docs_file(self, tmp_path):
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
         (docs_dir / "LLM-OPTIMIZED-REFERENCE.md").write_text(
@@ -1116,7 +1116,7 @@ class TestEmbedGraphProviderErrors:
     never as a traceback, and must always close its GraphStore."""
 
     def test_unknown_provider_returns_structured_error(self, tmp_path):
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         result = docs_module.embed_graph(
             repo_root=str(tmp_path), provider="moonbase",
         )
@@ -1126,7 +1126,7 @@ class TestEmbedGraphProviderErrors:
         assert "Valid: local, openai, google, minimax, voyage" in result["error"]
 
     def test_missing_env_vars_return_structured_error(self, tmp_path, monkeypatch):
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         for var in ("CRG_OPENAI_API_KEY", "CRG_OPENAI_BASE_URL", "CRG_OPENAI_MODEL"):
             monkeypatch.delenv(var, raising=False)
         result = docs_module.embed_graph(
@@ -1136,7 +1136,7 @@ class TestEmbedGraphProviderErrors:
         assert "CRG_OPENAI_API_KEY" in result["error"]
 
     def test_store_closed_when_provider_unknown(self, tmp_path, monkeypatch):
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         store = MagicMock()
         monkeypatch.setattr(
             docs_module, "_get_store", lambda repo_root=None: (store, tmp_path),
@@ -1214,7 +1214,7 @@ class TestGetWikiPageNoStoreLeak:
     resolve the repo root and discarded it without closing."""
 
     def test_get_wiki_page_does_not_open_graph_store(self, tmp_path, monkeypatch):
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         store_cls = MagicMock()
         monkeypatch.setattr(common_module, "GraphStore", store_cls)
         result = docs_module.get_wiki_page_func(
@@ -1332,7 +1332,7 @@ class TestFlowTools:
     """Tests for flow-related MCP tool functions."""
 
     def setup_method(self):
-        """Set up a temp dir with .git and .code-review-graph, seed data, build flows."""
+        """Set up a temp dir with .git and .reviewgraph, seed data, build flows."""
         self.tmp_dir = tempfile.mkdtemp()
         # Resolve symlinks (macOS /var -> /private/var) so paths match
         # what _validate_repo_root returns via Path.resolve().
@@ -1340,9 +1340,9 @@ class TestFlowTools:
 
         # Create markers so _validate_repo_root accepts this directory
         (self.root / ".git").mkdir()
-        (self.root / ".code-review-graph").mkdir()
+        (self.root / ".reviewgraph").mkdir()
 
-        db_path = str(self.root / ".code-review-graph" / "graph.db")
+        db_path = str(self.root / ".reviewgraph" / "graph.db")
         self.store = GraphStore(db_path)
         self._seed_data()
         self._build_flows()
@@ -1579,15 +1579,15 @@ class TestCommunityTools:
     """Tests for community-related MCP tool functions."""
 
     def setup_method(self):
-        """Set up a temp dir with .git and .code-review-graph, seed clustered graph."""
+        """Set up a temp dir with .git and .reviewgraph, seed clustered graph."""
         self.tmp_dir = tempfile.mkdtemp()
         self.root = Path(self.tmp_dir).resolve()
 
         # Create markers so _validate_repo_root accepts this directory
         (self.root / ".git").mkdir()
-        (self.root / ".code-review-graph").mkdir()
+        (self.root / ".reviewgraph").mkdir()
 
-        db_path = str(self.root / ".code-review-graph" / "graph.db")
+        db_path = str(self.root / ".reviewgraph" / "graph.db")
         self.store = GraphStore(db_path)
         self._seed_data()
         self._build_communities()
@@ -2402,9 +2402,9 @@ class TestGetMinimalContext:
         self.tmp = tempfile.mkdtemp()
         self.root = Path(self.tmp)
         (self.root / ".git").mkdir()
-        (self.root / ".code-review-graph").mkdir()
+        (self.root / ".reviewgraph").mkdir()
         # Create a small graph
-        db_path = self.root / ".code-review-graph" / "graph.db"
+        db_path = self.root / ".reviewgraph" / "graph.db"
         self.store = GraphStore(str(db_path))
         self.store.upsert_node(NodeInfo(
             kind="File", name="app.py", file_path=str(self.root / "app.py"),
@@ -2524,7 +2524,7 @@ class TestGetMinimalContext:
         repo.mkdir()
         # Linked worktrees use a .git pointer file instead of a directory.
         (repo / ".git").write_text("gitdir: ../main/.git/worktrees/cold\n")
-        db_path = repo / ".code-review-graph" / "graph.db"
+        db_path = repo / ".reviewgraph" / "graph.db"
 
         result = get_minimal_context(repo_root=str(repo))
 
@@ -2552,7 +2552,7 @@ class TestGetMinimalContext:
 
         assert result["status"] == "not_ready"
         assert result["reason"] == "missing_graph"
-        assert not (repo / ".code-review-graph").exists()
+        assert not (repo / ".reviewgraph").exists()
 
     def test_missing_graph_does_not_create_external_data_dir(self, tmp_path, monkeypatch):
         from graph_engine.tools.context import get_minimal_context
@@ -2599,7 +2599,7 @@ class TestGetMinimalContext:
         repo = tmp_path / "empty-graph"
         repo.mkdir()
         (repo / ".git").mkdir()
-        graph_dir = repo / ".code-review-graph"
+        graph_dir = repo / ".reviewgraph"
         graph_dir.mkdir()
         store = GraphStore(graph_dir / "graph.db")
         store.close()
@@ -2613,7 +2613,7 @@ class TestGetMinimalContext:
     def test_graph_built_at_another_commit_returns_not_ready(self, monkeypatch):
         from graph_engine.tools.context import get_minimal_context
 
-        db_path = self.root / ".code-review-graph" / "graph.db"
+        db_path = self.root / ".reviewgraph" / "graph.db"
         store = GraphStore(db_path)
         store.set_metadata("git_head_sha", "built-sha")
         store.commit()
@@ -2670,7 +2670,7 @@ class TestGraphProvenance:
         repo = tmp_path / name
         repo.mkdir(parents=True)
         (repo / ".git").mkdir()
-        graph_dir = repo / ".code-review-graph"
+        graph_dir = repo / ".reviewgraph"
         graph_dir.mkdir()
         store = GraphStore(graph_dir / "graph.db")
         try:
@@ -2716,7 +2716,7 @@ class TestGraphProvenance:
         repo = self._make_repo(
             tmp_path, {"last_updated": "2000-01-02T03:04:05"},
         )
-        db_path = repo / ".code-review-graph" / "graph.db"
+        db_path = repo / ".reviewgraph" / "graph.db"
         locker = common_module.sqlite3.connect(db_path)
         try:
             # GraphStore uses WAL, where writers do not block readers. Switch
@@ -2813,12 +2813,12 @@ class TestGraphProvenance:
         repo.mkdir()
         (repo / ".git").mkdir()
         assert common_module.graph_provenance(str(repo)) is None
-        assert not (repo / ".code-review-graph").exists()
+        assert not (repo / ".reviewgraph").exists()
 
     def test_corrupt_graph_database_has_no_envelope(self, tmp_path):
         repo = tmp_path / "repo"
         (repo / ".git").mkdir(parents=True)
-        graph_dir = repo / ".code-review-graph"
+        graph_dir = repo / ".reviewgraph"
         graph_dir.mkdir()
         (graph_dir / "graph.db").write_bytes(b"not a sqlite database")
         assert common_module.graph_provenance(str(repo)) is None

@@ -1396,7 +1396,7 @@ def test_action_yml_comment_points_at_migrations():
 
 
 def test_cache_path_is_the_graph_directory():
-    assert str(_cache_step()["with"]["path"]).strip() == ".code-review-graph"
+    assert str(_cache_step()["with"]["path"]).strip() == ".reviewgraph"
 
 
 # ===========================================================================
@@ -1465,12 +1465,12 @@ def test_pull_request_with_no_changed_files_degrades_cleanly(
 
 
 def test_first_run_with_no_cache_builds_from_scratch(happy: ActionRun):
-    """The happy-path fixture starts with no ``.code-review-graph`` at all."""
+    """The happy-path fixture starts with no ``.reviewgraph`` at all."""
     crg_calls = happy.runner.calls_to("reviewgraph")
     subcommands = [argv[1] for argv in crg_calls if len(argv) > 1]
     assert subcommands[0] == "build", subcommands
     assert "update" not in subcommands, "a cold run must not take the update path"
-    assert (happy.runner.workspace / ".code-review-graph" / "graph.db").is_file()
+    assert (happy.runner.workspace / ".reviewgraph" / "graph.db").is_file()
 
 
 def test_warm_cache_takes_the_update_path(tmp_path_factory: pytest.TempPathFactory):
@@ -1517,7 +1517,7 @@ def test_corrupt_cached_graph_falls_back_to_a_full_build(
 ):
     runner = make_runner(tmp_path_factory, "crg-corrupt", comment="false")
     make_scratch_repo(runner.workspace)
-    cache = runner.workspace / ".code-review-graph"
+    cache = runner.workspace / ".reviewgraph"
     cache.mkdir(parents=True, exist_ok=True)
     (cache / "graph.db").write_bytes(b"this is not a sqlite database")
 
@@ -1563,7 +1563,7 @@ def test_cached_graph_with_foreign_tables_falls_back_to_a_full_build(
     """
     runner = make_runner(tmp_path_factory, "crg-foreign-schema", comment="false")
     make_scratch_repo(runner.workspace)
-    cache = runner.workspace / ".code-review-graph"
+    cache = runner.workspace / ".reviewgraph"
     cache.mkdir(parents=True, exist_ok=True)
     db = cache / "graph.db"
     conn = sqlite3.connect(db)

@@ -78,7 +78,7 @@ def test_scheduled_metadata_preserves_repeatable_values(tmp_path: Path) -> None:
 def test_schedule_queries_follow_triggers_edges(tmp_path: Path) -> None:
     path = tmp_path / "Tasks.java"
     nodes, edges = _parsed(path)
-    graph_dir = tmp_path / ".code-review-graph"
+    graph_dir = tmp_path / ".reviewgraph"
     graph_dir.mkdir()
     db_path = graph_dir / "graph.db"
     with GraphStore(db_path) as store:

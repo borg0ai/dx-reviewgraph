@@ -133,7 +133,7 @@ def test_visualize_json_uses_local_export(tmp_path, capsys):
         "--format",
         "json",
     ]
-    data_dir = tmp_path / ".code-review-graph"
+    data_dir = tmp_path / ".reviewgraph"
     data_dir.mkdir()
     # visualize is read-only for missing graphs (#803); the path must exist.
     db_path = data_dir / "graph.db"
@@ -589,7 +589,7 @@ def test_explicit_monorepo_subproject_runs_a_real_graph_search(
     from graph_engine.incremental import full_build
     from graph_engine.search import rebuild_fts_index
 
-    db_path = module / ".code-review-graph" / "graph.db"
+    db_path = module / ".reviewgraph" / "graph.db"
     db_path.parent.mkdir(parents=True)
     store = GraphStore(db_path)
     try:
@@ -620,7 +620,7 @@ class TestGraphToolExplicitRepoResolution:
         mono = tmp_path / "mono"
         (mono / ".git").mkdir(parents=True)
         module = mono / "llvm"
-        crg = module / ".code-review-graph"
+        crg = module / ".reviewgraph"
         crg.mkdir(parents=True)
         (crg / "graph.db").write_bytes(b"")
         return mono, module

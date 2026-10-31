@@ -529,7 +529,7 @@ _FORBIDDEN_TOP_LEVEL = {
     ".beads",
     ".github",
     ".claude",
-    ".code-review-graph",
+    ".reviewgraph",
     "node_modules",
 }
 
@@ -1003,7 +1003,7 @@ def test_installed_distribution_smoke(
     # --- build -----------------------------------------------------------
     build_out = _run([str(env.script), "build"], cwd=repo, env=child)
     assert "Full build" in build_out.stdout, build_out.stdout
-    assert (repo / ".code-review-graph" / "graph.db").is_file()
+    assert (repo / ".reviewgraph" / "graph.db").is_file()
 
     # --- status ----------------------------------------------------------
     status = _json_tail(_run([str(env.script), "status", "--json"], cwd=repo, env=child).stdout)
@@ -1027,8 +1027,8 @@ def test_installed_distribution_smoke(
 
     # --- visualize: the only reader of the vendored D3 asset -------------
     _run([str(env.script), "visualize"], cwd=repo, env=child)
-    html = repo / ".code-review-graph" / "graph.html"
-    d3 = repo / ".code-review-graph" / "d3.v7.min.js"
+    html = repo / ".reviewgraph" / "graph.html"
+    d3 = repo / ".reviewgraph" / "d3.v7.min.js"
     assert html.is_file() and html.stat().st_size > 10_000
     assert d3.is_file(), (
         "the vendored D3 asset did not reach the generated page, so the wheel "

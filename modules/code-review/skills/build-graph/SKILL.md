@@ -21,6 +21,6 @@ Build or incrementally update the knowledge graph for this repository.
 
 ## Notes
 
-- The database is `.code-review-graph/graph.db` in the repository root.
-- Binary files, dependency and build directories, and patterns in `.code-review-graphignore` are skipped.
+- The database is `.reviewgraph/graph.db` in the repository root.
+- Binary files, dependency and build directories, and patterns in `.reviewgraphignore` are skipped.
 - For the list of supported languages call `get_docs_section_tool(section_name="languages")`.

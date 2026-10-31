@@ -25,9 +25,9 @@ class _FlowFixture:
         self.tmp_dir = tempfile.mkdtemp()
         self.root = Path(self.tmp_dir).resolve()
         (self.root / ".git").mkdir()
-        (self.root / ".code-review-graph").mkdir()
+        (self.root / ".reviewgraph").mkdir()
 
-        db_path = str(self.root / ".code-review-graph" / "graph.db")
+        db_path = str(self.root / ".reviewgraph" / "graph.db")
         self.store = GraphStore(db_path)
 
         shared_py = (self.root / "shared.py").as_posix()

@@ -96,7 +96,7 @@ def exists_case_exact(path: str) -> bool:
 def _python_files(root: Path) -> list[Path]:
     skip = {
         ".git", ".venv", "venv", "node_modules", "__pycache__",
-        ".code-review-graph", ".mypy_cache", ".pytest_cache", "build", "dist",
+        ".reviewgraph", ".mypy_cache", ".pytest_cache", "build", "dist",
     }
     out: list[Path] = []
     for dirpath, dirnames, filenames in os.walk(root):
@@ -1012,7 +1012,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     ap.add_argument("--repo", default=".", help="repository root")
     ap.add_argument(
         "--db", default=None,
-        help="graph.db (default: <repo>/.code-review-graph/graph.db)",
+        help="graph.db (default: <repo>/.reviewgraph/graph.db)",
     )
     ap.add_argument(
         "--package", default=None,
@@ -1031,7 +1031,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     db_path = (
         Path(args.db).resolve()
         if args.db
-        else repo_root / ".code-review-graph" / "graph.db"
+        else repo_root / ".reviewgraph" / "graph.db"
     )
     if not db_path.is_file():
         print(f"no graph database at {db_path}", file=sys.stderr)

@@ -1116,7 +1116,7 @@ class GraphStore:
         convention out of them (``tests/``, ``src/test/``) has to know where
         the repository starts, or it reads the directories above the checkout
         instead. Builds record the root; for a graph built before they did,
-        the default database location ``<root>/.code-review-graph/graph.db``
+        the default database location ``<root>/.reviewgraph/graph.db``
         gives the same answer. ``None`` means neither applies, and callers
         must degrade explicitly rather than assume the whole path is inside
         the repository.
@@ -1125,7 +1125,7 @@ class GraphStore:
         if recorded:
             return recorded
         parent = self.db_path.parent
-        if parent.name == ".code-review-graph":
+        if parent.name == ".reviewgraph":
             return str(parent.parent)
         return None
 

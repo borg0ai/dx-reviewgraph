@@ -23,7 +23,7 @@ def function(path, name, *, parent=None, params=""):
 
 
 def graph_path(root):
-    directory = root / ".code-review-graph"
+    directory = root / ".reviewgraph"
     directory.mkdir()
     return directory / "graph.db"
 

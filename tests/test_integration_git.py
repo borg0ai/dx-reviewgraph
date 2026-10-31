@@ -492,7 +492,7 @@ def test_full_build_with_recurse_submodules(
     git_repo_with_submodule: Path,
 ) -> None:
     """full_build with recurse_submodules parses submodule files."""
-    db_path = git_repo_with_submodule / ".code-review-graph" / "graph.db"
+    db_path = git_repo_with_submodule / ".reviewgraph" / "graph.db"
     db_path.parent.mkdir(parents=True, exist_ok=True)
     store = GraphStore(db_path)
     try:
@@ -635,7 +635,7 @@ def test_automatic_update_after_empty_commit_refreshes_freshness(
     repo = _init_repo(tmp_path)
     commit_a = _git_ok(repo, "rev-parse", "HEAD").stdout.strip()
     build_or_update_graph(full_rebuild=True, repo_root=str(repo), postprocess="none")
-    graph_path = repo / ".code-review-graph" / "graph.db"
+    graph_path = repo / ".reviewgraph" / "graph.db"
 
     with GraphStore(graph_path) as store:
         structure_at_a = _graph_structure_snapshot(store)
@@ -679,7 +679,7 @@ def test_automatic_update_after_unsupported_file_commit_refreshes_freshness(
     _git_ok(repo, "commit", "-m", "add unsupported notes")
     commit_a = _git_ok(repo, "rev-parse", "HEAD").stdout.strip()
     build_or_update_graph(full_rebuild=True, repo_root=str(repo), postprocess="none")
-    graph_path = repo / ".code-review-graph" / "graph.db"
+    graph_path = repo / ".reviewgraph" / "graph.db"
 
     with GraphStore(graph_path) as store:
         structure_at_a = _graph_structure_snapshot(store)
@@ -722,7 +722,7 @@ def test_explicit_changed_files_update_records_head_when_files_stored(
     _git_ok(repo, "commit", "-m", "change alpha")
     commit_b = _git_ok(repo, "rev-parse", "HEAD").stdout.strip()
 
-    with GraphStore(repo / ".code-review-graph" / "graph.db") as store:
+    with GraphStore(repo / ".reviewgraph" / "graph.db") as store:
         result = incremental_update(repo, store, changed_files=["a.py"])
         stored_sha = store.get_metadata("git_head_sha")
 
@@ -759,7 +759,7 @@ def test_failed_automatic_update_does_not_claim_graph_is_current(
         postprocess="none",
     )
 
-    with GraphStore(repo / ".code-review-graph" / "graph.db") as store:
+    with GraphStore(repo / ".reviewgraph" / "graph.db") as store:
         stored_sha = store.get_metadata("git_head_sha")
 
     # The failure is visible in status, errors and summary, but the anchor
@@ -911,7 +911,7 @@ def test_update_missing_graph_ignores_explicit_incremental_base(
     assert res["build_type"] == "full"
     assert res["base_resolved"] is None
     assert res["files_parsed"] == 2
-    with GraphStore(repo / ".code-review-graph" / "graph.db") as store:
+    with GraphStore(repo / ".reviewgraph" / "graph.db") as store:
         assert store.get_nodes_by_file(str(repo / "a.py"))
         assert store.get_nodes_by_file(str(repo / "beta.py"))
 
@@ -920,7 +920,7 @@ def test_update_repairs_existing_empty_graph(
     tmp_path: Path,
 ) -> None:
     repo = _init_repo(tmp_path)
-    graph_path = repo / ".code-review-graph" / "graph.db"
+    graph_path = repo / ".reviewgraph" / "graph.db"
     with GraphStore(graph_path):
         pass
     _commit_file(repo, "beta")

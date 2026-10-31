@@ -215,7 +215,7 @@ def generate_wiki_func(
     """Generate a markdown wiki from the community structure.
 
     [DOCS] Creates a wiki page for each detected community and an index
-    page. Pages are written to ``.code-review-graph/wiki/`` inside the
+    page. Pages are written to ``.reviewgraph/wiki/`` inside the
     repository. Only regenerates pages whose content has changed unless
     force=True.
 

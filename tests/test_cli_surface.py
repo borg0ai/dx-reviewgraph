@@ -345,7 +345,7 @@ def cli_env(tmp_path_factory) -> dict[str, str]:
     env = dict(os.environ)
     env["HOME"] = str(home)
     env["USERPROFILE"] = str(home)
-    env["CRG_HOME"] = str(home / ".code-review-graph")
+    env["CRG_HOME"] = str(home / ".reviewgraph")
     env["HERMES_HOME"] = str(home / ".hermes")
     env["NO_COLOR"] = "1"
     # A stray override in the developer's shell must not reach a subprocess.
@@ -353,7 +353,7 @@ def cli_env(tmp_path_factory) -> dict[str, str]:
         env.pop(stale, None)
     for name in CRG_ENV_VARS:
         env.pop(name, None)
-    env["CRG_HOME"] = str(home / ".code-review-graph")
+    env["CRG_HOME"] = str(home / ".reviewgraph")
     env["HERMES_HOME"] = str(home / ".hermes")
     return env
 
@@ -767,7 +767,7 @@ def test_missing_database_does_not_create_one(tmp_path, cli_env):
     _git(repo, "add", "-A")
     _git(repo, "commit", "-qm", "initial")
     run_cli("status", cwd=repo, env=cli_env)
-    assert not (repo / ".code-review-graph" / "graph.db").exists()
+    assert not (repo / ".reviewgraph" / "graph.db").exists()
 
 
 @pytest.mark.xfail(
@@ -795,7 +795,7 @@ def test_truncated_database_does_not_traceback(fresh_built_repo, cli_env):
     asserted as a failure because the exit code is defensible; the thing that
     would not be defensible is a traceback.
     """
-    db = fresh_built_repo / ".code-review-graph" / "graph.db"
+    db = fresh_built_repo / ".reviewgraph" / "graph.db"
     for suffix in ("-wal", "-shm"):
         db.with_name(db.name + suffix).unlink(missing_ok=True)
     db.write_bytes(b"")
@@ -835,7 +835,7 @@ def _corrupt(db: Path, kind: str) -> None:
 @pytest.mark.parametrize("command", DB_CONSUMING_COMMANDS)
 def test_corrupt_database_is_reported_cleanly(command, fresh_built_repo, cli_env):
     """Garbage bytes in graph.db: one line naming the file, exit 1."""
-    db = fresh_built_repo / ".code-review-graph" / "graph.db"
+    db = fresh_built_repo / ".reviewgraph" / "graph.db"
     _corrupt(db, "garbage")
     result = run_cli(*_invoke(command), cwd=fresh_built_repo, env=cli_env)
     assert_clean_failure(result)
@@ -855,7 +855,7 @@ def test_every_kind_of_corrupt_database_is_reported_cleanly(
     without complaint and used to be answered from as though they were this
     repository's graph.
     """
-    db = fresh_built_repo / ".code-review-graph" / "graph.db"
+    db = fresh_built_repo / ".reviewgraph" / "graph.db"
     _corrupt(db, kind)
     result = run_cli("status", cwd=fresh_built_repo, env=cli_env)
     assert_clean_failure(result)
@@ -883,10 +883,10 @@ def test_foreign_repository_database_is_rejected(tmp_path, cli_env):
     _git(host, "commit", "-qm", "host")
     assert run_cli("build", "-q", cwd=host, env=cli_env).returncode == 0
 
-    host_db = host / ".code-review-graph" / "graph.db"
+    host_db = host / ".reviewgraph" / "graph.db"
     for suffix in ("-wal", "-shm"):
         host_db.with_name(host_db.name + suffix).unlink(missing_ok=True)
-    shutil.copyfile(donor / ".code-review-graph" / "graph.db", host_db)
+    shutil.copyfile(donor / ".reviewgraph" / "graph.db", host_db)
 
     result = run_cli("dead-code", cwd=host, env=cli_env)
     assert "donor_only" not in result.output, (
@@ -903,7 +903,7 @@ def test_foreign_repository_database_is_rejected(tmp_path, cli_env):
 )
 @pytest.mark.parametrize("command", ["status", "detect-changes", "wiki", "visualize", "build"])
 def test_read_only_data_dir_is_reported_cleanly(command, fresh_built_repo, cli_env):
-    data_dir = fresh_built_repo / ".code-review-graph"
+    data_dir = fresh_built_repo / ".reviewgraph"
     original = data_dir.stat().st_mode
     data_dir.chmod(0o500)
     try:
@@ -1496,7 +1496,7 @@ def test_crg_data_dir_override_is_honoured(tmp_path, cli_env):
     result = run_cli("build", "-q", cwd=repo, env=env)
     assert result.returncode == 0, result.describe()
     assert (data_dir / "graph.db").exists(), result.describe()
-    assert not (repo / ".code-review-graph" / "graph.db").exists()
+    assert not (repo / ".reviewgraph" / "graph.db").exists()
 
 
 def test_crg_repo_root_override_is_honoured(built_repo, cli_env, tmp_path):
@@ -1519,7 +1519,7 @@ def test_empty_crg_data_dir_falls_back_to_the_default(tmp_path, cli_env):
     result = run_cli("build", "-q", cwd=repo, env=env)
     assert not result.traceback, result.describe()
     assert result.returncode == 0, result.describe()
-    assert (repo / ".code-review-graph" / "graph.db").exists(), result.describe()
+    assert (repo / ".reviewgraph" / "graph.db").exists(), result.describe()
 
 
 @pytest.mark.parametrize(

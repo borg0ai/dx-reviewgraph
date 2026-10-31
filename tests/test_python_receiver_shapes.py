@@ -180,7 +180,7 @@ def repo(tmp_path_factory) -> Path:
     (package / "lib.py").write_text(_LIB, encoding="utf-8")
     (package / "_common.py").write_text(_COMMON, encoding="utf-8")
     (package / "use.py").write_text(_USE, encoding="utf-8")
-    db_path = root / ".code-review-graph" / "graph.db"
+    db_path = root / ".reviewgraph" / "graph.db"
     store = GraphStore(db_path)
     try:
         full_build(root, store)

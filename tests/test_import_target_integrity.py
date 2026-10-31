@@ -139,7 +139,7 @@ def built_repo(tmp_path: Path) -> tuple[Path, Path]:
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
 
-    db_path = repo / ".code-review-graph" / "graph.db"
+    db_path = repo / ".reviewgraph" / "graph.db"
     store = GraphStore(db_path)
     try:
         full_build(repo, store)
@@ -266,7 +266,7 @@ def test_looks_like_a_path_only_flags_resolved_targets():
 def own_package_graph(tmp_path_factory) -> Path:
     """A graph built from a fresh copy of this project's own package.
 
-    The previous version of this guard read ``.code-review-graph/graph.db``
+    The previous version of this guard read ``.reviewgraph/graph.db``
     from the working tree. That file is gitignored, so the test was inert in
     CI and reported whatever a developer's last local build happened to
     contain -- and it skipped itself whenever the sources were newer. Copying
@@ -282,7 +282,7 @@ def own_package_graph(tmp_path_factory) -> Path:
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "add", "-A"], cwd=root, check=True)
 
-    db_path = root / ".code-review-graph" / "graph.db"
+    db_path = root / ".reviewgraph" / "graph.db"
     store = GraphStore(db_path)
     try:
         full_build(root, store)

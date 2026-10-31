@@ -113,7 +113,7 @@ async def _handshake(
 ) -> tuple[str, set[str]]:
     """Start ``serve`` over stdio as a client config would; return what the client sees."""
     repo = tmp_path / "repo with spaces"
-    (repo / ".code-review-graph").mkdir(parents=True)
+    (repo / ".reviewgraph").mkdir(parents=True)
     home = tmp_path / "home"
     home.mkdir()
     args = ["-m", "reviewgraph", "serve", "--repo", str(repo)]

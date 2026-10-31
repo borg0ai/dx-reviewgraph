@@ -64,7 +64,7 @@ class TestCallersOfHonoursReceiverEvidence:
         self.pool_file = (self.root / "pool.py").as_posix()
         self.mod_file = (self.root / "runner.py").as_posix()
         self.use_file = (self.root / "use.py").as_posix()
-        self.db_path = str(self.root / ".code-review-graph" / "graph.db")
+        self.db_path = str(self.root / ".reviewgraph" / "graph.db")
         self._seed()
 
     def teardown_method(self):
@@ -288,7 +288,7 @@ def built_repo(tmp_path: Path) -> Path:
         "    assert value.strip() == 'a'\n",
         encoding="utf-8",
     )
-    db_path = repo / ".code-review-graph" / "graph.db"
+    db_path = repo / ".reviewgraph" / "graph.db"
     store = GraphStore(db_path)
     try:
         full_build(repo, store)

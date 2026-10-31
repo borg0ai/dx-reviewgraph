@@ -57,7 +57,7 @@ runs:
     - name: Cache knowledge graph
       uses: actions/cache@v6
       with:
-        path: .code-review-graph
+        path: .reviewgraph
         key: code-review-graph-schema13-${{ runner.os }}-${{ hashFiles('**/uv.lock', '**/poetry.lock', '**/requirements*.txt', '**/Pipfile.lock', '**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock', '**/go.sum', '**/Cargo.lock', '**/Gemfile.lock', '**/composer.lock') }}
         restore-keys: |
           code-review-graph-schema13-${{ runner.os }}-
@@ -79,7 +79,7 @@ runs:
     - name: Build or update the graph
       shell: bash
       run: |
-        if [ -f .code-review-graph/graph.db ]; then
+        if [ -f .reviewgraph/graph.db ]; then
           # Cache hit: re-parse only the files that differ from the base ref.
           # If the restored database is unusable, fall back to a full build.
           # A corrupt, foreign or newer-schema cache now says so in one line

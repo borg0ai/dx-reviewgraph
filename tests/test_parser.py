@@ -280,13 +280,13 @@ class Plain:
         from graph_engine.tools.query import get_impact_radius, query_graph
 
         (tmp_path / ".git").mkdir()
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         target = tmp_path / "b.py"
         target.write_text("def hi():\n    return 1\n", encoding="utf-8")
         importer = tmp_path / "aliased.py"
         importer.write_text("import b as B\nprint(B.hi())\n", encoding="utf-8")
 
-        store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+        store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
         parser = CodeParser(tmp_path)
         for path in (target, importer):
             nodes, edges = parser.parse_file(path)

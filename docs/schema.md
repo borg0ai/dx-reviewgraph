@@ -1,6 +1,6 @@
 # Knowledge Graph Schema
 
-The graph is one SQLite database, `.code-review-graph/graph.db`, opened in WAL mode.
+The graph is one SQLite database, `.reviewgraph/graph.db`, opened in WAL mode.
 The base tables and indexes come from `_SCHEMA_SQL` in `modules/code-review/graph_engine/graph.py`.
 Everything else is added by the versioned migrations in `modules/code-review/graph_engine/migrations.py`.
 The current schema version is 13, the highest key in `MIGRATIONS`. A database

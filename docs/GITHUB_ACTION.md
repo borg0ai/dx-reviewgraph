@@ -8,7 +8,7 @@ runner, and no source code is sent to an external service.
 On each run the action:
 
 1. Installs `reviewgraph` from PyPI.
-2. Restores the cached `.code-review-graph/` SQLite graph and re-parses the
+2. Restores the cached `.reviewgraph/` SQLite graph and re-parses the
    files changed by the PR, or builds the graph from scratch on a cache miss.
 3. Runs `reviewgraph detect-changes --base origin/<base-branch>` to get
    risk-scored functions, affected execution flows and test gaps.
@@ -127,7 +127,7 @@ someone else's.
 
 ## Cache behavior
 
-The action caches the `.code-review-graph/` directory (the SQLite graph
+The action caches the `.reviewgraph/` directory (the SQLite graph
 database) with `actions/cache`:
 
 - **Key**: `code-review-graph-schema13-<runner.os>-<hashFiles(lockfiles)>`.

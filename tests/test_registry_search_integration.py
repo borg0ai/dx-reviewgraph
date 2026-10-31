@@ -17,7 +17,7 @@ def registry(tmp_path, monkeypatch):
 
 def indexed_repo(root, registry, *, alias=None, count=1):
     root = root.resolve()
-    directory = root / ".code-review-graph"
+    directory = root / ".reviewgraph"
     directory.mkdir(parents=True)
     with GraphStore(directory / "graph.db") as store:
         store.store_file_nodes_edges(

@@ -317,17 +317,17 @@ def _handle_init(args: argparse.Namespace) -> None:
             print(f"  {t}")
 
     if dry_run:
-        print("\n[dry-run] Would ensure .gitignore ignores .code-review-graph/.")
+        print("\n[dry-run] Would ensure .gitignore ignores .reviewgraph/.")
         print("[dry-run] No files were modified.")
         return
 
     gitignore_state = ensure_repo_gitignore_excludes_crg(repo_root)
     if gitignore_state == "created":
-        print("Created .gitignore and added .code-review-graph/.")
+        print("Created .gitignore and added .reviewgraph/.")
     elif gitignore_state == "updated":
-        print("Updated .gitignore with .code-review-graph/.")
+        print("Updated .gitignore with .reviewgraph/.")
     else:
-        print(".gitignore already contains .code-review-graph/.")
+        print(".gitignore already contains .reviewgraph/.")
 
     # Platform-native skills and hooks are installed by default where supported
     # so the graph tools are used proactively. Use --no-skills / --no-hooks /
@@ -584,8 +584,8 @@ def _find_explicit_repo_root(start: Path) -> "Path | None":
     """Resolve an explicit --repo for graph-tool commands.
 
     Walks upward from ``start``, stopping at the nearest directory that
-    contains a ``.code-review-graph``, ``.git``, or ``.svn`` marker. Unlike
-    ``find_repo_root``, a registered subproject (``.code-review-graph``)
+    contains a ``.reviewgraph``, ``.git``, or ``.svn`` marker. Unlike
+    ``find_repo_root``, a registered subproject (``.reviewgraph``)
     counts as a boundary, so a monorepo subdirectory built with
     ``build --repo mono/module`` resolves to the module — not to the
     monorepo's top-level ``.git`` (#697).
@@ -596,7 +596,7 @@ def _find_explicit_repo_root(start: Path) -> "Path | None":
     while True:
         if any(
             (current / marker).exists()
-            for marker in (".code-review-graph", ".git", ".svn")
+            for marker in (".reviewgraph", ".git", ".svn")
         ):
             return current
         if current == current.parent:
@@ -1698,7 +1698,7 @@ def _dispatch() -> None:
         from graph_engine.incremental import find_project_root, get_db_path
 
         if args.repo:
-            # For an explicit --repo the walk must treat .code-review-graph
+            # For an explicit --repo the walk must treat .reviewgraph
             # as a project boundary too: the plain .git/.svn walk resolves a
             # registered monorepo subdirectory to the monorepo root and the
             # graph built at the --repo path is never found (#697). Nearest
@@ -1707,7 +1707,7 @@ def _dispatch() -> None:
             if repo_root is None:
                 print(
                     f"--repo does not look like a project root (no .git, .svn, "
-                    f"or .code-review-graph found at or above): {args.repo}",
+                    f"or .reviewgraph found at or above): {args.repo}",
                     file=sys.stderr,
                 )
                 raise SystemExit(1)
@@ -2032,8 +2032,8 @@ def _dispatch() -> None:
             db_path = Path(args.data_dir).expanduser().resolve() / "graph.db"
         else:
             db_path = get_db_path(repo_root, read_only=True)
-        legacy_db = repo_root / ".code-review-graph.db"
-        default_db = repo_root / ".code-review-graph" / "graph.db"
+        legacy_db = repo_root / ".reviewgraph.db"
+        default_db = repo_root / ".reviewgraph" / "graph.db"
         if (
             not read_only_explicit_data_dir
             and not db_path.exists()

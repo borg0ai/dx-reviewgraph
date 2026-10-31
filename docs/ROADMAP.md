@@ -5,7 +5,7 @@
 Releases after v2.3.6 are listed in [CHANGELOG.md](../CHANGELOG.md).
 
 ### v2.3.6
-- Custom languages without forking: `.code-review-graph/languages.toml` maps extensions and node types to any tree-sitter-language-pack grammar (`docs/CUSTOM_LANGUAGES.md`)
+- Custom languages without forking: `.reviewgraph/languages.toml` maps extensions and node types to any tree-sitter-language-pack grammar (`docs/CUSTOM_LANGUAGES.md`)
 - GitHub Action for risk-scored PR review comments: graph built or restored on the CI runner, one sticky comment per PR, optional `fail-on-risk` gate; used on this repository via `.github/workflows/pr-review.yml` (`docs/GITHUB_ACTION.md`)
 - `agent_baseline` benchmark: graph queries against a grep-and-read-top-k baseline, in all six pinned eval configs
 - Co-change ground truth for `impact_accuracy`; the graph-derived metric is labelled a circular upper bound
@@ -43,7 +43,7 @@ Releases after v2.3.6 are listed in [CHANGELOG.md](../CHANGELOG.md).
 
 ### v2.2.0
 - Multi-repo watch daemon (`reviewgraph-daemon` / `reviewgraph daemon`)
-- TOML daemon configuration (`~/.code-review-graph/watch.toml`)
+- TOML daemon configuration (`~/.reviewgraph/watch.toml`)
 - One `reviewgraph watch` child process per repo, config-file watching with reconciliation, PID file, health checks with restart
 - Standalone `reviewgraph-daemon` entry point (7 subcommands) and a `daemon` subcommand group in the main CLI
 
@@ -82,7 +82,7 @@ Releases after v2.3.6 are listed in [CHANGELOG.md](../CHANGELOG.md).
 - 24 audit fixes: C/C++ support, performance, CI hardening
 
 ### v1.5.x
-- Generated files moved to `.code-review-graph/`
+- Generated files moved to `.reviewgraph/`
 - Visualisation: collapsed start, search, edge toggles
 - Works without git
 

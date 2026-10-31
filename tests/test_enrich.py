@@ -62,7 +62,7 @@ class TestExtractPattern:
 class TestEnrichSearch:
     def setup_method(self):
         self.tmpdir = tempfile.mkdtemp()
-        self.db_dir = Path(self.tmpdir) / ".code-review-graph"
+        self.db_dir = Path(self.tmpdir) / ".reviewgraph"
         self.db_dir.mkdir()
         self.db_path = self.db_dir / "graph.db"
         self.store = GraphStore(self.db_path)
@@ -145,7 +145,7 @@ class TestEnrichSearch:
 class TestEnrichFileRead:
     def setup_method(self):
         self.tmpdir = tempfile.mkdtemp()
-        self.db_dir = Path(self.tmpdir) / ".code-review-graph"
+        self.db_dir = Path(self.tmpdir) / ".reviewgraph"
         self.db_dir.mkdir()
         self.db_path = self.db_dir / "graph.db"
         self.store = GraphStore(self.db_path)
@@ -224,7 +224,7 @@ class TestRunHookOutput:
         # We test the format indirectly by checking enrich_search output
         # since run_hook reads from stdin which is harder to test
         tmpdir = tempfile.mkdtemp()
-        db_dir = Path(tmpdir) / ".code-review-graph"
+        db_dir = Path(tmpdir) / ".reviewgraph"
         db_dir.mkdir()
         store = GraphStore(db_dir / "graph.db")
         store.upsert_node(

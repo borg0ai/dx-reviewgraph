@@ -75,7 +75,7 @@ def test_inheritors_query_finds_struct_and_interface_embeddings(tmp_path):
     nodes, edges = CodeParser().parse_file(source_path)
     base = next(node for node in nodes if node.name == "Base")
     assert base.extra["docstring"] == "Base documents the original declaration."
-    graph_dir = tmp_path / ".code-review-graph"
+    graph_dir = tmp_path / ".reviewgraph"
     graph_dir.mkdir()
     with GraphStore(graph_dir / "graph.db") as store:
         for node in nodes:

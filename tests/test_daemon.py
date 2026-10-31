@@ -139,7 +139,7 @@ class TestConfigParsing:
         assert cfg.repos[0].path == str(repo_a.resolve())
 
     def test_load_config_no_git_dir(self, tmp_path):
-        """Repos without .git or .code-review-graph are skipped."""
+        """Repos without .git or .reviewgraph are skipped."""
         bare = tmp_path / "bare-dir"
         bare.mkdir()
 
@@ -510,15 +510,15 @@ class TestWatchDaemon:
         repo_a = tmp_path / "repo-a"
         repo_a.mkdir()
         (repo_a / ".git").mkdir()
-        (repo_a / ".code-review-graph").mkdir()
+        (repo_a / ".reviewgraph").mkdir()
         # Create graph.db so _initial_build is skipped
-        (repo_a / ".code-review-graph" / "graph.db").touch()
+        (repo_a / ".reviewgraph" / "graph.db").touch()
 
         repo_b = tmp_path / "repo-b"
         repo_b.mkdir()
         (repo_b / ".git").mkdir()
-        (repo_b / ".code-review-graph").mkdir()
-        (repo_b / ".code-review-graph" / "graph.db").touch()
+        (repo_b / ".reviewgraph").mkdir()
+        (repo_b / ".reviewgraph" / "graph.db").touch()
 
         config = DaemonConfig(
             session_name="test-sess",
@@ -616,7 +616,7 @@ class TestWatchDaemon:
         daemon._children = {"alpha": mock_alpha}
 
         # Remove graph.db for beta so _initial_build is triggered
-        beta_db = Path(config.repos[1].path) / ".code-review-graph" / "graph.db"
+        beta_db = Path(config.repos[1].path) / ".reviewgraph" / "graph.db"
         beta_db.unlink()
 
         with (

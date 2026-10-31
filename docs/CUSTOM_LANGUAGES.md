@@ -8,7 +8,7 @@ you can add it with a config file. No fork, no code changes.
 
 ## Quick start
 
-Create `<repo_root>/.code-review-graph/languages.toml`:
+Create `<repo_root>/.reviewgraph/languages.toml`:
 
 ```toml
 [languages.erlang]

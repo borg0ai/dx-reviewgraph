@@ -27,7 +27,7 @@ def test_full_build_indexes_node_typescript_imports_and_call_context(
         (tmp_path / "dependency.ts").write_text(
             "export function calculate(value: number): number { return value - 1; }\n"
         )
-    graph_dir = tmp_path / ".code-review-graph"
+    graph_dir = tmp_path / ".reviewgraph"
     graph_dir.mkdir()
     with GraphStore(graph_dir / "graph.db") as store:
         built = full_build(tmp_path, store)

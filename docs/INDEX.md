@@ -5,7 +5,7 @@
 - [FAQ.md](FAQ.md): how it compares to LSP, RAG, grep, and similar tools; when not to use it
 - [FEATURES.md](FEATURES.md): release highlights by version
 - [GITHUB_ACTION.md](GITHUB_ACTION.md): risk-scored PR review comments in GitHub Actions
-- [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md): add a language through `.code-review-graph/languages.toml`
+- [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md): add a language through `.reviewgraph/languages.toml`
 - [architecture.md](architecture.md): system design and data flow
 - [schema.md](schema.md): node and edge types, SQLite tables (including flows, communities, FTS5)
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md): common problems and fixes, including Windows/WSL

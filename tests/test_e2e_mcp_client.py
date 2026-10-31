@@ -273,7 +273,7 @@ async def test_mcp_client_full_review_journey(tmp_path: Path) -> None:
             assert built["files_parsed"] == 3, built["summary"]
             assert built["total_nodes"] >= 7
             assert built["errors"] == []
-            assert (repo / ".code-review-graph" / "graph.db").is_file()
+            assert (repo / ".reviewgraph" / "graph.db").is_file()
 
             # --- minimal context (documented first call) --------------------
             context = _payload(
@@ -358,7 +358,7 @@ async def test_mcp_client_rejects_repo_root_outside_a_project(tmp_path: Path) ->
     repo = _make_fixture_repo(tmp_path)
     crg_home = tmp_path / "crg-home"
     crg_home.mkdir()
-    # Exists, readable, and deliberately has no .git / .svn / .code-review-graph.
+    # Exists, readable, and deliberately has no .git / .svn / .reviewgraph.
     outsider = tmp_path / "outside"
     outsider.mkdir()
     (outsider / "secrets.txt").write_text("not yours\n", encoding="utf-8")

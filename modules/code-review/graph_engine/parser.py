@@ -2998,7 +2998,7 @@ class CodeParser:
         self._rust_project_cache: dict[
             str, tuple[Path, Path, Path, dict[str, Path], Path]
         ] = {}
-        # Config-driven custom languages (.code-review-graph/languages.toml).
+        # Config-driven custom languages (.reviewgraph/languages.toml).
         # The built-in tables stay shared module-level constants; only when a
         # repo defines custom languages does this parser switch to merged
         # copies, so other CodeParser instances (multi-repo registry, worker
@@ -16289,7 +16289,7 @@ class CodeParser:
                     continue
                 found = self._exact_file(boundary, parts)
                 # An unindexed file (``vendor/bundle``, anything a
-                # .code-review-graphignore excludes) is not a target: the
+                # .reviewgraphignore excludes) is not a target: the
                 # graph has no node for it, so naming it would be a
                 # confident path that resolves to nothing.
                 if found is not None and self._path_is_indexed(found, boundary):

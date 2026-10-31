@@ -17,7 +17,7 @@ Usage::
 ``reversed``  the same files, reversed
 ``rotate``    the same files, rotated by half their length
 
-The build always writes into ``<repo_root>/.code-review-graph`` (the real
+The build always writes into ``<repo_root>/.reviewgraph`` (the real
 location the real pipeline uses); the finished database is then copied to
 ``<out_db>`` with the SQLite backup API so the copy is consistent even if a
 WAL segment is still open.
@@ -73,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     repo_root = Path(args.repo_root).resolve()
-    data_dir = repo_root / ".code-review-graph"
+    data_dir = repo_root / ".reviewgraph"
     shutil.rmtree(data_dir, ignore_errors=True)
 
     _apply_order(args.order)

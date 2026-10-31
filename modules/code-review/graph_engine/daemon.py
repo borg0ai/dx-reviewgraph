@@ -1,6 +1,6 @@
 """Multi-repo watch daemon for graph_engine.
 
-Reads ``~/.code-review-graph/watch.toml`` to configure which repositories
+Reads ``~/.reviewgraph/watch.toml`` to configure which repositories
 to watch, then spawns one ``reviewgraph watch`` child process per
 repo.  Monitors the config file for live changes (adding/removing repos)
 and health-checks child processes, restarting any that die.
@@ -197,11 +197,11 @@ def load_config(path: Path | None = None) -> DaemonConfig:
         has_repo_marker = (
             (repo_path / ".git").exists()
             or (repo_path / ".svn").exists()
-            or (repo_path / ".code-review-graph").exists()
+            or (repo_path / ".reviewgraph").exists()
         )
         if not has_repo_marker:
             logger.warning(
-                "Skipping repo %s — no .git, .svn, or .code-review-graph directory found",
+                "Skipping repo %s — no .git, .svn, or .reviewgraph directory found",
                 repo_path,
             )
             continue
@@ -328,10 +328,10 @@ def add_repo_to_config(
     has_repo_marker = (
         (resolved / ".git").exists()
         or (resolved / ".svn").exists()
-        or (resolved / ".code-review-graph").exists()
+        or (resolved / ".reviewgraph").exists()
     )
     if not has_repo_marker:
-        raise ValueError(f"No .git, .svn, or .code-review-graph directory in {resolved}")
+        raise ValueError(f"No .git, .svn, or .reviewgraph directory in {resolved}")
 
     effective_alias = alias or resolved.name
 
@@ -1094,7 +1094,7 @@ class WatchDaemon:
 
         # Build initial graph for repos that lack a database
         for repo in self._config.repos:
-            db_path = Path(repo.path) / ".code-review-graph" / "graph.db"
+            db_path = Path(repo.path) / ".reviewgraph" / "graph.db"
             if not db_path.exists():
                 self._initial_build(repo)
 
@@ -1166,7 +1166,7 @@ class WatchDaemon:
             for alias in to_add | to_update:
                 repo = desired[alias]
                 registry.register(repo.path, alias=repo.alias)
-                db_path = Path(repo.path) / ".code-review-graph" / "graph.db"
+                db_path = Path(repo.path) / ".reviewgraph" / "graph.db"
                 if not db_path.exists():
                     repos_needing_build.append(repo)
 

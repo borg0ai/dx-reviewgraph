@@ -92,7 +92,7 @@ def _padding_tests(prefix: str) -> str:
 def risky_repo(tmp_path_factory) -> dict[str, Any]:
     """A repo whose riskiest changed file sorts last in the diff order."""
     root = tmp_path_factory.mktemp("risk-budget-repo")
-    (root / ".code-review-graph").mkdir(parents=True, exist_ok=True)
+    (root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
 
     padding = [f"aaa_pad{i}" for i in range(4)]
     for prefix in padding:
@@ -132,7 +132,7 @@ def risky_repo(tmp_path_factory) -> dict[str, Any]:
             encoding="utf-8",
         )
 
-    db_path = root / ".code-review-graph" / "graph.db"
+    db_path = root / ".reviewgraph" / "graph.db"
     os.environ["CRG_SERIAL_PARSE"] = "1"
     with GraphStore(db_path) as store:
         full_build(root, store)
@@ -419,7 +419,7 @@ def _spread_module(bodies: int, filler: int) -> list[str]:
 def hunky_repo(tmp_path_factory) -> dict[str, Any]:
     """A committed repo with six well-separated changes in one file."""
     root = tmp_path_factory.mktemp("hunky-repo")
-    (root / ".code-review-graph").mkdir(parents=True, exist_ok=True)
+    (root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
     _git(root, "init", "-q")
 
     lines = _spread_module(bodies=6, filler=30)
@@ -440,7 +440,7 @@ def hunky_repo(tmp_path_factory) -> dict[str, Any]:
     (root / "spread.py").write_text("\n".join(edited) + "\n", encoding="utf-8")
 
     os.environ["CRG_SERIAL_PARSE"] = "1"
-    with GraphStore(root / ".code-review-graph" / "graph.db") as store:
+    with GraphStore(root / ".reviewgraph" / "graph.db") as store:
         full_build(root, store)
 
     hunks = len(re.findall(

@@ -50,7 +50,7 @@ def hook_repo(tmp_path, monkeypatch):
     binary = bin_dir / "reviewgraph"
     binary.write_text(
         '#!/bin/sh\nprintf "%s\\n" "$*" >> "$CRG_HOOK_LOG"\n'
-        "mkdir -p .code-review-graph\ntouch .code-review-graph/graph.db\n"
+        "mkdir -p .reviewgraph\ntouch .reviewgraph/graph.db\n"
     )
     binary.chmod(0o755)
     monkeypatch.setenv("PATH", str(bin_dir) + os.pathsep + os.environ["PATH"])
@@ -70,7 +70,7 @@ def test_shared_hook_skips_linked_worktree_graph_creation(tmp_path, monkeypatch)
     git(repo, "worktree", "add", "-b", "feature", str(linked))
     result = commit_change(linked)
     assert not commands.exists()
-    assert not (linked / ".code-review-graph").exists()
+    assert not (linked / ".reviewgraph").exists()
     assert "linked worktree" in result.stderr
 
 

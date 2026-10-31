@@ -89,7 +89,7 @@ Updates the graph on every file save.
 ### 5. Visualize the graph (optional)
 ```bash
 reviewgraph visualize
-open .code-review-graph/graph.html
+open .reviewgraph/graph.html
 ```
 Interactive D3.js force-directed graph. It starts collapsed (File nodes only); click a file to expand its children. Use the search bar to filter and click legend edge types to toggle them. `--format json|graphml|svg|obsidian|cypher` writes other formats.
 
@@ -132,7 +132,7 @@ Ask your MCP client: "Show me the architecture of this project". This calls `get
 ```bash
 reviewgraph wiki
 ```
-Writes one markdown page per detected community, plus an index, to `.code-review-graph/wiki/`.
+Writes one markdown page per detected community, plus an index, to `.reviewgraph/wiki/`.
 
 ### 10. Multi-repo search
 ```bash
@@ -156,7 +156,7 @@ The parser covers Python, JavaScript, TypeScript/TSX, Go, Rust, Java, C/C++, C#,
 
 Extension-less scripts are detected by shebang for bash/sh/zsh/ksh/dash/ash, Python, Node, Ruby, Perl, Lua, Rscript, and PHP interpreters.
 
-Languages not covered can be added through a `.code-review-graph/languages.toml` file. See [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md).
+Languages not covered can be added through a `.reviewgraph/languages.toml` file. See [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md).
 
 ## What Gets Indexed
 
@@ -174,7 +174,7 @@ See [schema.md](schema.md) for details.
 These paths are excluded by default. A leading `/` anchors the pattern at the repository root.
 
 ```
-**/.code-review-graph/**   **/node_modules/**   **/.git/**       **/.svn/**
+**/.reviewgraph/**   **/node_modules/**   **/.git/**       **/.svn/**
 **/__pycache__/**          *.pyc                **/.venv/**      **/venv/**
 /dist/**    /build/**    /.next/**    /.nuxt/**    /target/**    /bin/**    /obj/**
 **/vendor/**    /storage/**    /bootstrap/cache/**    /public/build/**
@@ -186,7 +186,7 @@ These paths are excluded by default. A leading `/` anchors the pattern at the re
 
 A nested `target/`, `build/`, `.next/` or `.nuxt/` directory is also ignored when a sibling manifest (for example `pom.xml`, `build.gradle` or `next.config.js`) shows it is build output.
 
-To add patterns, create a `.code-review-graphignore` file in the repository root (same syntax as `.gitignore`):
+To add patterns, create a `.reviewgraphignore` file in the repository root (same syntax as `.gitignore`):
 
 ```
 generated/**
@@ -194,4 +194,4 @@ vendor/**
 *.generated.ts
 ```
 
-In git repositories, indexing is based on tracked files (`git ls-files`), so gitignored files are skipped. Use `.code-review-graphignore` to exclude tracked files or when git is not available.
+In git repositories, indexing is based on tracked files (`git ls-files`), so gitignored files are skipped. Use `.reviewgraphignore` to exclude tracked files or when git is not available.

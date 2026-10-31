@@ -514,8 +514,8 @@ class TestCheckoutUnderATestDirectory:
     def setup_method(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name) / "test" / "checkout"
-        (self.root / ".code-review-graph").mkdir(parents=True)
-        self.store = GraphStore(self.root / ".code-review-graph" / "graph.db")
+        (self.root / ".reviewgraph").mkdir(parents=True)
+        self.store = GraphStore(self.root / ".reviewgraph" / "graph.db")
         self.store.set_metadata("repo_root", str(self.root))
 
     def teardown_method(self):

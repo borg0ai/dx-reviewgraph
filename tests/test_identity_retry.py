@@ -128,7 +128,7 @@ def test_ignored_failed_file_is_removed_or_reported_pending(
     monkeypatch.setenv("CRG_SERIAL_PARSE", "1")
     calls = failing_parser(monkeypatch)
     incremental_update(repo, store, changed_files=[])
-    (repo / ".code-review-graphignore").write_text("broken.cpp\n")
+    (repo / ".reviewgraphignore").write_text("broken.cpp\n")
     calls.clear()
     result = incremental_update(repo, store, changed_files=[], reconcile_stale=reconcile)
     assert calls == []

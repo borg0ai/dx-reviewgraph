@@ -44,7 +44,7 @@ _SOURCE_EXTS = (
 
 _SKIP_DIRS = {
     ".git", ".hg", ".svn", "node_modules", "__pycache__",
-    ".code-review-graph", ".venv", "venv", "dist", "build",
+    ".reviewgraph", ".venv", "venv", "dist", "build",
 }
 
 _STOPWORDS = {

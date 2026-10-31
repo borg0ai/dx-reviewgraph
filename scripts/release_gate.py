@@ -95,7 +95,7 @@ CHECKS: dict[str, Check] = {
         policy=(
             "Blocks. It is the only check that proves a graph built by a released "
             "version survives being opened by this code. A migration that corrupts "
-            "an existing .code-review-graph/graph.db cannot be undone by a later "
+            "an existing .reviewgraph/graph.db cannot be undone by a later "
             "patch release, and the user's database is not ours to lose."
         ),
         modules=("tests/test_upgrade_path.py",),

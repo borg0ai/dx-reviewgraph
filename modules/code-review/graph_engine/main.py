@@ -1062,7 +1062,7 @@ async def generate_wiki_tool(
     """Generate a markdown wiki from the code community structure.
 
     Creates a wiki page for each detected community and an index page.
-    Pages are written to .code-review-graph/wiki/ inside the repository.
+    Pages are written to .reviewgraph/wiki/ inside the repository.
     Only regenerates pages whose content has changed unless force=True.
 
     Offloaded via ``_offload`` — on large graphs the page-generation loop
@@ -1287,7 +1287,7 @@ async def traverse_graph_tool(
 def list_repos_tool() -> dict:
     """List all registered repositories in the multi-repo registry.
 
-    Returns the list of repos registered at ~/.code-review-graph/registry.json.
+    Returns the list of repos registered at ~/.reviewgraph/registry.json.
     Use the CLI 'register' command to add repos.
 
     Stays synchronous: one small JSON read, no graph database and no Git.

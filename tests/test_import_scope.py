@@ -76,7 +76,7 @@ def _go_repo(root: Path, members: int = 4, importers: int = 3) -> Path:
 
 
 def _build(repo: Path) -> GraphStore:
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     full_build(repo, store)
     store.commit()
     return store
@@ -279,7 +279,7 @@ class TestBuildEqualsUpdate:
         repo = _go_repo(tmp_path / "repo", members=3, importers=4)
         _init_repo(repo)
 
-        incremental_db = repo / ".code-review-graph" / "graph.db"
+        incremental_db = repo / ".reviewgraph" / "graph.db"
         store = GraphStore(incremental_db)
         full_build(repo, store)
         store.commit()

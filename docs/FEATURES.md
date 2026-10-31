@@ -20,7 +20,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 ## v2.3.8
 - **Bounded MCP responses**: #849 found `get_affected_flows` returning ~247k tokens inside a workflow documented as "5 tool calls, 800 tokens total". A sweep of the other 29 tools found the same bug in ten more places: `list_communities` returned 206k tokens with default arguments, `get_community` 134k, `get_architecture_overview` 625k in standard mode. All are now capped under one contract: `total` (or a per-list `*_total`) reports the untruncated count, `truncated` marks a cut, and the summary says how many of how many are shown. Cap parameters reject values below 1 and reject booleans. `detail_level="minimal"` was added to the analysis and refactor tools. `tests/test_token_budget.py` pins the per-tool budget table so a removed cap fails CI. Four query tools (`get_impact_radius`, `find_large_functions`, `traverse_graph`, `semantic_search_nodes`) are still unbounded in the worst case and are tracked in #888. See [COMMANDS.md](COMMANDS.md#result-bounds).
 - **Framework-aware PHP parsing**: traits, enums, object creation and base clauses are indexed. Composer PSR-4 resolution is longest-prefix, multi-directory, cached and bounded to the repository. Blade references ignore comments and escaped directives. Laravel Route and Eloquent edges require explicit framework, import or receiver evidence.
-- **Custom languages without forking**: a `.code-review-graph/languages.toml` file indexes any grammar shipped by tree-sitter-language-pack (extension map plus node-type lists, validated and capped). Built-in languages always win. See [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md).
+- **Custom languages without forking**: a `.reviewgraph/languages.toml` file indexes any grammar shipped by tree-sitter-language-pack (extension map plus node-type lists, validated and capped). Built-in languages always win. See [CUSTOM_LANGUAGES.md](CUSTOM_LANGUAGES.md).
 - **GitHub Action for risk-scored PR reviews**: the composite `action.yml` builds or restores the graph from the CI cache, runs `detect-changes` against the PR base, and updates one sticky comment with a risk table, affected flows, test gaps and the Token Savings line. Optional `fail-on-risk` merge gate. This repository runs it in `.github/workflows/pr-review.yml`. See [GITHUB_ACTION.md](GITHUB_ACTION.md).
 - **`agent_baseline` eval benchmark**: compares graph queries with a grep-and-read-top-3 agent baseline instead of the whole-corpus baseline. Wired into all six pinned eval configs.
 - **Co-change ground truth for `impact_accuracy`**: predictions are also graded against the files co-changed in the same commit. The graph-derived metric is labelled "circular (upper bound)".
@@ -122,7 +122,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 
 ## v1.5.3
 - **No git required**: `build`, `status`, `visualize` and `watch` work on any directory.
-- **File organisation**: generated files moved into `.code-review-graph/` (auto-created `.gitignore`, legacy migration).
+- **File organisation**: generated files moved into `.reviewgraph/` (auto-created `.gitignore`, legacy migration).
 - **Visualisation density**: starts collapsed (File nodes only), search bar, clickable edge type toggles, scale-aware layout for large graphs.
 
 ## v1.4.0
@@ -151,7 +151,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 - **6 MCP tools**, **3 skills** (build-graph, review-delta, review-pr), and **PostToolUse hooks** (Write|Edit|Bash) for background updates.
 
 ## Privacy & Data
-- Graph data is stored locally in `.code-review-graph/graph.db` (SQLite), auto-gitignored.
+- Graph data is stored locally in `.reviewgraph/graph.db` (SQLite), auto-gitignored.
 - No telemetry. Core graph and review workflows need no network access.
 - Optional embedding features call local or remote services only when explicitly enabled.
-- Respects `.gitignore` and `.code-review-graphignore`.
+- Respects `.gitignore` and `.reviewgraphignore`.

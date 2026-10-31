@@ -161,17 +161,17 @@ class TestFindProjectRoot:
 class TestGetDbPath:
     def test_creates_directory_and_db_path(self, tmp_path):
         db_path = get_db_path(tmp_path)
-        assert db_path == tmp_path / ".code-review-graph" / "graph.db"
-        assert (tmp_path / ".code-review-graph").is_dir()
+        assert db_path == tmp_path / ".reviewgraph" / "graph.db"
+        assert (tmp_path / ".reviewgraph").is_dir()
 
     def test_creates_gitignore(self, tmp_path):
         get_db_path(tmp_path)
-        gi = tmp_path / ".code-review-graph" / ".gitignore"
+        gi = tmp_path / ".reviewgraph" / ".gitignore"
         assert gi.exists()
         assert "*\n" in gi.read_text(encoding="utf-8")
 
     def test_migrates_legacy_db(self, tmp_path):
-        legacy = tmp_path / ".code-review-graph.db"
+        legacy = tmp_path / ".reviewgraph.db"
         legacy.write_text("legacy data")
         db_path = get_db_path(tmp_path)
         assert db_path.exists()
@@ -179,19 +179,19 @@ class TestGetDbPath:
         assert db_path.read_text() == "legacy data"
 
     def test_cleans_legacy_side_files(self, tmp_path):
-        legacy = tmp_path / ".code-review-graph.db"
+        legacy = tmp_path / ".reviewgraph.db"
         legacy.write_text("data")
         for suffix in ("-wal", "-shm", "-journal"):
-            (tmp_path / f".code-review-graph.db{suffix}").write_text("side")
+            (tmp_path / f".reviewgraph.db{suffix}").write_text("side")
         get_db_path(tmp_path)
         for suffix in ("-wal", "-shm", "-journal"):
-            assert not (tmp_path / f".code-review-graph.db{suffix}").exists()
+            assert not (tmp_path / f".reviewgraph.db{suffix}").exists()
 
     def test_read_only_resolution_does_not_create_migrate_or_clean(self, tmp_path):
-        legacy = tmp_path / ".code-review-graph.db"
+        legacy = tmp_path / ".reviewgraph.db"
         legacy.write_text("legacy data")
         side_files = [
-            tmp_path / f".code-review-graph.db{suffix}"
+            tmp_path / f".reviewgraph.db{suffix}"
             for suffix in ("-wal", "-shm", "-journal")
         ]
         for side_file in side_files:
@@ -199,7 +199,7 @@ class TestGetDbPath:
 
         db_path = get_db_path(tmp_path, read_only=True)
 
-        assert db_path == tmp_path / ".code-review-graph" / "graph.db"
+        assert db_path == tmp_path / ".reviewgraph" / "graph.db"
         assert not db_path.parent.exists()
         assert legacy.read_text() == "legacy data"
         assert all(side_file.read_text() == "side" for side_file in side_files)
@@ -214,7 +214,7 @@ class TestEnsureRepoGitignoreExcludesCrg:
         assert gitignore.exists()
         assert gitignore.read_text() == (
             "# Added by reviewgraph\n"
-            ".code-review-graph/\n"
+            ".reviewgraph/\n"
         )
 
     def test_appends_rule_when_missing(self, tmp_path):
@@ -226,20 +226,20 @@ class TestEnsureRepoGitignoreExcludesCrg:
         assert gitignore.read_text() == (
             "node_modules/\n"
             "# Added by reviewgraph\n"
-            ".code-review-graph/\n"
+            ".reviewgraph/\n"
         )
 
     def test_idempotent_when_present(self, tmp_path):
         gitignore = tmp_path / ".gitignore"
-        gitignore.write_text(".code-review-graph/\n")
+        gitignore.write_text(".reviewgraph/\n")
 
         state = ensure_repo_gitignore_excludes_crg(tmp_path)
         assert state == "already-present"
-        assert gitignore.read_text() == ".code-review-graph/\n"
+        assert gitignore.read_text() == ".reviewgraph/\n"
 
     def test_treats_wildcard_ignore_as_present(self, tmp_path):
         gitignore = tmp_path / ".gitignore"
-        gitignore.write_text(".code-review-graph/**\n")
+        gitignore.write_text(".reviewgraph/**\n")
 
         state = ensure_repo_gitignore_excludes_crg(tmp_path)
         assert state == "already-present"
@@ -254,7 +254,7 @@ class TestIgnorePatterns:
         assert "/build/**" in patterns
 
     def test_custom_ignore_file(self, tmp_path):
-        ignore = tmp_path / ".code-review-graphignore"
+        ignore = tmp_path / ".reviewgraphignore"
         ignore.write_text("custom/\n# comment\n\nvendor/**\n")
         patterns = _load_ignore_patterns(tmp_path)
         assert "**/custom/**" in patterns
@@ -271,7 +271,7 @@ class TestIgnorePatterns:
         assert not _should_ignore("src/main.py", patterns)
 
     def test_should_ignore_directory_trailing_slash_pattern(self, tmp_path):
-        ignore = tmp_path / ".code-review-graphignore"
+        ignore = tmp_path / ".reviewgraphignore"
         ignore.write_text("vendor/\n/generated/\n")
 
         patterns = _load_ignore_patterns(tmp_path)
@@ -351,11 +351,11 @@ class TestDataDir:
     """Tests for get_data_dir / CRG_DATA_DIR / CRG_REPO_ROOT (#155)."""
 
     def test_default_uses_repo_subdir(self, tmp_path, monkeypatch):
-        """Without CRG_DATA_DIR, graphs live at <repo>/.code-review-graph."""
+        """Without CRG_DATA_DIR, graphs live at <repo>/.reviewgraph."""
         monkeypatch.delenv("CRG_DATA_DIR", raising=False)
         from graph_engine.incremental import get_data_dir
         result = get_data_dir(tmp_path)
-        assert result == tmp_path / ".code-review-graph"
+        assert result == tmp_path / ".reviewgraph"
         assert result.is_dir()
         # Auto-generated gitignore must exist
         assert (result / ".gitignore").is_file()
@@ -395,7 +395,7 @@ class TestDataDir:
         assert "—" in decoded, "em-dash missing from decoded gitignore"
 
     def test_env_override_replaces_repo_subdir(self, tmp_path, monkeypatch):
-        """CRG_DATA_DIR replaces the default <repo>/.code-review-graph."""
+        """CRG_DATA_DIR replaces the default <repo>/.reviewgraph."""
         external = tmp_path / "external-graphs"
         repo = tmp_path / "project"
         repo.mkdir()
@@ -404,8 +404,8 @@ class TestDataDir:
         result = get_data_dir(repo)
         assert result == external.resolve()
         assert result.is_dir()
-        # The repo itself should NOT have a .code-review-graph dir now
-        assert not (repo / ".code-review-graph").exists()
+        # The repo itself should NOT have a .reviewgraph dir now
+        assert not (repo / ".reviewgraph").exists()
 
     def test_get_db_path_uses_data_dir(self, tmp_path, monkeypatch):
         """get_db_path should honor CRG_DATA_DIR too."""
@@ -446,7 +446,7 @@ class TestDataDirRegistry:
     """Tests for registry-based data_dir resolution."""
 
     def test_registry_data_dir_overrides_default(self, tmp_path, monkeypatch):
-        """Registry data_dir should override default .code-review-graph."""
+        """Registry data_dir should override default .reviewgraph."""
         from graph_engine.incremental import get_data_dir
         from graph_engine.registry import Registry
 
@@ -463,7 +463,7 @@ class TestDataDirRegistry:
         result = get_data_dir(repo)
         assert result == external.resolve()
         assert result.is_dir()
-        assert not (repo / ".code-review-graph").exists()
+        assert not (repo / ".reviewgraph").exists()
 
     def test_registry_data_dir_overrides_env_var(self, tmp_path, monkeypatch):
         """Registry data_dir should override CRG_DATA_DIR."""
@@ -512,7 +512,7 @@ class TestDataDirRegistry:
 
         # Don't set in registry
         result = get_data_dir(repo)
-        assert result == repo / ".code-review-graph"
+        assert result == repo / ".reviewgraph"
         assert result.is_dir()
 
     def test_data_dir_auto_creates_directory(self, tmp_path, monkeypatch):

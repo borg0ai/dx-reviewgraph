@@ -375,7 +375,7 @@ def test_install_leaves_a_hand_tuned_codex_table_alone(tmp_path: Path) -> None:
 
 def _codex_config(tail: str) -> str:
     return (
-        "[mcp_servers.reviewgraph]\n"
+        "[mcp_servers.code-review-graph]\n"
         'command = "uvx"\n'
         'args = ["reviewgraph", "serve"]\n'
         + tail

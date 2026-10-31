@@ -650,7 +650,7 @@ def test_only_installer_owned_gitignore_block_is_removed(
     gitignore = fake_repo / ".gitignore"
     _write(
         gitignore,
-        "dist/\n# Added by reviewgraph\n.code-review-graph/\ncoverage/\n",
+        "dist/\n# Added by reviewgraph\n.reviewgraph/\ncoverage/\n",
     )
 
     uninstall.run(repo=fake_repo, keep_data=True)
@@ -658,9 +658,9 @@ def test_only_installer_owned_gitignore_block_is_removed(
     assert gitignore.read_text(encoding="utf-8") == "dist/\ncoverage/\n"
 
     # An unmarked entry may have been written by the user before install.
-    _write(gitignore, "dist/\n.code-review-graph/\n")
+    _write(gitignore, "dist/\n.reviewgraph/\n")
     uninstall.run(repo=fake_repo, keep_data=True)
-    assert gitignore.read_text(encoding="utf-8") == "dist/\n.code-review-graph/\n"
+    assert gitignore.read_text(encoding="utf-8") == "dist/\n.reviewgraph/\n"
 
 
 def test_dry_run_is_meaningful_and_byte_for_byte_read_only(
@@ -669,7 +669,7 @@ def test_dry_run_is_meaningful_and_byte_for_byte_read_only(
 ) -> None:
     config = fake_repo / ".mcp.json"
     _write_json(config, {"mcpServers": {"reviewgraph": {}}})
-    data = fake_repo / ".code-review-graph" / "graph.db"
+    data = fake_repo / ".reviewgraph" / "graph.db"
     data.parent.mkdir()
     data.write_bytes(b"graph")
     plugin = fake_home / ".config" / "opencode" / "plugins" / "crg-plugin.ts"
@@ -745,7 +745,7 @@ def test_non_repository_directory_is_refused_without_deleting_data(
     fake_home: Path,
 ) -> None:
     ordinary_directory = tmp_path / "ordinary-directory"
-    data = ordinary_directory / ".code-review-graph" / "unrelated.txt"
+    data = ordinary_directory / ".reviewgraph" / "unrelated.txt"
     config = ordinary_directory / ".mcp.json"
     _write(data, "not owned by CRG")
     _write_json(config, {"mcpServers": {"reviewgraph": {}}})
@@ -770,7 +770,7 @@ def test_repository_subdirectory_normalises_to_vcs_root(
 ) -> None:
     nested = fake_repo / "src" / "package"
     nested.mkdir(parents=True)
-    data = fake_repo / ".code-review-graph" / "graph.db"
+    data = fake_repo / ".reviewgraph" / "graph.db"
     data.parent.mkdir()
     data.write_bytes(b"graph")
 
@@ -792,7 +792,7 @@ def test_symlink_and_out_of_boundary_paths_are_skipped(
     outside_data = tmp_path / "outside-data"
     outside_data.mkdir()
     _write(outside_data / "keep.txt", "keep")
-    os.symlink(outside_data, fake_repo / ".code-review-graph", target_is_directory=True)
+    os.symlink(outside_data, fake_repo / ".reviewgraph", target_is_directory=True)
 
     outside_config = tmp_path / "outside-config.json"
     _write_json(outside_config, {"servers": {"reviewgraph": {}, "other": {}}})
@@ -812,7 +812,7 @@ def test_symlink_and_out_of_boundary_paths_are_skipped(
     report = uninstall.run(repo=fake_repo)
 
     assert (outside_data / "keep.txt").read_text(encoding="utf-8") == "keep"
-    assert (fake_repo / ".code-review-graph").is_symlink()
+    assert (fake_repo / ".reviewgraph").is_symlink()
     assert _read_jsonc(outside_config)["servers"] == {
         "reviewgraph": {},
         "other": {},
@@ -848,9 +848,9 @@ def test_partial_filesystem_failure_is_reported_and_does_not_stop_cleanup(
     fake_home: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    blocked = fake_repo / ".code-review-graph.db"
+    blocked = fake_repo / ".reviewgraph.db"
     blocked.write_bytes(b"db")
-    removable = fake_repo / ".code-review-graph.db-wal"
+    removable = fake_repo / ".reviewgraph.db-wal"
     removable.write_bytes(b"wal")
     original_unlink = Path.unlink
 
@@ -888,12 +888,12 @@ def test_keep_flags_preserve_data_and_user_configuration(
     fake_repo: Path,
     fake_home: Path,
 ) -> None:
-    repo_data = fake_repo / ".code-review-graph"
+    repo_data = fake_repo / ".reviewgraph"
     repo_data.mkdir()
     (repo_data / "graph.db").write_bytes(b"db")
-    legacy = fake_repo / ".code-review-graph.db"
+    legacy = fake_repo / ".reviewgraph.db"
     legacy.write_bytes(b"db")
-    user_data = fake_home / ".code-review-graph"
+    user_data = fake_home / ".reviewgraph"
     user_data.mkdir()
     (user_data / "registry.json").write_text("{}", encoding="utf-8")
     user_config = fake_home / ".qwen" / "settings.json"
@@ -923,7 +923,7 @@ def test_all_repos_reads_registry_before_removing_user_data(
     external_data = tmp_path / "external-data"
     external_data.mkdir()
     (external_data / "graph.db").write_bytes(b"keep")
-    registry_dir = fake_home / ".code-review-graph"
+    registry_dir = fake_home / ".reviewgraph"
     registry_dir.mkdir()
     _write_json(
         registry_dir / "registry.json",
@@ -1006,7 +1006,7 @@ def test_platform_scoped_unbind_removes_only_target_and_keeps_data(
     codex_config = fake_home / ".codex" / "config.toml"
     _write_codex_config(codex_config)
 
-    data_db = fake_repo / ".code-review-graph" / "graph.db"
+    data_db = fake_repo / ".reviewgraph" / "graph.db"
     _write(data_db, "graph")
 
     report = uninstall.run(repo=fake_repo, platforms=["claude"])

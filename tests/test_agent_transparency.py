@@ -21,7 +21,7 @@ def _make_repo(tmp_path: Path, name: str = "repo") -> tuple[Path, GraphStore]:
     root = tmp_path / name
     root.mkdir()
     (root / ".git").mkdir()
-    graph_dir = root / ".code-review-graph"
+    graph_dir = root / ".reviewgraph"
     graph_dir.mkdir()
     return root, GraphStore(graph_dir / "graph.db")
 

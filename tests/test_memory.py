@@ -83,7 +83,7 @@ def test_save_result_uses_repo_root_default(tmp_path: Path) -> None:
         repo_root=tmp_path,
     )
 
-    expected_dir = tmp_path / ".code-review-graph" / "memory"
+    expected_dir = tmp_path / ".reviewgraph" / "memory"
     assert saved_path.parent == expected_dir
     assert saved_path.exists()
 

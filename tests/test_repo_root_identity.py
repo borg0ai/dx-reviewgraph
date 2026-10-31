@@ -20,7 +20,7 @@ def test_incremental_update_survives_mixed_repo_root_spellings(tmp_path: Path, m
     (repo / "app.py").write_text("def main() -> None:\n    pass\n", encoding="utf-8")
     monkeypatch.chdir(repo)
 
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     try:
         full_build(repo.resolve(), store)
         before = store.get_all_files()
@@ -42,7 +42,7 @@ def test_incremental_update_refuses_total_root_mismatch_without_purging(
     (repo / "app.py").write_text("def main() -> None:\n    pass\n", encoding="utf-8")
     wrong_root = tmp_path / "wrong-root"
     wrong_root.mkdir()
-    store = GraphStore(repo / ".code-review-graph" / "graph.db")
+    store = GraphStore(repo / ".reviewgraph" / "graph.db")
     try:
         full_build(repo, store)
         before = store.get_all_files()

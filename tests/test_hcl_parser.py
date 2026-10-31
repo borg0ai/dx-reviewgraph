@@ -69,7 +69,7 @@ module "network" {
         encoding="utf-8",
     )
 
-    store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+    store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
     try:
         result = full_build(tmp_path, store)
 

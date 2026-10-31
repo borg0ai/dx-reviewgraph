@@ -54,7 +54,7 @@ def _write(root: Path, files: dict[str, str | bytes]) -> None:
 
 
 def _build(root: Path) -> None:
-    store = GraphStore(root / ".code-review-graph" / "graph.db")
+    store = GraphStore(root / ".reviewgraph" / "graph.db")
     try:
         full_build(root, store)
     finally:

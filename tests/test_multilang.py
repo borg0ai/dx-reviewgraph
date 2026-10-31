@@ -808,7 +808,7 @@ class TestCSharpNamespaceResolution:
         from graph_engine.tools.query import query_graph
 
         (tmp_path / ".git").mkdir()
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         core = tmp_path / "Core.cs"
         self._write(core, "namespace ACME.Core;\npublic class TaskBoard {}\n")
         app = tmp_path / "App.cs"
@@ -819,7 +819,7 @@ class TestCSharpNamespaceResolution:
             "using System.Linq;\nnamespace ACME.Other;\npublic class Other {}\n",
         )
 
-        store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+        store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
         parser = CodeParser()
         for path in (core, app, unrelated):
             nodes, edges = parser.parse_file(path)
@@ -841,7 +841,7 @@ class TestCSharpNamespaceResolution:
         from graph_engine.tools.query import query_graph
 
         (tmp_path / ".git").mkdir()
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         core = tmp_path / "Core.cs"
         self._write(
             core,
@@ -859,7 +859,7 @@ class TestCSharpNamespaceResolution:
             "public class App {}\n",
         )
 
-        store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+        store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
         parser = CodeParser()
         for path in (core, app):
             nodes, edges = parser.parse_file(path)
@@ -1002,7 +1002,7 @@ class TestCSharpReceiverCallResolution:
         from graph_engine.postprocessing import run_post_processing
 
         (tmp_path / ".git").mkdir()
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         files = {
             "Service.cs": self.SERVICE,
             "Consumer.cs": self.CONSUMER,
@@ -1012,7 +1012,7 @@ class TestCSharpReceiverCallResolution:
         }
         for name, content in files.items():
             (tmp_path / name).write_text(content, encoding="utf-8")
-        store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+        store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
         with patch(
             "graph_engine.incremental.get_all_tracked_files",
             return_value=sorted(files),
@@ -1024,7 +1024,7 @@ class TestCSharpReceiverCallResolution:
     def _call_targets_of(self, tmp_path, caller_suffix):
         from graph_engine.graph import GraphStore
 
-        store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+        store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
         try:
             rows = store._conn.execute(
                 "SELECT target_qualified FROM edges "
@@ -1144,7 +1144,7 @@ class TestCSharpNamespaceImpactAndCoverage:
         from graph_engine.graph import GraphStore
 
         (tmp_path / ".git").mkdir()
-        (tmp_path / ".code-review-graph").mkdir()
+        (tmp_path / ".reviewgraph").mkdir()
         core = tmp_path / "Core.cs"
         core.write_text(
             "namespace ACME.Core;\n"
@@ -1191,7 +1191,7 @@ class TestCSharpNamespaceImpactAndCoverage:
             encoding="utf-8",
         )
 
-        store = GraphStore(tmp_path / ".code-review-graph" / "graph.db")
+        store = GraphStore(tmp_path / ".reviewgraph" / "graph.db")
         parser = CodeParser()
         for path in (core, app, tests, unrelated):
             nodes, edges = parser.parse_file(path)

@@ -299,7 +299,7 @@ class Fixture:
 
     @property
     def db_path(self) -> Path:
-        return self.repo / ".code-review-graph" / "graph.db"
+        return self.repo / ".reviewgraph" / "graph.db"
 
 
 @pytest.fixture(scope="module")
@@ -1249,7 +1249,7 @@ REPO_ROOT_NOT_REFUSED = {"get_docs_section_tool"}
 
 
 async def test_repo_root_outside_a_project_root_is_refused(built: Fixture) -> None:
-    """A repo_root without .git/.svn/.code-review-graph must not be served."""
+    """A repo_root without .git/.svn/.reviewgraph must not be served."""
     outsider = str(built.outsider)
     async with _client(built) as session:
         listed = await asyncio.wait_for(session.list_tools(), timeout=CALL_TIMEOUT)

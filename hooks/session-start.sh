@@ -5,7 +5,7 @@
 # Drain stdin so large hook payloads do not cause BrokenPipeError (#493).
 cat >/dev/null || true
 
-DB_PATH=".code-review-graph/graph.db"
+DB_PATH=".reviewgraph/graph.db"
 
 if [ -f "$DB_PATH" ]; then
     cat <<'INSTRUCTIONS'

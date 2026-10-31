@@ -216,7 +216,7 @@ def _refresh_target_resolution(store: GraphStore) -> None:
 # output names such as ``build`` and ``dist`` from hiding nested source
 # directories.  See: #91 and PR #92.
 DEFAULT_IGNORE_PATTERNS = [
-    "**/.code-review-graph/**",
+    "**/.reviewgraph/**",
     "**/node_modules/**",
     "**/.git/**",
     "**/.svn/**",
@@ -441,9 +441,9 @@ def get_data_dir(repo_root: Path, *, create: bool = True) -> Path:
     Resolution priority:
     1. Registry entry for this repo (set via --data-dir)
     2. CRG_DATA_DIR environment variable (global override)
-    3. Default: <repo>/.code-review-graph/
+    3. Default: <repo>/.reviewgraph/
 
-    By default, ``<repo_root>/.code-review-graph``. If the
+    By default, ``<repo_root>/.reviewgraph``. If the
     ``CRG_DATA_DIR`` environment variable is set, it is used verbatim
     instead — letting you keep graphs outside the working tree (useful
     for ephemeral workspaces, Docker volumes, or shared caches). See: #155
@@ -475,7 +475,7 @@ def get_data_dir(repo_root: Path, *, create: bool = True) -> Path:
     if env_override:
         data_dir = Path(env_override).expanduser().resolve()
     else:
-        data_dir = repo_root / ".code-review-graph"
+        data_dir = repo_root / ".reviewgraph"
 
     if create:
         _create_data_dir(data_dir)
@@ -487,7 +487,7 @@ def get_db_path(repo_root: Path, *, read_only: bool = False) -> Path:
     """Determine the database path for a repository.
 
     Respects ``CRG_DATA_DIR`` (see :func:`get_data_dir`). Migrates a
-    legacy top-level ``.code-review-graph.db`` file into the new
+    legacy top-level ``.reviewgraph.db`` file into the new
     directory when it exists (WAL/SHM side-files are discarded). Pass
     ``read_only=True`` to resolve the current path without creating a data
     directory, migrating a legacy database, or deleting side-files.
@@ -502,12 +502,12 @@ def get_db_path(repo_root: Path, *, read_only: bool = False) -> Path:
     # legacy file sits at the repo root — if CRG_DATA_DIR is set we
     # skip the migration because there's no relationship between the
     # legacy location and the new one).
-    legacy_db = repo_root / ".code-review-graph.db"
+    legacy_db = repo_root / ".reviewgraph.db"
     if legacy_db.exists() and not new_db.exists():
         legacy_db.rename(new_db)
     # Discard stale WAL/SHM side-files from the old location
     for suffix in ("-wal", "-shm", "-journal"):
-        side = repo_root / f".code-review-graph.db{suffix}"
+        side = repo_root / f".reviewgraph.db{suffix}"
         if side.exists():
             side.unlink()
 
@@ -515,7 +515,7 @@ def get_db_path(repo_root: Path, *, read_only: bool = False) -> Path:
 
 
 def ensure_repo_gitignore_excludes_crg(repo_root: Path) -> str:
-    """Ensure repo-level .gitignore excludes ``.code-review-graph/``.
+    """Ensure repo-level .gitignore excludes ``.reviewgraph/``.
 
     Returns one of:
     - ``created``: .gitignore was created with the entry
@@ -529,10 +529,10 @@ def ensure_repo_gitignore_excludes_crg(repo_root: Path) -> str:
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
-        if line == ".code-review-graph" or line.startswith(".code-review-graph/"):
+        if line == ".reviewgraph" or line.startswith(".reviewgraph/"):
             return "already-present"
 
-    block = "# Added by reviewgraph\n.code-review-graph/\n"
+    block = "# Added by reviewgraph\n.reviewgraph/\n"
     prefix = "\n" if existing and not existing.endswith("\n") else ""
     gitignore_path.write_text(existing + prefix + block, encoding="utf-8")
 
@@ -542,7 +542,7 @@ def ensure_repo_gitignore_excludes_crg(repo_root: Path) -> str:
 
 
 def _load_ignore_patterns(repo_root: Path) -> list[str]:
-    """Load ignore patterns from .code-review-graphignore file.
+    """Load ignore patterns from .reviewgraphignore file.
 
     A line starting with ``!`` keeps a path out of the automatic nested
     build-output detection (see :data:`NESTED_OUTPUT_DIR_MARKERS`); it does not
@@ -550,7 +550,7 @@ def _load_ignore_patterns(repo_root: Path) -> list[str]:
     """
     patterns = list(DEFAULT_IGNORE_PATTERNS)
     keep: list[str] = []
-    ignore_file = repo_root / ".code-review-graphignore"
+    ignore_file = repo_root / ".reviewgraphignore"
     if ignore_file.exists():
         for line in ignore_file.read_text(encoding="utf-8", errors="replace").splitlines():
             line = line.strip()
@@ -693,7 +693,7 @@ def _nested_output_ignore_patterns(
     watch pays for the scan once, not on every incremental update, while a
     module added later is still picked up without a restart.  Set
     ``CRG_NESTED_OUTPUT_SCAN=0`` to turn the whole thing off, or list
-    ``!some/path`` in ``.code-review-graphignore`` to spare one directory.
+    ``!some/path`` in ``.reviewgraphignore`` to spare one directory.
 
     Excluding a directory removes its files from the graph, so the result is
     logged at info level: an unexpected exclusion has to be discoverable from
@@ -717,7 +717,7 @@ def _nested_output_ignore_patterns(
         logger.info(
             "Excluding %d nested build-output director%s (a sibling manifest marks "
             "them as build output; keep one with '!<path>' in "
-            ".code-review-graphignore): %s",
+            ".reviewgraphignore): %s",
             len(patterns),
             "y" if len(patterns) == 1 else "ies",
             ", ".join(pattern[1:-3] for pattern in patterns[:10])
@@ -2975,7 +2975,7 @@ def _create_watch_handler(
                         and f"/{Path(relative).as_posix()}/**" in ignore_patterns
                         and (repo_root / relative).is_file()
                     )
-                    if output_became_file or relative == ".code-review-graphignore" or (
+                    if output_became_file or relative == ".reviewgraphignore" or (
                         not _should_ignore(relative, ignore_patterns)
                         and (
                             (

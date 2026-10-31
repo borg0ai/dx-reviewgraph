@@ -136,7 +136,7 @@ Java 프로젝트에는 Spring 의존성 주입 호출 해석, 요청 엔드포�
 
 ### 직접 언어 추가하기
 
-파서가 다루지 않는 언어를 저장소에서 쓴다면 `.code-review-graph/`에 `languages.toml`을 추가해, 파일 확장자를 `tree_sitter_language_pack`에 들어 있는 아무 문법에 연결하고 함수, 클래스, 임포트, 호출의 노드 타입을 적으세요.
+파서가 다루지 않는 언어를 저장소에서 쓴다면 `.reviewgraph/`에 `languages.toml`을 추가해, 파일 확장자를 `tree_sitter_language_pack`에 들어 있는 아무 문법에 연결하고 함수, 클래스, 임포트, 호출의 노드 타입을 적으세요.
 
 ```toml
 [languages.erlang]
@@ -289,7 +289,7 @@ jobs:
 | **커뮤니티 탐지** | 그래프 크기에 맞춰 해상도를 조절하는 Leiden 클러스터링 |
 | **아키텍처 개요** | 커뮤니티 구조 기반 아키텍처 지도와 결합 경고 |
 | **위험 점수 리뷰** | `detect_changes`가 diff를 영향받는 함수, 흐름, 테스트 공백에 대응 |
-| **사용자 정의 언어** | `.code-review-graph/languages.toml`로 새 언어 추가. 포크 불필요 |
+| **사용자 정의 언어** | `.reviewgraph/languages.toml`로 새 언어 추가. 포크 불필요 |
 | **GitHub Action** | CI에서 위험 점수가 매겨진 고정 PR 리뷰 댓글. 선택적 `fail-on-risk` 머지 게이트 |
 | **리팩터링 도구** | 이름 변경 미리보기, 프레임워크를 아는 데드 코드 탐지, 커뮤니티 기반 제안 |
 | **위키 생성** | 커뮤니티 구조에서 Markdown 위키 생성 |
@@ -297,7 +297,7 @@ jobs:
 | **다중 저장소 데몬** | `reviewgraph-daemon`이 여러 저장소를 자식 프로세스로 감시. 헬스 체크와 재시작 포함 |
 | **MCP 프롬프트** | 워크플로 템플릿 5개: 리뷰, 아키텍처, 디버그, 온보딩, 머지 전 점검 |
 | **전문 검색** | 키워드와 벡터 유사도를 결합한 FTS5 하이브리드 검색 |
-| **로컬 저장** | `.code-review-graph/` 안의 SQLite 파일 하나. 외부 데이터베이스나 클라우드 서비스 없음 |
+| **로컬 저장** | `.reviewgraph/` 안의 SQLite 파일 하나. 외부 데이터베이스나 클라우드 서비스 없음 |
 
 ---
 
@@ -414,7 +414,7 @@ reviewgraph-daemon stop                   # stop the daemon and all watchers
 
 `reviewgraph daemon start|stop|status|...`로도 쓸 수 있습니다.
 
-`reviewgraph-daemon add`는 `~/.code-review-graph/watch.toml`에 기록하며, 이 파일은 직접 편집해도 됩니다.
+`reviewgraph-daemon add`는 `~/.reviewgraph/watch.toml`에 기록하며, 이 파일은 직접 편집해도 됩니다.
 
 ```toml
 [[repos]]
@@ -480,7 +480,7 @@ alias = "project-b"
 <summary><strong>설정</strong></summary>
 <br>
 
-색인에서 빼고 싶은 경로가 있으면 저장소 루트에 `.code-review-graphignore` 파일을 만드세요.
+색인에서 빼고 싶은 경로가 있으면 저장소 루트에 `.reviewgraphignore` 파일을 만드세요.
 
 ```
 generated/**
@@ -489,7 +489,7 @@ vendor/**
 node_modules/**
 ```
 
-git 저장소에서는 추적되는 파일만 색인하므로(`git ls-files`) gitignore된 파일은 건너뜁니다. 추적되는 파일을 빼거나 git을 쓸 수 없을 때 `.code-review-graphignore`를 쓰세요. 기본 무시 목록은 [docs/USAGE.md](docs/USAGE.md#ignore-patterns)에 있습니다.
+git 저장소에서는 추적되는 파일만 색인하므로(`git ls-files`) gitignore된 파일은 건너뜁니다. 추적되는 파일을 빼거나 git을 쓸 수 없을 때 `.reviewgraphignore`를 쓰세요. 기본 무시 목록은 [docs/USAGE.md](docs/USAGE.md#ignore-patterns)에 있습니다.
 
 선택적 의존성 그룹:
 

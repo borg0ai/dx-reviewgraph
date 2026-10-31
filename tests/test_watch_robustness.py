@@ -260,7 +260,7 @@ class TestIgnoreAwareScheduling:
     def test_a_single_path_can_opt_out(self, tmp_path):
         """Dropping files from the graph needs an escape smaller than a kill switch."""
         _maven_repo(tmp_path)
-        (tmp_path / ".code-review-graphignore").write_text(
+        (tmp_path / ".reviewgraphignore").write_text(
             "# keep our hand-written module\n!intranet-backend/target\n", encoding="utf-8"
         )
         clear_nested_ignore_cache()
@@ -279,7 +279,7 @@ class TestIgnoreAwareScheduling:
             _load_ignore_patterns(tmp_path)
 
         assert "intranet-backend/target" in caplog.text
-        assert ".code-review-graphignore" in caplog.text
+        assert ".reviewgraphignore" in caplog.text
 
 
 class TestNewDirectoryAdoption:

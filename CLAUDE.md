@@ -24,7 +24,7 @@ Core module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cl
 - `tools/`: tool implementations by domain: `build.py`, `query.py`, `review.py`, `context.py`, `flows_tools.py`, `community_tools.py`, `refactor_tools.py`, `docs.py`, `registry_tools.py`, `analysis_tools.py`; shared helpers in `_common.py`.
 - `prompts.py`: 5 MCP prompts (review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check).
 - `apps/cli/reviewgraph/cli.py` owns the `reviewgraph` command. `daemon.py` is core; `apps/cli/reviewgraph/daemon_cli.py` owns the `reviewgraph-daemon` command.
-- `parser.py`: Tree-sitter multi-language parser with fallbacks for notebooks and other formats. `custom_languages.py`: languages defined in `.code-review-graph/languages.toml` (see docs/CUSTOM_LANGUAGES.md).
+- `parser.py`: Tree-sitter multi-language parser with fallbacks for notebooks and other formats. `custom_languages.py`: languages defined in `.reviewgraph/languages.toml` (see docs/CUSTOM_LANGUAGES.md).
 - `graph.py`: SQLite graph store (nodes, edges, impact analysis). `migrations.py`: schema migrations; current schema version is 13.
 - `incremental.py`: full build, Git/SVN change detection, incremental update, stale-file reconciliation, watch mode. `postprocessing.py`: shared post-build pipeline (signatures, flows, communities, FTS).
 - Post-build resolvers: `python_resolver.py`, `jedi_resolver.py` (optional `enrichment` extra), `spring_resolver.py`, `event_resolver.py`, `temporal_resolver.py`, `config_keys.py`, `scoped_resolver.py` (PHP, Rust, C#), `rescript_resolver.py`, `hcl_resolver.py`, `tsconfig_resolver.py` (tsconfig and jsconfig path aliases).
@@ -35,7 +35,7 @@ Core module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cl
 - `skills.py`: `install` (platform MCP configs, hooks, skills, instruction blocks). `_legacy_instructions.py`: instruction blocks shipped by earlier releases. `jsonc.py`: comment-preserving JSONC tokenising and splices, shared by install and uninstall so neither flattens a commented config. `uninstall.py`: reverses `install`. `enrich.py`: PreToolUse hook enrichment. `forget.py`: drops files from the graph. `registry.py`: multi-repo registry. `http_origin_guard.py`: Host/Origin checks for `serve --http`. `token_benchmark.py` and `eval/`: benchmarks. `constants.py`: shared constants.
 - `modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.
 
-Database: `.code-review-graph/graph.db` (SQLite, WAL mode).
+Database: `.reviewgraph/graph.db` (SQLite, WAL mode).
 
 ## Key Commands
 
@@ -71,7 +71,7 @@ uv run reviewgraph --help             # full command list
 
 - No `eval()`, `exec()`, `pickle` or `yaml.unsafe_load()`.
 - No `shell=True` in subprocess calls.
-- `_validate_repo_root()` requires an existing directory containing `.git`, `.svn` or `.code-review-graph`, which blocks path traversal through `repo_root`.
+- `_validate_repo_root()` requires an existing directory containing `.git`, `.svn` or `.reviewgraph`, which blocks path traversal through `repo_root`.
 - `_sanitize_name()` strips control characters and caps names at 256 characters.
 - `escH()` in `visualization.py` escapes HTML entities including quotes and backticks; `</script>` is escaped inside embedded JSON.
 - D3.js is bundled and loaded with an SRI hash; the CDN fallback carries the same hash.
@@ -104,59 +104,19 @@ uv run reviewgraph --help             # full command list
 - google-embeddings: constructs the Google provider with the `google-embeddings` and `all` extras.
 - windows-native: a subset of the suite on windows-latest.
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
-## Beads Issue Tracker
+## IssueGraph issue tracking
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+This project uses IssueGraph. Run `issuegraph prime` for current workflow and command guidance.
 
-### Quick Reference
+Use `issuegraph ready`, `issuegraph show <id>`, `issuegraph update <id> --claim`, and
+`issuegraph close <id>` for task tracking. Use `issuegraph remember "insight"` for persistent
+project knowledge. Do not create Markdown TODO lists.
 
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>         # Complete work
-```
+IssueGraph stores its local database under `.issuegraph/` and tracks `issues.jsonl` plus
+`manifest.json` in Git. Do not create branches, commit, push, merge, or sync IssueGraph remotes
+unless the user explicitly asks. When asked for a PR, target `main`.
 
-### Rules
-
-- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
-
-## Branching
-
-Use short-lived feature branches and open every pull request directly against `main`.
-CI and PR review run on that target. Merge through the pull request; tag releases from `main`.
-The optional long-running release checks live in `.github/workflows/release-gate.yml` and
-run manually before a release.
-
-## Session Completion
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd dolt push
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-<!-- END BEADS INTEGRATION -->
+Before handoff, run relevant quality checks and report changed files and validation results.
 
 <!-- reviewgraph MCP tools -->
 ## MCP Tools: reviewgraph

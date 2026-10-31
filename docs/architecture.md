@@ -56,7 +56,7 @@ Reusable library code lives in `modules/code-review/graph_engine/`. CLI commands
 | Module | Role |
 |---|---|
 | `parser.py` | Tree-sitter multi-language parser plus targeted fallbacks; emits nodes and edges per file |
-| `custom_languages.py` | Config-driven languages from `.code-review-graph/languages.toml` |
+| `custom_languages.py` | Config-driven languages from `.reviewgraph/languages.toml` |
 | `graph.py` | `GraphStore`: SQLite storage, queries, impact radius |
 | `migrations.py` | Versioned schema migrations, currently v11 (see `schema.md`) |
 | `incremental.py` | File collection and ignore rules, git/SVN change detection, full and incremental builds, post-build resolvers |
@@ -78,7 +78,7 @@ Reusable library code lives in `modules/code-review/graph_engine/`. CLI commands
 
 ### Full build (`incremental.full_build()`)
 1. `collect_all_files()` lists tracked files (`git ls-files` when git is available, so
-   untracked and gitignored files are skipped) and applies `.code-review-graphignore`.
+   untracked and gitignored files are skipped) and applies `.reviewgraphignore`.
 2. Each file is read once; the bytes are hashed (SHA-256) and passed to
    `CodeParser.parse_bytes()`, which walks the Tree-sitter tree and emits nodes and edges.
 3. `GraphStore.store_file_nodes_edges()` (or `store_file_batch()`) replaces the file's rows
@@ -130,7 +130,7 @@ Python-side traversal instead.
 
 ## Storage
 
-One SQLite database, `.code-review-graph/graph.db`, in WAL mode so readers are not blocked
+One SQLite database, `.reviewgraph/graph.db`, in WAL mode so readers are not blocked
 during updates. Tables: `nodes`, `edges`, `metadata`, `flows`, `flow_memberships`,
 `communities`, `nodes_fts` (FTS5), `nodes_fts_state`, `community_summaries`,
 `flow_snapshots`, `risk_index`, and
@@ -150,7 +150,7 @@ node type tables (`_CLASS_TYPES`, `_FUNCTION_TYPES` and similar in `parser.py`) 
 2. Call detection inside function bodies.
 3. Import resolution to module paths, refined later by the post-build resolvers.
 
-Languages without a grammar can be added through `.code-review-graph/languages.toml`
+Languages without a grammar can be added through `.reviewgraph/languages.toml`
 (`docs/CUSTOM_LANGUAGES.md`). Some formats (notebooks, Vue and Svelte SFCs, SQL, Ansible,
 Spring configuration) use targeted parsers instead of Tree-sitter.
 

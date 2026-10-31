@@ -319,7 +319,7 @@ class TestParserIntegration:
         from graph_engine.incremental import full_build
 
         repo, src = self._repo(tmp_path)
-        db_path = repo / ".code-review-graph" / "graph.db"
+        db_path = repo / ".reviewgraph" / "graph.db"
         store = GraphStore(db_path)
         try:
             stats = full_build(repo, store)

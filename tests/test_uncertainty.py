@@ -42,14 +42,14 @@ def repo(tmp_path_factory):
     """A minimal project root with a graph that has real, resolvable nodes."""
     root = Path(tempfile.mkdtemp(dir=str(tmp_path_factory.mktemp("repos")))).resolve()
     (root / ".git").mkdir()
-    (root / ".code-review-graph").mkdir()
+    (root / ".reviewgraph").mkdir()
 
     auth = (root / "auth.py")
     auth.write_text("def login():\n    pass\n", encoding="utf-8")
     main = (root / "main.py")
     main.write_text("import auth\n\n\ndef process():\n    auth.login()\n", encoding="utf-8")
 
-    db_path = root / ".code-review-graph" / "graph.db"
+    db_path = root / ".reviewgraph" / "graph.db"
     with GraphStore(db_path) as store:
         for path in (auth, main):
             store.upsert_node(NodeInfo(
@@ -76,7 +76,7 @@ def repo(tmp_path_factory):
 
 
 def _store(root: Path) -> GraphStore:
-    return GraphStore(root / ".code-review-graph" / "graph.db")
+    return GraphStore(root / ".reviewgraph" / "graph.db")
 
 
 # ---------------------------------------------------------------------------
@@ -394,9 +394,9 @@ def test_search_zero_hits_is_qualified(repo):
 
 def test_search_on_an_empty_graph_says_so(tmp_path):
     root = tmp_path / "empty"
-    (root / ".code-review-graph").mkdir(parents=True)
+    (root / ".reviewgraph").mkdir(parents=True)
     (root / ".git").mkdir()
-    GraphStore(root / ".code-review-graph" / "graph.db").close()
+    GraphStore(root / ".reviewgraph" / "graph.db").close()
 
     result = semantic_search_nodes(query="anything", repo_root=str(root))
 
@@ -566,9 +566,9 @@ def test_unresolved_target_on_a_current_graph_says_not_indexed(repo, monkeypatch
 def test_unresolved_target_on_an_empty_graph_says_build(tmp_path):
     """Nothing indexed at all is a build problem, not a missing symbol."""
     root = (tmp_path / "empty").resolve()
-    (root / ".code-review-graph").mkdir(parents=True)
+    (root / ".reviewgraph").mkdir(parents=True)
     (root / ".git").mkdir()
-    GraphStore(root / ".code-review-graph" / "graph.db").close()
+    GraphStore(root / ".reviewgraph" / "graph.db").close()
 
     result = query_graph(
         pattern="callers_of", target="Anything", repo_root=str(root),

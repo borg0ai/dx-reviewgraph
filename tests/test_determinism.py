@@ -161,7 +161,7 @@ def _make_corpus(destination: Path) -> Path:
         shutil.copytree(
             src,
             destination / name,
-            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".code-review-graph"),
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".reviewgraph"),
         )
     env = {
         **os.environ,
@@ -272,7 +272,7 @@ def corpus_at_another_path(
     clone = tmp_path_factory.mktemp("crg-corpus-copy-at-a-deliberately-longer-path")
     destination = clone / "repository-under-a-longer-directory-name"
     shutil.copytree(corpus, destination)
-    shutil.rmtree(destination / ".code-review-graph", ignore_errors=True)
+    shutil.rmtree(destination / ".reviewgraph", ignore_errors=True)
     return destination
 
 

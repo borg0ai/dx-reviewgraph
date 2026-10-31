@@ -23,7 +23,7 @@ class TestRegistry:
 
         self.repo2 = Path(self.tmp_dir) / "repo2"
         self.repo2.mkdir()
-        (self.repo2 / ".code-review-graph").mkdir()
+        (self.repo2 / ".reviewgraph").mkdir()
 
     def teardown_method(self):
         import shutil
@@ -56,7 +56,7 @@ class TestRegistry:
             self.registry.register("/nonexistent/path/repo")
 
     def test_register_not_a_repo(self):
-        """Registering a dir without .git or .code-review-graph raises ValueError."""
+        """Registering a dir without .git or .reviewgraph raises ValueError."""
         import pytest
         bare_dir = Path(self.tmp_dir) / "bare"
         bare_dir.mkdir()
@@ -748,13 +748,13 @@ class TestRegistryLocationIsolation:
         from graph_engine.constants import crg_home
 
         monkeypatch.setenv("CRG_HOME", "   ")
-        assert crg_home() == Path.home() / ".code-review-graph"
+        assert crg_home() == Path.home() / ".reviewgraph"
 
     def test_bare_registry_writes_under_the_override(self, tmp_path, monkeypatch):
         """Registry() with no path argument must land in the sandbox.
 
         This is the leak that put pytest tmp paths into a developer's real
-        ~/.code-review-graph/registry.json.
+        ~/.reviewgraph/registry.json.
         """
         # Point Path.home() at a fake home too, so the assertion that nothing
         # was written there needs no access to the developer's real one.
@@ -774,7 +774,7 @@ class TestRegistryLocationIsolation:
         sandboxed = sandbox / "registry.json"
         assert sandboxed.exists()
         assert "leaky" in sandboxed.read_text(encoding="utf-8")
-        assert not (fake_home / ".code-review-graph").exists()
+        assert not (fake_home / ".reviewgraph").exists()
 
     def test_get_data_dir_uses_the_sandboxed_registry(self, tmp_path, monkeypatch):
         """incremental.get_data_dir() builds its own Registry() internally."""

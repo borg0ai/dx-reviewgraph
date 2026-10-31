@@ -82,7 +82,7 @@ docs/                                   # user documentation
 
 ## Adding Language Support
 
-If you only need a language for your own repository, you may not need to change this project: add a `.code-review-graph/languages.toml` that maps extensions and node types to any grammar in tree-sitter-language-pack (see [docs/CUSTOM_LANGUAGES.md](docs/CUSTOM_LANGUAGES.md)). To add built-in support:
+If you only need a language for your own repository, you may not need to change this project: add a `.reviewgraph/languages.toml` that maps extensions and node types to any grammar in tree-sitter-language-pack (see [docs/CUSTOM_LANGUAGES.md](docs/CUSTOM_LANGUAGES.md)). To add built-in support:
 
 1. Add the extension mapping to `EXTENSION_TO_LANGUAGE` in `parser.py`.
 2. Add the tree-sitter node types to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`.

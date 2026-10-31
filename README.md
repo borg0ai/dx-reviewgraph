@@ -136,7 +136,7 @@ Java projects get Spring dependency-injection call resolution, request endpoints
 
 ### Add your own language
 
-If your repository uses a language the parser does not cover, add a `languages.toml` to `.code-review-graph/` that maps file extensions to any grammar bundled in `tree_sitter_language_pack`, plus the node types for functions, classes, imports and calls:
+If your repository uses a language the parser does not cover, add a `languages.toml` to `.reviewgraph/` that maps file extensions to any grammar bundled in `tree_sitter_language_pack`, plus the node types for functions, classes, imports and calls:
 
 ```toml
 [languages.erlang]
@@ -289,7 +289,7 @@ From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding co
 | **Community detection** | Leiden clustering with resolution scaled to graph size |
 | **Architecture overview** | Community-based architecture map with coupling warnings |
 | **Risk-scored reviews** | `detect_changes` maps diffs to affected functions, flows and test gaps |
-| **Custom languages** | New languages via `.code-review-graph/languages.toml`, no fork needed |
+| **Custom languages** | New languages via `.reviewgraph/languages.toml`, no fork needed |
 | **GitHub Action** | Sticky risk-scored PR review comments in CI, with an optional `fail-on-risk` merge gate |
 | **Refactoring tools** | Rename preview, framework-aware dead code detection, community-driven suggestions |
 | **Wiki generation** | Markdown wiki from community structure |
@@ -297,7 +297,7 @@ From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding co
 | **Multi-repo daemon** | `reviewgraph-daemon` watches several repos as child processes, with health checks and restart |
 | **MCP prompts** | 5 workflow templates: review, architecture, debug, onboard, pre-merge |
 | **Full-text search** | FTS5 hybrid search combining keyword and vector similarity |
-| **Local storage** | One SQLite file in `.code-review-graph/`; no external database or cloud service |
+| **Local storage** | One SQLite file in `.reviewgraph/`; no external database or cloud service |
 
 ---
 
@@ -414,7 +414,7 @@ reviewgraph-daemon stop                   # stop the daemon and all watchers
 
 Also available as `reviewgraph daemon start|stop|status|...`.
 
-`reviewgraph-daemon add` writes to `~/.code-review-graph/watch.toml`, which you can also edit directly:
+`reviewgraph-daemon add` writes to `~/.reviewgraph/watch.toml`, which you can also edit directly:
 
 ```toml
 [[repos]]
@@ -480,7 +480,7 @@ The assistant uses these once the graph is built.
 <summary><strong>Configuration</strong></summary>
 <br>
 
-To exclude paths from indexing, create a `.code-review-graphignore` file in the repository root:
+To exclude paths from indexing, create a `.reviewgraphignore` file in the repository root:
 
 ```
 generated/**
@@ -489,7 +489,7 @@ vendor/**
 node_modules/**
 ```
 
-In git repositories only tracked files are indexed (`git ls-files`), so gitignored files are skipped. Use `.code-review-graphignore` to exclude tracked files or when git is not available. The default ignore list is in [docs/USAGE.md](docs/USAGE.md#ignore-patterns).
+In git repositories only tracked files are indexed (`git ls-files`), so gitignored files are skipped. Use `.reviewgraphignore` to exclude tracked files or when git is not available. The default ignore list is in [docs/USAGE.md](docs/USAGE.md#ignore-patterns).
 
 Optional dependency groups:
 

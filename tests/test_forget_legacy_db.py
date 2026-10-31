@@ -18,7 +18,7 @@ def test_forget_migrates_legacy_database_instead_of_reporting_missing(
     repo.mkdir()
     (repo / "a.py").write_text("def a():\n    return 1\n")
     (repo / "b.py").write_text("def b():\n    return 2\n")
-    legacy = repo / ".code-review-graph.db"
+    legacy = repo / ".reviewgraph.db"
     with GraphStore(legacy) as store:
         full_build(repo, store)
     assert legacy.exists()
@@ -32,7 +32,7 @@ def test_forget_migrates_legacy_database_instead_of_reporting_missing(
     captured = capsys.readouterr()
     assert "No graph found" not in captured.out + captured.err
     assert exit_code == 0
-    migrated = repo / ".code-review-graph" / "graph.db"
+    migrated = repo / ".reviewgraph" / "graph.db"
     assert migrated.exists()
     assert not legacy.exists()
     with GraphStore(migrated) as store:

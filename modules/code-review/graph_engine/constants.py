@@ -279,14 +279,14 @@ IMPACT_SCORE_FLOOR = _bounded_float_env(
 #: Follows the same convention as CRG_DATA_DIR.
 CRG_HOME_ENV = "CRG_HOME"
 
-_DEFAULT_CRG_HOME = Path.home() / ".code-review-graph"
+_DEFAULT_CRG_HOME = Path.home() / ".reviewgraph"
 
 
 def crg_home() -> Path:
     """Return the per-user state directory for graph_engine.
 
     ``$CRG_HOME`` wins when set and non-empty; otherwise
-    ``~/.code-review-graph``.
+    ``~/.reviewgraph``.
 
     Resolved per call rather than captured in a module-level constant. An
     import-time constant cannot be redirected afterwards, which is what let

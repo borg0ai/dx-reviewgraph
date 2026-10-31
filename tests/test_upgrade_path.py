@@ -228,7 +228,7 @@ def _current_cli(args: list[str], env: dict[str, str]) -> subprocess.CompletedPr
 
 
 def _db_path(corpus: Path) -> Path:
-    return corpus / ".code-review-graph" / "graph.db"
+    return corpus / ".reviewgraph" / "graph.db"
 
 
 def _snapshot(corpus: Path) -> dict[str, Any]:

@@ -35,8 +35,8 @@ from graph_engine.tools import get_impact_radius, list_graph_stats, query_graph
 def repo(tmp_path: Path) -> dict:
     """A small graph with repeated call sites and one unresolved caller."""
     root = tmp_path
-    (root / ".code-review-graph").mkdir()
-    db_path = root / ".code-review-graph" / "graph.db"
+    (root / ".reviewgraph").mkdir()
+    db_path = root / ".reviewgraph" / "graph.db"
 
     app = (root / "app.py").as_posix()
     svc = (root / "svc.py").as_posix()
@@ -178,7 +178,7 @@ class TestCallSitesOnRows:
         self, repo, detail_level,
     ):
         """A call written outside the caller's own file must still be locatable."""
-        with GraphStore(Path(repo["root"]) / ".code-review-graph" / "graph.db") as store:
+        with GraphStore(Path(repo["root"]) / ".reviewgraph" / "graph.db") as store:
             store.upsert_edge(EdgeInfo(
                 kind="CALLS", source=f"{repo['other']}::caller_two",
                 target=f"{repo['svc']}::handler",
@@ -304,7 +304,7 @@ class TestTargetResolutionColumn:
 
     def test_refresh_reclassifies_a_target_a_resolver_bound(self, repo):
         """A resolver pass rewrites a bare target; the column must follow it."""
-        db_path = Path(repo["root"]) / ".code-review-graph" / "graph.db"
+        db_path = Path(repo["root"]) / ".reviewgraph" / "graph.db"
         resolved_qn = f"{repo['svc']}::missing_helper"
         with GraphStore(db_path) as store:
             assert store._conn.execute(
@@ -338,7 +338,7 @@ class TestTargetResolutionColumn:
     def test_counts_are_correct_before_the_column_is_populated(self, repo):
         """A graph built before the column existed must still split correctly,
         and a half-classified one must not double-count or under-count."""
-        db_path = Path(repo["root"]) / ".code-review-graph" / "graph.db"
+        db_path = Path(repo["root"]) / ".reviewgraph" / "graph.db"
         with GraphStore(db_path) as store:
             classified = store.count_edges_by_resolution("CALLS")
             store._conn.execute("UPDATE edges SET target_resolution = NULL")
@@ -456,7 +456,7 @@ class TestFilteringUsesTheIndex:
         """``INDEXED BY`` fails to prepare unless the index really covers the
         predicate, so this holds whatever plan SQLite picks for a table this
         small."""
-        db_path = Path(repo["root"]) / ".code-review-graph" / "graph.db"
+        db_path = Path(repo["root"]) / ".reviewgraph" / "graph.db"
         with GraphStore(db_path) as store:
             count = store._conn.execute(
                 "SELECT COUNT(*) FROM edges "
@@ -471,7 +471,7 @@ def test_build_populates_the_column(tmp_path: Path):
     from graph_engine.incremental import full_build
 
     root = tmp_path
-    (root / ".code-review-graph").mkdir()
+    (root / ".reviewgraph").mkdir()
     (root / "lib.py").write_text(
         "def helper(value):\n    return value + 1\n", encoding="utf-8",
     )
@@ -481,7 +481,7 @@ def test_build_populates_the_column(tmp_path: Path):
         "    return helper(helper(value))\n",
         encoding="utf-8",
     )
-    db_path = root / ".code-review-graph" / "graph.db"
+    db_path = root / ".reviewgraph" / "graph.db"
     with GraphStore(db_path) as store:
         full_build(root, store)
 

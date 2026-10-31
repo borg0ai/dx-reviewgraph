@@ -62,7 +62,7 @@ def test_visualize_svg_without_matplotlib_prints_one_line_and_exits(
     """A missing optional dependency must not surface as a traceback."""
     monkeypatch.setitem(sys.modules, "matplotlib", None)
 
-    data_dir = tmp_path / ".code-review-graph"
+    data_dir = tmp_path / ".reviewgraph"
     data_dir.mkdir()
     # visualize is read-only for missing graphs (#803); the path must exist.
     db_path = data_dir / "graph.db"

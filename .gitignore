@@ -19,7 +19,7 @@ env/
 *.db-journal
 *.db-wal
 *.db-shm
-.code-review-graph/
+.reviewgraph/
 
 # IDE
 .idea/
@@ -82,9 +82,13 @@ docs/assets/marketing-diagram*
 # Local scratch space for audits, analyses and drafts
 scratch/
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-.beads-credential-key
+# IssueGraph local database; keep issue snapshots and formulas tracked.
+.issuegraph/*
+!.issuegraph/formulas/
+!.issuegraph/formulas/**
+!.issuegraph/issues.jsonl
+!.issuegraph/manifest.json
+.issuegraph-credential-key
 
 # Local tool configuration
 .codex/

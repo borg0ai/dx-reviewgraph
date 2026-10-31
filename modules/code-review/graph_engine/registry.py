@@ -1,6 +1,6 @@
 """Multi-repo registry and connection pool.
 
-Manages a registry of multiple repositories at ``~/.code-review-graph/registry.json``
+Manages a registry of multiple repositories at ``~/.reviewgraph/registry.json``
 and provides a connection pool for concurrent access to multiple graph databases.
 """
 
@@ -30,7 +30,7 @@ class Registry:
     """Manages a JSON-based registry of reviewgraph repositories.
 
     Each entry stores the repo path and an optional alias.
-    The registry lives at ``~/.code-review-graph/registry.json``, or under
+    The registry lives at ``~/.reviewgraph/registry.json``, or under
     ``$CRG_HOME`` when that is set.
     """
 
@@ -66,7 +66,7 @@ class Registry:
     ) -> dict[str, str]:
         """Register a repository path.
 
-        Validates that the path contains a ``.git`` or ``.code-review-graph``
+        Validates that the path contains a ``.git`` or ``.reviewgraph``
         directory.
 
         Args:
@@ -86,12 +86,12 @@ class Registry:
         has_repo_marker = (
             (resolved / ".git").exists()
             or (resolved / ".svn").exists()
-            or (resolved / ".code-review-graph").exists()
+            or (resolved / ".reviewgraph").exists()
         )
         if not has_repo_marker:
             raise ValueError(
                 f"Path does not look like a repository "
-                f"(no .git, .svn, or .code-review-graph): {resolved}"
+                f"(no .git, .svn, or .reviewgraph): {resolved}"
             )
 
         with self._lock:

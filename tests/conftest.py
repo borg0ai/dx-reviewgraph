@@ -18,7 +18,7 @@ import pytest
 def isolated_crg_home(tmp_path_factory, monkeypatch):
     """Redirect the per-user state directory into a temporary directory.
 
-    ``~/.code-review-graph`` holds ``registry.json``, ``watch.toml``,
+    ``~/.reviewgraph`` holds ``registry.json``, ``watch.toml``,
     ``daemon.pid``, ``daemon-state.json`` and ``logs/``. Two paths reached
     the real one:
 

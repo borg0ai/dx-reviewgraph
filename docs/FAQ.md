@@ -28,7 +28,7 @@ language server.
 
 - One graph for the whole repository. Language servers run one process per
   language and rebuild or revalidate per session. CRG parses with Tree-sitter,
-  stores nodes and edges in one SQLite file (`.code-review-graph/graph.db`), and
+  stores nodes and edges in one SQLite file (`.reviewgraph/graph.db`), and
   answers queries across more than 35 languages plus notebooks from one process,
   including cross-language edges.
 - It persists. `update` re-parses only changed files and their dependents;
@@ -105,7 +105,7 @@ documentation; check upstream for current behaviour.
 
 | Tool | Approach | Persistence | External deps | Review focus |
 |---|---|---|---|---|
-| **reviewgraph** | Tree-sitter AST to structural graph (calls, imports, inheritance, tests) over MCP and CLI | SQLite in `.code-review-graph/`, incremental updates | None for the core; embeddings optional | Yes: blast radius, risk-scored change analysis, test-gap detection |
+| **reviewgraph** | Tree-sitter AST to structural graph (calls, imports, inheritance, tests) over MCP and CLI | SQLite in `.reviewgraph/`, incremental updates | None for the core; embeddings optional | Yes: blast radius, risk-scored change analysis, test-gap detection |
 | **Serena** | LSP-backed symbol retrieval and editing tools over MCP | Language-server state plus per-project memories | A language server per language | General coding-agent toolkit, not review-specific |
 | **codegraph** | AST/call-graph indexing over MCP (several projects share this name) | Varies by implementation | Varies by implementation | Retrieval-focused |
 | **claude-context** | Chunk and embed semantic code search over MCP | Vector index in a vector database | Embedding provider plus vector DB | Search-focused, not review-specific |
@@ -202,18 +202,18 @@ more than a 3,000-file repository you touch once.
 **Monorepos.** One graph per repository root. Commands find the root by walking
 up to the nearest `.git`, and in git repositories only tracked files
 (`git ls-files`) are indexed, so gitignored build output is skipped. Use
-`.code-review-graphignore` to exclude tracked paths (`vendor/**`, generated
+`.reviewgraphignore` to exclude tracked paths (`vendor/**`, generated
 code), or pass `--repo <path>` to point a command at a specific directory.
 
 **Git worktrees.** Each worktree is its own root and gets its own
-`.code-review-graph/` matching its checkout. Do not share one database across
+`.reviewgraph/` matching its checkout. Do not share one database across
 worktrees at different commits. The pre-commit hook skips linked worktrees
 unless `CRG_HOOK_WORKTREES=1` is set, so a commit there does not build a second
 graph by accident. To keep the database outside the working tree (ephemeral
 workspaces, network shares), pass `--data-dir <path>` to `build`, `update`,
 `status` and the other graph commands, or set `CRG_DATA_DIR`.
 
-**Multiple repos.** A registry at `~/.code-review-graph/registry.json` (or
+**Multiple repos.** A registry at `~/.reviewgraph/registry.json` (or
 under `$CRG_HOME`) lets MCP clients search across projects:
 
 ```bash

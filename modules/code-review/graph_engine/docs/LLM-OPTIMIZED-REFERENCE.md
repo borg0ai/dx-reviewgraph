@@ -39,7 +39,7 @@ Caps reject values below 1 and booleans. get_affected_flows treats max_flows=0 a
 </section>
 
 <section name="legal">
-MIT licence. Graph build and review run locally; no telemetry. Database: .code-review-graph/graph.db. Cloud embedding providers (openai, google, minimax, voyage) send node names, docstrings and file paths to that provider only when you select them; a stderr warning is printed unless CRG_ACCEPT_CLOUD_EMBEDDINGS=1.
+MIT licence. Graph build and review run locally; no telemetry. Database: .reviewgraph/graph.db. Cloud embedding providers (openai, google, minimax, voyage) send node names, docstrings and file paths to that provider only when you select them; a stderr warning is printed unless CRG_ACCEPT_CLOUD_EMBEDDINGS=1.
 </section>
 
 <section name="watch">
@@ -56,12 +56,12 @@ Run embed_graph_tool once; changing model or provider re-embeds every node. sema
 <section name="languages">
 Tree-sitter (tree-sitter-language-pack): Python, JavaScript, TypeScript, TSX, Go, Rust, Java, C, C++, C#, VB.NET, Ruby, Kotlin, Swift, PHP, Scala, Solidity, Dart, R, Perl, Lua, Luau, Objective-C, Bash and Zsh, Elixir, Zig, PowerShell, Julia, ReScript, GDScript, Nix, Verilog and SystemVerilog, SQL, HCL (Terraform .tf and .hcl).
 Targeted parsers: Vue and Svelte single-file components, Astro (through the TypeScript parser), Jupyter and Databricks notebooks, Perl XS (parsed as C), Ansible playbooks, roles and tasks, Spring configuration (.properties and YAML). Other YAML is not parsed.
-Custom languages: .code-review-graph/languages.toml (extensions and node types per grammar), see docs/CUSTOM_LANGUAGES.md. Built-in extensions and language names cannot be overridden.
+Custom languages: .reviewgraph/languages.toml (extensions and node types per grammar), see docs/CUSTOM_LANGUAGES.md. Built-in extensions and language names cannot be overridden.
 </section>
 
 <section name="troubleshooting">
 Locked database: SQLite runs in WAL mode with a 5 s busy timeout and recovers on its own. Run one build at a time.
-Large repos: a cold build of about 3,000 files takes about 40 s; an incremental update on the hook path about 2.5 s (docs/REPRODUCING.md). Add patterns to .code-review-graphignore to skip generated code.
+Large repos: a cold build of about 3,000 files takes about 40 s; an incremental update on the hook path about 2.5 s (docs/REPRODUCING.md). Add patterns to .reviewgraphignore to skip generated code.
 Stale graph: reviewgraph update, or build_or_update_graph_tool(full_rebuild=True) when nodes are missing.
 Missing nodes: check the languages section and your ignore patterns.
 Windows and WSL: use forward slashes in repo_root; in WSL install uv inside WSL and use WSL2 for file watching.
