@@ -131,9 +131,9 @@ The agent left the hook enabled after it blocked write operations because its re
 
 ### Commit implementation before RFC lifecycle changes
 Status: discussed
-Touches: `apps/cli/reviewgraph/init_ui.py`, `apps/cli/reviewgraph/cli.py`, `apps/cli/pyproject.toml`, `uv.lock`, `tests/test_init_ui.py`, `docs/USAGE.md`
+Touches: `.spec/rfc/0003*`
 
-The implementation was committed separately from the RFC lifecycle changes to satisfy the Netify workflow ordering.
+RFC 0003 closure is sequenced after the implementation push is verified, keeping the lifecycle record aligned with the delivered code.
 
 ### Install formula wheels with dependencies
 Status: discussed
