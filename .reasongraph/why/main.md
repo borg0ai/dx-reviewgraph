@@ -131,9 +131,9 @@ The agent left the hook enabled after it blocked write operations because its re
 
 ### Commit implementation before RFC lifecycle changes
 Status: discussed
-Touches: `.spec/rfc/0003*`
+Touches: `README*`, `docs/**`, `CHANGELOG*`, `action.yml`, `release_gate*`, `embeddings*`, `eval*`, `*.md`
 
-RFC 0003 closure is sequenced after the implementation push is verified, keeping the lifecycle record aligned with the delivered code.
+The agent staged all pending working-tree changes and committed them together on `main`, after aligning the branch with `origin/main` at `7461013`. The commit recorded 37 changed files, with 464 insertions and 1,317 deletions.
 
 ### Install formula wheels with dependencies
 Status: discussed
