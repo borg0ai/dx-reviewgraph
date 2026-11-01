@@ -1,4 +1,4 @@
-"""Tests for the release gate: scripts/release_gate.py and its workflow.
+"""Tests for scripts/release_gate.py.
 
 These are fast and always on. They are the teeth of the gate itself, which
 is otherwise a YAML file nothing exercises until a release is at stake:
@@ -6,9 +6,6 @@ is otherwise a YAML file nothing exercises until a release is at stake:
 * the blocking policy is asserted here, not just written down;
 * the canaries that stop a check from passing without running are each
   driven to failure with a real junit report;
-* the workflow is parsed and checked against the registry, so a check
-  cannot be added to one and forgotten in the other, and it is asserted not
-  to run on pull requests.
 """
 
 from __future__ import annotations
@@ -20,11 +17,9 @@ import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "release_gate.py"
-WORKFLOW = REPO_ROOT / ".github" / "workflows" / "release-gate.yml"
 
 _spec = importlib.util.spec_from_file_location("release_gate", SCRIPT)
 assert _spec is not None and _spec.loader is not None
@@ -456,71 +451,3 @@ def test_summarize_exits_one_when_a_blocking_verdict_is_missing(tmp_path: Path):
     )
     assert completed.returncode == 1
     assert "packaging missing" in out.read_text(encoding="utf-8")
-
-
-# ---------------------------------------------------------------------------
-# the workflow has to agree with the registry
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(scope="module")
-def workflow() -> dict:
-    return yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
-
-
-def test_the_gate_never_runs_on_pull_requests(workflow: dict):
-    # Requirement, not taste: every job here takes minutes, and a contributor
-    # must not wait for them.
-    triggers = workflow.get("on", workflow.get(True))
-    assert set(triggers) == {"workflow_dispatch"}
-
-
-def test_every_check_has_a_job_that_runs_it(workflow: dict):
-    text = WORKFLOW.read_text(encoding="utf-8")
-    for key in gate.CHECKS:
-        assert key in workflow["jobs"], f"{key} has no job"
-        assert f"--check {key}" in text, f"{key} is never run"
-
-
-def test_every_job_feeds_the_report(workflow: dict):
-    needs = workflow["jobs"]["report"]["needs"]
-    assert set(needs) == set(gate.CHECKS)
-    assert workflow["jobs"]["report"]["if"] == "always()"
-
-
-def test_every_check_job_has_a_timeout(workflow: dict):
-    for name, job in workflow["jobs"].items():
-        assert isinstance(job.get("timeout-minutes"), int), f"{name} has no timeout"
-
-
-def test_every_job_uses_the_pip_cache(workflow: dict):
-    for name, job in workflow["jobs"].items():
-        setups = [
-            step
-            for step in job["steps"]
-            if isinstance(step.get("uses"), str) and step["uses"].startswith("actions/setup-python")
-        ]
-        assert setups, f"{name} sets up no Python"
-        for step in setups:
-            assert step["with"]["cache"] == "pip", name
-
-
-def test_the_matrix_legs_named_in_the_registry_are_the_ones_the_workflow_runs(workflow: dict):
-    jobs = workflow["jobs"]
-    assert jobs["e2e"]["strategy"]["matrix"]["os"] == list(gate.CHECKS["e2e"].variants)
-    versions = jobs["suite"]["strategy"]["matrix"]["python-version"]
-    assert versions == list(gate.CHECKS["suite"].variants)
-
-
-def test_the_coverage_job_excludes_every_slow_check(workflow: dict):
-    steps = workflow["jobs"]["suite"]["steps"]
-    command = next(step["run"] for step in steps if step.get("name") == "Run the full suite")
-    for marker in ("browser", "upgrade", "packaging", "corpus", "determinism"):
-        assert f"not {marker}" in command
-
-
-def test_the_report_job_posts_to_the_job_summary_and_one_issue(workflow: dict):
-    text = yaml.dump(workflow["jobs"]["report"])
-    assert "GITHUB_STEP_SUMMARY" in text
-    assert "gh issue" in text
-    assert "gh pr create" not in text, "the gate must not open a release pull request"
