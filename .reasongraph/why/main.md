@@ -21,11 +21,11 @@ Touches: `modules/code-review`, `modules/reviewgraph`, `pyproject.toml`, `CLAUDE
 
 The module directory and its path references were renamed to align repository structure with the ReviewGraph product name. The `graph_engine` import package and historical changelog references were retained to avoid unnecessary compatibility and history changes.
 
-### Publish the renamed distribution as version 2.3.11
-Status: discussed
-Touches: `pyproject.toml`, `*/pyproject.toml`
+### Publish the distribution as version 2.4.0
+Status: directed
+Touches: `pyproject.toml`, `apps/cli/pyproject.toml`, `modules/reviewgraph/pyproject.toml`, `modules/reviewgraph/graph_engine/__init__.py`, `docs/USAGE.md`, `uv.lock`, `CHANGELOG.md`
 
-The release preflight found version `2.3.11` in the latest tag and all three package manifests, so a new release requires a version bump. The proposed `2.4.0` and alternative `2.3.12` were not selected; no release changes were made.
+The release version was set to 2.4.0 to capture the install/init behavior change, rich terminal interface, and added Rich dependency.
 
 ### Install Homebrew wheel dependencies and test graph construction
 Status: discussed
@@ -137,11 +137,11 @@ The agent staged all pending working-tree changes and committed them together on
 
 ### Install formula wheels with dependencies
 Status: discussed
-Touches: `Formula/reviewgraph.rb`
+Touches: `apps/cli/pyproject.toml`, `modules/reviewgraph/pyproject.toml`
 
-The formula installs both wheels with plain `pip install` so pip resolves and installs their declared dependencies. Homebrew’s `venv.pip_install` uses `--no-deps`, which left packages such as `networkx` unavailable when `reviewgraph init` ran.
+Installation verification was interpreted as installing the released package through Homebrew after publication. No installation or release verification occurred because release checks stopped the workflow.
 
-Considered/rejected: Using `venv.pip_install` was rejected because it omits wheel dependencies.
+Risk: The intended installation method remains unverified.
 
 ### Commit all pending changes on main
 Status: directed
@@ -149,10 +149,48 @@ Touches: `CHANGELOG.md`, `*/README*`, `action.yml`, `pyproject.toml`, `scripts/r
 
 The pending 37-file change set was committed on `main` and pushed as `abb440c` after its diff was inspected. This brought the requested working-tree changes into the shared branch.
 
-### Commit all pending changes on main
-Status: discussed — release handling proposed, not confirmed
+### Commit all pending changes on main (updated)
+Status: directed
 Touches: `.reasongraph/why/main.md`
 
-The generated why-pack file and its local commit leave the working tree ahead of `origin/main`, blocking the release preflight. Including the generated file in a release commit was proposed because the pre-push hook regenerates it, but this handling remains undecided.
+The pending generated why-pack was committed on `main` to leave the working tree clean for release preparation. The commit remained local because pushing would trigger another hook-generated change.
 
-Risk: Release remains blocked while local and remote branch state differ.
+### Commit all pending changes on main (updated)
+Status: directed
+Touches: `CHANGELOG.md`, `README*`, `action.yml`, `pyproject.toml`, `scripts/release_gate.py`
+
+The pending repository changes were committed and pushed on `main` as one commit. The release workflow remained separate from this commit.
+
+### Commit the generated why-pack without pushing
+Status: directed
+Touches: `.reasongraph/why/main.md`
+
+The generated why-pack was committed as `61e2d69`. It was not pushed because the requested action was limited to committing.
+
+### Keep the why-pack hook behavior unresolved before release
+Status: discussed
+Touches: `.reasongraph/why/main.md`
+
+The pre-push hook regenerates the why-pack, leaving changes that affect release preflight. Its behavior was left unresolved; no hook bypass was used.
+
+### Stop release before commit when required checks fail
+Status: discussed
+Touches: `tests/test_documentation.py`, `tests/test_readme_parity.py`
+
+The release gate requires checks to pass before commit, tag, or push. The full test run reported 4,968 passed and 7 failed; lint and type checks passed, so release work stopped before those git actions.
+
+Risk: Release remains incomplete until all required checks pass.
+
+### Synchronize translated README install instructions
+Status: discussed
+Touches: `README.md`, `README.zh-CN.md`, `README.ja-JP.md`, `README.ko-KR.md`, `README.hi-IN.md`
+
+The parity checks compare README code blocks, and translated files retained an install block removed from the primary README. The translated files were not successfully updated before they disappeared from the working tree.
+
+Risk: README parity checks remain failing.
+
+### Preserve working-tree deletions pending clarification
+Status: discussed
+Touches: `CHANGELOG.md`, `README.zh-CN.md`, `README.ja-JP.md`, `README.ko-KR.md`, `README.hi-IN.md`, `SECURITY.md`
+
+These tracked files appeared deleted in the working tree, and the cause or intent was not established. They were not restored to avoid overwriting potentially intentional changes.

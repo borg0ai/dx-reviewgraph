@@ -3331,7 +3331,7 @@ wheels = [
 
 [[package]]
 name = "reviewgraph"
-version = "2.3.11"
+version = "2.4.0"
 source = { editable = "apps/cli" }
 dependencies = [
     { name = "reviewgraph-engine" },
@@ -3397,7 +3397,7 @@ provides-extras = ["all", "eval", "google-embeddings", "embeddings", "communitie
 
 [[package]]
 name = "reviewgraph-engine"
-version = "2.3.11"
+version = "2.4.0"
 source = { editable = "modules/reviewgraph" }
 dependencies = [
     { name = "anyio" },
@@ -3492,7 +3492,7 @@ dev = [
 
 [[package]]
 name = "reviewgraph-workspace"
-version = "2.3.11"
+version = "2.4.0"
 source = { virtual = "." }
 dependencies = [
     { name = "reviewgraph" },

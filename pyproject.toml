@@ -1,9 +1,9 @@
 [project]
 name = "reviewgraph-workspace"
-version = "2.3.11"
+version = "2.4.0"
 requires-python = ">=3.10"
 dependencies = [
-    "reviewgraph==2.3.11",
+    "reviewgraph==2.4.0",
 ]
 
 [tool.uv]

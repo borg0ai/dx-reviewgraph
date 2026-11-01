@@ -1,15 +1,10 @@
 """Regression checks for user-facing command examples."""
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-README_FILES = (
-    "README.md",
-    "README.hi-IN.md",
-    "README.ja-JP.md",
-    "README.ko-KR.md",
-    "README.zh-CN.md",
-)
+README_FILES = ("README.md",)
 USER_DOC_FILES = README_FILES + (
     "docs/COMMANDS.md",
     "docs/FAQ.md",

@@ -140,7 +140,7 @@ build, review, search and the MCP server run locally. `serve --http` binds to
 
 The only network activity is opt-in:
 
-- Local embeddings (`pip install "reviewgraph[embeddings]"`) download the
+- Local embeddings (the `embeddings` extra, not part of the Luban Homebrew formula) download the
   `all-MiniLM-L6-v2` model from Hugging Face on first use. Your code stays on
   the machine.
 - Cloud embeddings (OpenAI-compatible, Google Gemini, MiniMax, Voyage AI) send
