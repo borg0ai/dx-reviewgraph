@@ -284,14 +284,15 @@ def _match_files_to_forget(
     return sorted(matched)
 
 
-def _handle_init(args: argparse.Namespace) -> None:
-    """Set up MCP config for detected AI coding platforms."""
-    from graph_engine.incremental import ensure_repo_gitignore_excludes_crg, find_repo_root
+def _handle_install(args: argparse.Namespace) -> None:
+    """Set up MCP config, skills and hooks for the user's AI coding agents.
+
+    Everything is written at user level; no file inside a repository is touched
+    (that is ``reviewgraph init``, see RFC 0004).
+    """
     from graph_engine.skills import install_platform_configs
 
-    repo_root = Path(args.repo) if args.repo else find_repo_root()
-    if not repo_root:
-        repo_root = Path.cwd()
+    repo_root = Path.home()
 
     dry_run = getattr(args, "dry_run", False)
     target = getattr(args, "platform", "all") or "all"
@@ -301,7 +302,9 @@ def _handle_init(args: argparse.Namespace) -> None:
     skip_instructions = getattr(args, "no_instructions", False)
 
     print("Installing MCP server config...")
-    configured = install_platform_configs(repo_root, target=target, dry_run=dry_run)
+    configured = install_platform_configs(
+        repo_root, target=target, dry_run=dry_run, user_scope=True
+    )
 
     if not configured:
         print("No platforms detected.")
@@ -309,7 +312,7 @@ def _handle_init(args: argparse.Namespace) -> None:
         print(f"\nConfigured {len(configured)} platform(s): {', '.join(configured)}")
 
     # Preview the instruction files that would be touched (#173).
-    instr_targets = _instruction_files_to_modify(repo_root, target)
+    instr_targets = _user_instruction_files_to_modify(repo_root, target)
     if instr_targets:
         print()
         print("Graph instructions will be injected into:")
@@ -317,17 +320,8 @@ def _handle_init(args: argparse.Namespace) -> None:
             print(f"  {t}")
 
     if dry_run:
-        print("\n[dry-run] Would ensure .gitignore ignores .reviewgraph/.")
-        print("[dry-run] No files were modified.")
+        print("\n[dry-run] No files were modified.")
         return
-
-    gitignore_state = ensure_repo_gitignore_excludes_crg(repo_root)
-    if gitignore_state == "created":
-        print("Created .gitignore and added .reviewgraph/.")
-    elif gitignore_state == "updated":
-        print("Updated .gitignore with .reviewgraph/.")
-    else:
-        print(".gitignore already contains .reviewgraph/.")
 
     # Platform-native skills and hooks are installed by default where supported
     # so the graph tools are used proactively. Use --no-skills / --no-hooks /
@@ -346,7 +340,6 @@ def _handle_init(args: argparse.Namespace) -> None:
         install_cursor_hooks,
         install_gemini_cli_hooks,
         install_gemini_cli_skills,
-        install_git_hook,
         install_hermes_skills,
         install_hooks,
         install_opencode_plugin,
@@ -381,7 +374,7 @@ def _handle_init(args: argparse.Namespace) -> None:
             "Inject graph instructions into the files above?",
             default_yes=True,
         ):
-            outcomes = inject_instruction_files(repo_root, target=target)
+            outcomes = inject_instruction_files(repo_root, target=target, user_scope=True)
             for label, wording in (
                 ("created", "Injected graph instructions into"),
                 ("updated", "Updated graph instructions in"),
@@ -419,17 +412,11 @@ def _handle_init(args: argparse.Namespace) -> None:
     if not skip_hooks and target in ("codex", "all"):
         hooks_path = install_codex_hooks(repo_root)
         print(f"Installed Codex hooks in {hooks_path}")
-        git_hook = install_git_hook(repo_root)
-        if git_hook:
-            print(f"Installed git pre-commit hook in {git_hook}")
     if not skip_hooks and target in ("claude", "qoder", "all"):
         platforms_to_install = [target] if target != "all" else ["claude", "qoder"]
         for plat in platforms_to_install:
             install_hooks(repo_root, platform=plat)
             print(f"Installed hooks in {repo_root / f'.{plat}' / 'settings.json'}")
-        git_hook = install_git_hook(repo_root)
-        if git_hook:
-            print(f"Installed git pre-commit hook in {git_hook}")
 
     # Cursor hooks (user-level, only if ~/.cursor exists — matching MCP detect)
     if not skip_hooks and target in ("all", "cursor") and PLATFORMS["cursor"]["detect"]():
@@ -456,8 +443,91 @@ def _handle_init(args: argparse.Namespace) -> None:
 
     print()
     print("Next steps:")
-    print("  1. reviewgraph build    # build the knowledge graph")
-    print("  2. Restart your AI coding tool to pick up the new config")
+    print("  1. Restart your AI coding tool to pick up the new config")
+    print("  2. In each repository run: reviewgraph init    # seed it and build the graph")
+
+
+def _user_instruction_files_to_modify(home: Path, target: str) -> list[str]:
+    """User-level instruction files ``install`` would write, as ``name (state)``."""
+    from graph_engine.skills import (
+        _CLAUDE_MD_SECTION,
+        _CLAUDE_MD_SECTION_MARKER,
+        _USER_INSTRUCTION_FILES,
+        _upgrade_managed_block,
+    )
+
+    targets: list[str] = []
+    for relative, owners in _USER_INSTRUCTION_FILES.values():
+        if target != "all" and target not in owners:
+            continue
+        path = home / relative
+        if not path.exists():
+            targets.append(f"~/{relative} (new)")
+            continue
+        content = path.read_text(encoding="utf-8", errors="replace")
+        if _CLAUDE_MD_SECTION_MARKER not in content:
+            targets.append(f"~/{relative} (append)")
+        elif _upgrade_managed_block(content, _CLAUDE_MD_SECTION) is not None:
+            targets.append(f"~/{relative} (update)")
+    return targets
+
+
+def _handle_init(args: argparse.Namespace) -> None:
+    """Seed the current repository and build its graph (RFC 0004).
+
+    Installs nothing for any agent; ``reviewgraph install`` does that once per
+    machine.
+    """
+    from graph_engine.incremental import ensure_repo_gitignore_excludes_crg, find_repo_root
+    from graph_engine.skills import install_git_hook
+
+    repo_root = Path(args.repo) if args.repo else find_repo_root()
+    if not repo_root:
+        repo_root = Path.cwd()
+    dry_run = getattr(args, "dry_run", False)
+    no_build = getattr(args, "no_build", False)
+
+    if dry_run:
+        print(f"[dry-run] Would seed {repo_root}:")
+        print("  create .reviewgraph/")
+        print("  ensure .gitignore ignores .reviewgraph/")
+        print("  install the git pre-commit hook")
+        print("  skip the graph build (--no-build)" if no_build else "  build the graph")
+        print("[dry-run] No files were modified.")
+        return
+
+    (repo_root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
+    gitignore_state = ensure_repo_gitignore_excludes_crg(repo_root)
+    if gitignore_state == "created":
+        print("Created .gitignore and added .reviewgraph/.")
+    elif gitignore_state == "updated":
+        print("Updated .gitignore with .reviewgraph/.")
+    else:
+        print(".gitignore already contains .reviewgraph/.")
+
+    git_hook = install_git_hook(repo_root)
+    if git_hook:
+        print(f"Installed git pre-commit hook in {git_hook}")
+
+    if no_build:
+        print("Skipped graph build (--no-build).")
+    else:
+        from graph_engine.tools.build import build_or_update_graph
+
+        result = build_or_update_graph(
+            full_rebuild=True, repo_root=str(repo_root), postprocess="full"
+        )
+        print(
+            f"Full build: {result.get('files_parsed', 0)} files, "
+            f"{result.get('total_nodes', 0)} nodes, {result.get('total_edges', 0)} edges "
+            "(postprocess=full)"
+        )
+        if result.get("errors"):
+            print(f"Errors: {len(result['errors'])}")
+
+    print()
+    print("Next steps:")
+    print("  reviewgraph install    # once per machine: set up your AI coding tools")
 
 
 def _handle_data_dir_option(args, repo_root: Path) -> None:
@@ -899,9 +969,14 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("-v", "--version", action="store_true", help="Show version and exit")
     sub = ap.add_subparsers(dest="command")
 
-    # install (primary) + init (alias)
-    install_cmd = sub.add_parser("install", help="Register MCP server with AI coding platforms")
-    install_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    # install (global agent setup) and init (repo seed)
+    install_cmd = sub.add_parser(
+        "install",
+        help="Set up AI coding agents for this user (global; run once per machine)",
+    )
+    # install never writes into a repository; --repo is accepted and ignored so
+    # existing scripts keep working.
+    install_cmd.add_argument("--repo", default=None, help=argparse.SUPPRESS)
     install_cmd.add_argument(
         "--dry-run",
         action="store_true",
@@ -941,7 +1016,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Target platform for MCP config (default: all detected)",
     )
 
-    init_cmd = sub.add_parser("init", help="Alias for install")
+    init_cmd = sub.add_parser(
+        "init",
+        help="Seed this repository (.reviewgraph/, .gitignore, git hook) and build the graph",
+    )
     init_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
     init_cmd.add_argument(
         "--dry-run",
@@ -949,34 +1027,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show what would be done without writing files",
     )
     init_cmd.add_argument(
-        "--no-skills",
+        "--no-build",
         action="store_true",
-        help="Skip generating platform-native skill files",
-    )
-    init_cmd.add_argument(
-        "--no-hooks",
-        action="store_true",
-        help="Skip installing platform-native hooks",
-    )
-    init_cmd.add_argument(
-        "--no-instructions",
-        action="store_true",
-        help="Skip injecting graph instructions into CLAUDE.md / AGENTS.md / etc.",
-    )
-    init_cmd.add_argument(
-        "-y",
-        "--yes",
-        action="store_true",
-        help="Auto-confirm instruction injection without an interactive prompt",
-    )
-    init_cmd.add_argument("--skills", action="store_true", help=argparse.SUPPRESS)
-    init_cmd.add_argument("--hooks", action="store_true", help=argparse.SUPPRESS)
-    init_cmd.add_argument("--all", action="store_true", dest="install_all", help=argparse.SUPPRESS)
-    init_cmd.add_argument(
-        "--platform",
-        choices=_PLATFORM_CHOICES,
-        default="all",
-        help="Target platform for MCP config (default: all detected)",
+        help="Seed the repository without building the graph",
     )
 
     uninstall_cmd = sub.add_parser(
@@ -1885,7 +1938,11 @@ def _dispatch() -> None:
             raise SystemExit(1)
         return
 
-    if args.command in ("init", "install"):
+    if args.command == "install":
+        _handle_install(args)
+        return
+
+    if args.command == "init":
         _handle_init(args)
         return
 

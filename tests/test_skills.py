@@ -2646,7 +2646,7 @@ class TestInstallSkillsRespectTargetPlatform:
         )
         with patch("builtins.input", return_value="n"):
             with patch("graph_engine.skills.Path.home", return_value=tmp_path):
-                crg_cli._handle_init(args)
+                crg_cli._handle_install(args)
         return (tmp_path / ".claude" / "skills").is_dir()
 
     def test_cursor_install_does_not_create_claude_skills(self, tmp_path):

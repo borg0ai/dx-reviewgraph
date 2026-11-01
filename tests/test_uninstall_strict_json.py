@@ -259,7 +259,8 @@ def test_cli_install_then_uninstall_reproduction_from_issue_1068(
 ) -> None:
     from reviewgraph import cli
 
-    settings = fake_repo / ".claude" / "settings.json"
+    # ``install`` is user-level since RFC 0004, so the file lives under home.
+    settings = fake_home / ".claude" / "settings.json"
     settings.parent.mkdir(parents=True)
     # Byte-for-byte the file from the issue's reproduction steps.
     settings.write_text(
@@ -270,8 +271,7 @@ def test_cli_install_then_uninstall_reproduction_from_issue_1068(
     )
     original = _strict(settings)
 
-    argv = ["reviewgraph", "install", "--repo", str(fake_repo), "-y",
-            "--platform", "claude-code"]
+    argv = ["reviewgraph", "install", "-y", "--platform", "claude-code"]
     with patch.object(sys, "argv", argv):
         cli.main()
     assert {"PostToolUse", "SessionStart"} <= set(_strict(settings)["hooks"])
@@ -309,11 +309,10 @@ def test_cli_gemini_install_then_uninstall_keeps_shared_settings_strict(
     """Gemini keeps the MCP entry and the hooks in one file; both edits must stay strict."""
     from reviewgraph import cli
 
-    settings = fake_repo / ".gemini" / "settings.json"
+    settings = fake_home / ".gemini" / "settings.json"
     _write_json(settings, _GEMINI_USER_SETTINGS)
 
-    argv = ["reviewgraph", "install", "--repo", str(fake_repo), "-y",
-            "--platform", "gemini-cli"]
+    argv = ["reviewgraph", "install", "-y", "--platform", "gemini-cli"]
     with patch.object(sys, "argv", argv):
         cli.main()
     installed = _strict(settings)
