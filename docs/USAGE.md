@@ -6,13 +6,18 @@ Applies to reviewgraph 2.3.11.
 
 ```bash
 brew install systembugtj/luban-homebrew/reviewgraph
-reviewgraph install    # detect installed AI coding tools and configure each one
-reviewgraph build      # parse the codebase
+reviewgraph install    # once per machine: configure your AI coding tools
+cd your-repo
+reviewgraph init       # per repository: seed it and build the graph
 ```
 
 The Homebrew formula supports macOS. Linux and Windows package channels are planned.
 
-`install` detects which AI coding tools you have, writes an MCP server entry for each, installs hooks and skills where the platform supports them, and adds graph instructions to the platform's rules file (`CLAUDE.md`, `AGENTS.md`, and others). `--no-hooks`, `--no-skills` and `--no-instructions` skip those steps; `--dry-run` shows what would be written. Restart the editor or tool afterwards.
+`install` is global and repo-independent. It detects which AI coding tools you have, writes a user-level MCP server entry for each, installs hooks and skills where the platform supports them, and adds graph instructions to the platform's user-level instruction file (for example `~/.claude/CLAUDE.md`). It never writes into a repository, and the entries it writes do not pin one repository. `--no-hooks`, `--no-skills` and `--no-instructions` skip those steps; `--dry-run` shows what would be written. Restart the editor or tool afterwards.
+
+`init` is the per-repository half. It creates `.reviewgraph/`, adds it to `.gitignore`, installs the git pre-commit hook and builds the graph. It configures no agent. `--no-build` seeds without building; `--dry-run` shows what would be done.
+
+On an interactive terminal both commands draw a banner, one live row per step (green done, yellow skipped, red failed), a platform table, a styled confirm prompt and a closing summary panel with next steps. A failed step is listed in the summary with its reason. When stdout is piped, `NO_COLOR` is set, `TERM=dumb`, or you pass `--plain`, they print the plain log instead, and MCP stdio output is never styled.
 
 To configure one platform only:
 
@@ -28,21 +33,23 @@ reviewgraph install --platform codebuddy
 | Platform | `--platform` | Config file |
 |----------|--------------|-------------|
 | Codex | `codex` | `~/.codex/config.toml` + `~/.codex/hooks.json` |
-| Claude Code | `claude-code` | `.mcp.json` + `.claude/settings.json` |
-| CodeBuddy Code | `codebuddy` | `.mcp.json` + `CODEBUDDY.md` + `.codebuddy/settings.json` + `.codebuddy/skills/<name>/SKILL.md` |
-| Cursor | `cursor` | `.cursor/mcp.json` |
+| Claude Code | `claude-code` | `~/.claude.json` + `~/.claude/settings.json` |
+| CodeBuddy Code | `codebuddy` | `~/.codebuddy.json` + `~/.codebuddy/CODEBUDDY.md` + `~/.codebuddy/settings.json` + `~/.codebuddy/skills/<name>/SKILL.md` |
+| Cursor | `cursor` | `~/.cursor/mcp.json` |
 | Windsurf | `windsurf` | `~/.codeium/windsurf/mcp_config.json` |
 | Zed | `zed` | `~/Library/Application Support/Zed/settings.json` (macOS) or `~/.config/zed/settings.json` |
 | Continue | `continue` | `~/.continue/config.json` |
-| OpenCode | `opencode` | `opencode.jsonc` (preferred) or `opencode.json` |
+| OpenCode | `opencode` | `~/.config/opencode/opencode.jsonc` (preferred) or `opencode.json` |
 | Antigravity | `antigravity` | `~/.gemini/antigravity/mcp_config.json` |
-| Gemini CLI | `gemini-cli` | `.gemini/settings.json` |
+| Gemini CLI | `gemini-cli` | `~/.gemini/settings.json` |
 | Qwen Code | `qwen` | `~/.qwen/settings.json` |
-| Kiro | `kiro` | `.kiro/settings/mcp.json` |
-| Qoder | `qoder` | `.qoder/mcp.json` |
-| GitHub Copilot | `copilot` | `.vscode/mcp.json` |
+| Kiro | `kiro` | `~/.kiro/settings/mcp.json` |
+| Qoder | `qoder` | `~/.qoder/mcp.json` |
+| GitHub Copilot | `copilot` | VS Code user `mcp.json` (`~/Library/Application Support/Code/User/` on macOS, `~/.config/Code/User/` on Linux) |
 | GitHub Copilot CLI | `copilot-cli` | `~/.copilot/mcp-config.json` |
 | Hermes Agent | `hermes` | `~/.hermes/config.yaml` (or `$HERMES_HOME/config.yaml`) |
+
+Earlier releases wrote some of these files into the repository (`.mcp.json`, `.cursor/mcp.json`, `.gemini/settings.json`, `CLAUDE.md`, `AGENTS.md` and others). An upgrade leaves those files alone. Run `reviewgraph uninstall` in the repository to remove the old entries, then `reviewgraph install` once for your user.
 
 The CodeBuddy layout follows its documentation for
 [MCP configuration](https://www.codebuddy.ai/docs/cli/mcp),
@@ -53,8 +60,7 @@ checkout path.
 
 ### Git pre-commit hook
 
-For Codex, Claude Code and Qoder, `install` also appends a `pre-commit` hook in
-the repository's hooks directory (found with `git rev-parse --git-path hooks`,
+`init` appends a `pre-commit` hook in the repository's hooks directory (found with `git rev-parse --git-path hooks`,
 so `core.hooksPath` setups work). The hook runs `update` and
 `detect-changes --brief` before each commit. It skips linked worktrees, so an
 implicit update does not build a second graph for another branch; set

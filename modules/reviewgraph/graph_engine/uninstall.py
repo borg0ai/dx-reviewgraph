@@ -888,6 +888,31 @@ def _scope_for_config(path: Path, repo_root: Path, home: Path) -> tuple[str, Pat
     return None
 
 
+def _config_candidates(
+    repo_root: Path,
+    home: Path,
+    scope: str,
+    platforms: frozenset[str] | None,
+) -> list[tuple[str, dict[str, Any], Path]]:
+    """Every config path an installer release may have written, per platform.
+
+    The repo scope looks only at the project-level path. The user scope also
+    looks at the user-level paths ``reviewgraph install`` writes since RFC 0004
+    (``user_config_path`` and the project-relative layout rooted at ``home``).
+    """
+    found: list[tuple[str, dict[str, Any], Path]] = []
+    for platform_name, spec in skills.PLATFORMS.items():
+        if platforms is not None and platform_name not in platforms:
+            continue
+        paths = [spec["config_path"](repo_root)]
+        if scope == "user":
+            paths.append(spec["config_path"](home))
+            if "user_config_path" in spec:
+                paths.append(spec["user_config_path"](home))
+        found.extend((platform_name, spec, path) for path in paths)
+    return found
+
+
 def _process_platform_configs(
     repo_root: Path,
     home: Path,
@@ -898,11 +923,11 @@ def _process_platform_configs(
     platforms: frozenset[str] | None = None,
 ) -> None:
     seen: set[tuple[Path, str, str]] = set()
-    for platform_name, spec in skills.PLATFORMS.items():
-        if platforms is not None and platform_name not in platforms:
-            continue
+    for platform_name, spec, candidate in _config_candidates(
+        repo_root, home, scope, platforms
+    ):
         try:
-            path = _absolute(spec["config_path"](repo_root))
+            path = _absolute(candidate)
             key = str(spec["key"])
             format_name = str(spec["format"])
         except (KeyError, OSError, TypeError, ValueError) as exc:
@@ -1136,6 +1161,53 @@ def _process_repo(
     _remove_gitignore(repo_root, report, dry_run=dry_run)
 
 
+def _remove_user_level_integrations(
+    reference_repo: Path,
+    home: Path,
+    report: UninstallReport,
+    *,
+    dry_run: bool,
+) -> None:
+    """Remove the hooks, skills and instruction blocks ``install`` writes under ``home``."""
+    hook_commands = _commands(skills.generate_hooks_config(reference_repo))
+    for settings in (
+        home / ".claude" / "settings.json",
+        home / ".qoder" / "settings.json",
+        home / ".codebuddy" / "settings.json",
+    ):
+        _remove_hooks(settings, hook_commands, home, report, dry_run=dry_run)
+
+    gemini_names = skills._GEMINI_CLI_HOOK_FILENAMES
+    _remove_hooks(
+        home / ".gemini" / "settings.json",
+        {f"bash .gemini/hooks/{name}" for name in gemini_names},
+        home,
+        report,
+        dry_run=dry_run,
+    )
+    for name in gemini_names:
+        _remove_file(home / ".gemini" / "hooks" / name, home, report, dry_run=dry_run)
+
+    for root_name in (".claude", ".gemini", ".codebuddy"):
+        for slug in _generated_skill_slugs():
+            _remove_skill_file(
+                home / root_name / "skills" / slug / "SKILL.md",
+                home,
+                report,
+                dry_run=dry_run,
+            )
+    for name in _qoder_skill_names(home, report):
+        _remove_skill_file(
+            home / ".qoder" / "skills" / name / "SKILL.md",
+            home,
+            report,
+            dry_run=dry_run,
+        )
+
+    for relative, _owners in skills._USER_INSTRUCTION_FILES.values():
+        _remove_instruction(home / relative, home, report, dry_run=dry_run)
+
+
 def _process_user(
     reference_repo: Path,
     home: Path,
@@ -1194,6 +1266,8 @@ def _process_user(
         report,
         dry_run=dry_run,
     )
+
+    _remove_user_level_integrations(reference_repo, home, report, dry_run=dry_run)
 
     hermes_skills = skills._hermes_home() / "skills" / "reviewgraph"
     for slug in _generated_skill_slugs():

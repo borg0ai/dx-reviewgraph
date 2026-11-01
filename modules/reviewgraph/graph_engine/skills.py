@@ -152,6 +152,27 @@ def _hermes_config_path() -> Path:
     return _hermes_home() / "config.yaml"
 
 
+def _opencode_user_config_path() -> Path:
+    """Return OpenCode's user-level config, preferring an existing JSONC file."""
+    base = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "opencode"
+    for name in ("opencode.jsonc", "opencode.json"):
+        if (base / name).exists():
+            return base / name
+    return base / "opencode.jsonc"
+
+
+def _vscode_user_mcp_path() -> Path:
+    """Return VS Code's user-level ``mcp.json`` for the current OS."""
+    system = platform.system()
+    if system == "Darwin":
+        return Path.home() / "Library" / "Application Support" / "Code" / "User" / "mcp.json"
+    if system == "Windows":
+        appdata = os.environ.get("APPDATA", "").strip()
+        base = Path(appdata) if appdata else Path.home() / "AppData" / "Roaming"
+        return base / "Code" / "User" / "mcp.json"
+    return Path.home() / ".config" / "Code" / "User" / "mcp.json"
+
+
 def _opencode_config_path(repo_root: Path) -> Path:
     """Return OpenCode's existing project config, preferring JSONC."""
     for name in ("opencode.jsonc", "opencode.json"):
@@ -174,6 +195,7 @@ PLATFORMS: dict[str, dict[str, Any]] = {
     "claude": {
         "name": "Claude Code",
         "config_path": lambda root: root / ".mcp.json",
+        "user_config_path": lambda root: Path.home() / ".claude.json",
         "key": "mcpServers",
         "detect": lambda: True,
         "format": "object",
@@ -214,6 +236,7 @@ PLATFORMS: dict[str, dict[str, Any]] = {
     "opencode": {
         "name": "OpenCode",
         "config_path": _opencode_config_path,
+        "user_config_path": lambda root: _opencode_user_config_path(),
         "key": "mcp",
         "detect": lambda: True,
         "format": "object",
@@ -262,6 +285,7 @@ PLATFORMS: dict[str, dict[str, Any]] = {
     "copilot": {
         "name": "GitHub Copilot",
         "config_path": lambda root: root / ".vscode" / "mcp.json",
+        "user_config_path": lambda root: _vscode_user_mcp_path(),
         "key": "servers",
         "detect": _copilot_vscode_detected,
         "format": "object",
@@ -292,6 +316,7 @@ PLATFORMS: dict[str, dict[str, Any]] = {
     "codebuddy": {
         "name": "CodeBuddy Code",
         "config_path": lambda root: root / ".mcp.json",
+        "user_config_path": lambda root: Path.home() / ".codebuddy.json",
         "key": "mcpServers",
         "detect": lambda: True,
         "format": "object",
@@ -1025,17 +1050,28 @@ def install_platform_configs(
     repo_root: Path,
     target: str = "all",
     dry_run: bool = False,
+    *,
+    user_scope: bool = False,
 ) -> list[str]:
     """Install MCP config for one or all detected platforms.
 
     Args:
-        repo_root: Project root directory.
+        repo_root: Project root directory. With ``user_scope`` it is the home
+            directory and no repo is pinned in the written entries.
         target: Platform key or "all".
         dry_run: If True, print what would be done without writing.
+        user_scope: Write the user-level config of each platform (what
+            ``reviewgraph install`` does) instead of the project-level one.
 
     Returns:
         List of platform names that were configured.
     """
+    def _config_path(plat: dict[str, Any]) -> Path:
+        if user_scope and "user_config_path" in plat:
+            return plat["user_config_path"](repo_root)
+        return plat["config_path"](repo_root)
+
+    pinned_repo = None if user_scope else repo_root
     shared_aliases: dict[str, tuple[str, ...]] = {}
     if target == "all":
         platforms_to_install = {k: v for k, v in PLATFORMS.items() if v["detect"]()}
@@ -1051,7 +1087,7 @@ def install_platform_configs(
         codebuddy = platforms_to_install.get("codebuddy")
         if claude is not None and codebuddy is not None:
             same_contract = (
-                claude["config_path"](repo_root) == codebuddy["config_path"](repo_root)
+                _config_path(claude) == _config_path(codebuddy)
                 and all(
                     claude[field] == codebuddy[field]
                     for field in ("key", "format", "needs_type")
@@ -1073,11 +1109,11 @@ def install_platform_configs(
         configured.extend(PLATFORMS[alias]["name"] for alias in shared_aliases.get(key, ()))
 
     for key, plat in platforms_to_install.items():
-        if key == "opencode":
+        if key == "opencode" and not user_scope:
             _warn_legacy_opencode_config(repo_root)
-        config_path: Path = plat["config_path"](repo_root)
+        config_path: Path = _config_path(plat)
         server_key = plat["key"]
-        server_entry = _build_server_entry(plat, key=key, repo_root=repo_root)
+        server_entry = _build_server_entry(plat, key=key, repo_root=pinned_repo)
 
         if plat["format"] in ("toml", "yaml"):
             if plat["format"] == "toml":
@@ -2372,6 +2408,18 @@ _PLATFORM_INSTRUCTION_FILES: dict[str, tuple[str, ...]] = {
     "CODEBUDDY.md": ("codebuddy",),
 }
 
+# User-level counterparts used by ``reviewgraph install``: file under the home
+# directory and the platforms that own it. Platforms with no user-level
+# instruction file (``.cursorrules``, ``.windsurfrules``, Copilot, Qoder) are
+# left out on purpose: install never writes into a repository.
+_USER_INSTRUCTION_FILES: dict[str, tuple[str, tuple[str, ...]]] = {
+    ".claude/CLAUDE.md": (".claude/CLAUDE.md", ("claude",)),
+    "AGENTS.md": (".codex/AGENTS.md", ("codex",)),
+    "GEMINI.md": (".gemini/GEMINI.md", ("antigravity", "gemini-cli")),
+    ".kiro/steering/graph_engine.md": (".kiro/steering/graph_engine.md", ("kiro",)),
+    "CODEBUDDY.md": (".codebuddy/CODEBUDDY.md", ("codebuddy",)),
+}
+
 # Superseded paths written by older releases. Reinstall removes only the exact
 # generated section and leaves any user-authored content intact.
 _LEGACY_PLATFORM_INSTRUCTION_FILES: dict[str, tuple[str, ...]] = {
@@ -2593,6 +2641,7 @@ def inject_instruction_files(
     target: str = "all",
     *,
     include_claude_md: bool = True,
+    user_scope: bool = False,
 ) -> dict[str, str]:
     """Write every instruction file for ``target`` and report what happened.
 
@@ -2602,6 +2651,17 @@ def inject_instruction_files(
     upgraded and which ones need manual attention.
     """
     outcomes: dict[str, str] = {}
+    if user_scope:
+        # ``repo_root`` is the home directory here.
+        for label, (relative, owners) in _USER_INSTRUCTION_FILES.items():
+            if target != "all" and target not in owners:
+                continue
+            if label in _PLATFORM_INSTRUCTION_CUSTOM_SECTIONS:
+                marker, section = _PLATFORM_INSTRUCTION_CUSTOM_SECTIONS[label]
+            else:
+                marker, section = _CLAUDE_MD_SECTION_MARKER, _CLAUDE_MD_SECTION
+            outcomes[relative] = _inject_instructions(repo_root / relative, marker, section)
+        return outcomes
     if include_claude_md and target in ("claude", "all"):
         outcomes["CLAUDE.md"] = inject_claude_md(repo_root)
     for filename, owners in _PLATFORM_INSTRUCTION_FILES.items():

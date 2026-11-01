@@ -3335,6 +3335,7 @@ version = "2.3.11"
 source = { editable = "apps/cli" }
 dependencies = [
     { name = "reviewgraph-engine" },
+    { name = "rich" },
 ]
 
 [package.optional-dependencies]
@@ -3388,6 +3389,7 @@ requires-dist = [
     { name = "reviewgraph-engine", extras = ["eval"], marker = "extra == 'eval'", editable = "modules/reviewgraph" },
     { name = "reviewgraph-engine", extras = ["google-embeddings"], marker = "extra == 'google-embeddings'", editable = "modules/reviewgraph" },
     { name = "reviewgraph-engine", extras = ["wiki"], marker = "extra == 'wiki'", editable = "modules/reviewgraph" },
+    { name = "rich", specifier = ">=13,<16" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.3.0,<1" },
     { name = "types-networkx", marker = "extra == 'dev'" },
 ]
