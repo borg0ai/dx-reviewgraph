@@ -13,11 +13,8 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/reviewgraph/"><img src="https://img.shields.io/pypi/v/reviewgraph?style=flat-square&color=blue" alt="PyPI"></a>
-  <a href="https://pepy.tech/project/reviewgraph"><img src="https://img.shields.io/pepy/dt/reviewgraph?style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/borg0ai/dx-reviewgraph/stargazers"><img src="https://img.shields.io/github/stars/borg0ai/dx-reviewgraph?style=flat-square" alt="Stars"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT Licence"></a>
-  <a href="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml"><img src="https://github.com/borg0ai/dx-reviewgraph/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg?style=flat-square" alt="Python 3.10+"></a>
   <a href="https://modelcontextprotocol.io/"><img src="https://img.shields.io/badge/MCP-compatible-green.svg?style=flat-square" alt="MCP"></a>
   <a href="https://discord.gg/3p58KXqGFN"><img src="https://img.shields.io/badge/discord-join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
@@ -46,7 +43,7 @@
 ## जल्दी शुरुआत
 
 ```bash
-pip install reviewgraph          # or: pipx install reviewgraph
+brew install systembugtj/luban-homebrew/reviewgraph
 reviewgraph install              # detect installed AI coding tools and configure each one
 reviewgraph build                # parse the codebase
 ```
@@ -663,5 +660,5 @@ MIT। देखें [LICENSE](LICENSE)।
 
 <p align="center">
 <br>
-<code>pip install reviewgraph && reviewgraph install</code>
+<code>brew install systembugtj/luban-homebrew/reviewgraph && reviewgraph install</code>
 </p>

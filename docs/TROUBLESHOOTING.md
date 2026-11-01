@@ -59,45 +59,17 @@ commit proceeds.
 Re-running `install` upgrades the exact hook block written by older releases.
 A block you have edited is left alone; update it by hand.
 
-### 2. `reviewgraph: command not found` after `pip install`
+### 2. `reviewgraph: command not found` after Homebrew install
 
-**Cause.** `pip` put the console script in a `bin/` directory that is not on
-your `PATH`.
+**Cause.** Homebrew's executable directory is missing from your `PATH`.
 
-**Fix.** Pick one:
+**Fix.** Check that Homebrew installed the formula, then load its shell paths:
 
-1. Install with `pipx`:
-
-   ```bash
-   pip uninstall reviewgraph
-   pipx install reviewgraph
-   ```
-
-   If the command is still not found, run `pipx ensurepath` and open a new
-   shell.
-
-2. Run it with `uvx` (no install):
-
-   ```bash
-   uvx reviewgraph install
-   uvx reviewgraph build
-   ```
-
-3. Run it as a module with the interpreter you installed into:
-
-   ```bash
-   python -m reviewgraph install
-   python -m reviewgraph build
-   ```
-
-4. Add the script directory to `PATH`. `pip show reviewgraph | grep Location`
-   prints the `site-packages` directory; the scripts are in the sibling `bin/`
-   (on macOS user installs, typically `~/Library/Python/3.X/bin`):
-
-   ```bash
-   echo 'export PATH="$HOME/Library/Python/3.12/bin:$PATH"' >> ~/.zshrc
-   source ~/.zshrc
-   ```
+```bash
+brew list reviewgraph
+eval "$(brew shellenv)"
+reviewgraph --version
+```
 
 ### 3. Is reviewgraph project-scoped or user-scoped?
 
@@ -105,7 +77,7 @@ Both. The pieces are scoped differently:
 
 | Piece | Scope | Where |
 |---|---|---|
-| Python package | User | Installed once with `pip`, `pipx` or `uvx` |
+| ReviewGraph CLI | User | Installed once with Homebrew |
 | Graph database | Project | `.reviewgraph/graph.db` in each repository (or `--data-dir` / `CRG_DATA_DIR`) |
 | MCP server config (`.mcp.json` and platform equivalents) | Project | One server per project; the entry carries `cwd=<project>` |
 | Multi-repo registry | User | `~/.reviewgraph/registry.json` (or under `$CRG_HOME`) |

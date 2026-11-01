@@ -4,12 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "reviewgraph"
-version = "2.3.9"
+version = "2.3.10"
 description = "ReviewGraph command line application"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
-dependencies = ["code-review-engine==2.3.9"]
+dependencies = [
+    "code-review-engine==2.3.10",
+]
 
 [project.urls]
 Homepage = "https://github.com/borg0ai/dx-reviewgraph"

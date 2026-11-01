@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "code-review-engine"
-version = "2.3.9"
+version = "2.3.10"
 description = "ReviewGraph: local-first knowledge graph for token-efficient code review through MCP and CLI"
 readme = "README.md"
 license = "MIT"

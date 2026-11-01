@@ -1,14 +1,16 @@
 # User Guide
 
-Applies to reviewgraph 2.3.9.
+Applies to reviewgraph 2.3.10.
 
 ## Installation
 
 ```bash
-pip install reviewgraph
+brew install systembugtj/luban-homebrew/reviewgraph
 reviewgraph install    # detect installed AI coding tools and configure each one
 reviewgraph build      # parse the codebase
 ```
+
+The Homebrew formula supports macOS. Linux and Windows package channels are planned.
 
 `install` detects which AI coding tools you have, writes an MCP server entry for each, installs hooks and skills where the platform supports them, and adds graph instructions to the platform's rules file (`CLAUDE.md`, `AGENTS.md`, and others). `--no-hooks`, `--no-skills` and `--no-instructions` skip those steps; `--dry-run` shows what would be written. Restart the editor or tool afterwards.
 
@@ -95,9 +97,10 @@ Interactive D3.js force-directed graph. It starts collapsed (File nodes only); c
 
 ### 6. Semantic search (optional)
 ```bash
-pip install "reviewgraph[embeddings]"
+brew install systembugtj/luban-homebrew/reviewgraph
 ```
-Then run `reviewgraph embed` or the `embed_graph_tool` MCP tool to compute vectors. `semantic_search_nodes_tool` uses vector similarity when matching embeddings exist and falls back to keyword/FTS search otherwise.
+The Homebrew formula installs the core package. Optional embedding dependencies are not included.
+`semantic_search_nodes_tool` uses vector similarity when matching embeddings exist and falls back to keyword/FTS search otherwise.
 
 Providers: local sentence-transformers, OpenAI-compatible endpoints, Google Gemini, MiniMax, and Voyage AI. Local embeddings read `CRG_EMBEDDING_MODEL`; OpenAI-compatible providers read `CRG_OPENAI_BASE_URL`, `CRG_OPENAI_API_KEY` and `CRG_OPENAI_MODEL`; Voyage reads `VOYAGE_API_KEY` and optionally `CRG_VOYAGE_MODEL`. Cloud providers print an egress warning unless `CRG_ACCEPT_CLOUD_EMBEDDINGS=1` is set. The full variable list is in the [README](../README.md#environment-variables).
 
