@@ -1,6 +1,6 @@
 # RFC 0003: Refine reviewgraph init as a rich colorful TUI
 
-**Status:** Approved
+**Status:** Implemented
 
 ## Summary
 
