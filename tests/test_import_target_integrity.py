@@ -275,7 +275,7 @@ def own_package_graph(tmp_path_factory) -> Path:
     """
     root = tmp_path_factory.mktemp("own-package") / "repo"
     shutil.copytree(
-        REPO_ROOT / "modules" / "code-review" / "graph_engine",
+        REPO_ROOT / "modules" / "reviewgraph" / "graph_engine",
         root / "graph_engine",
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )

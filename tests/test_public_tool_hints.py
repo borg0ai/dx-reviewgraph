@@ -7,7 +7,7 @@ from graph_engine.hints import _INTENT_TOOLS, _WORKFLOW, SessionState, generate_
 
 
 def test_all_hints_name_registered_mcp_tools():
-    tree = ast.parse((Path(__file__).parents[1] / "modules" / "code-review" / "graph_engine" / "main.py").read_text())
+    tree = ast.parse((Path(__file__).parents[1] / "modules" / "reviewgraph" / "graph_engine" / "main.py").read_text())
     registered = {
         node.name
         for node in tree.body

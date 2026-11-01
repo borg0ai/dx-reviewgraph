@@ -22,7 +22,7 @@ Usage
 -----
     uv run --python 3.13 python scripts/audit_python_imports.py \
         --repo . --package reviewgraph \
-        --calls-module modules/code-review/graph_engine/changes.py \
+        --calls-module modules/reviewgraph/graph_engine/changes.py \
         --build-log build.log --json audit.json
 """
 
@@ -997,13 +997,13 @@ def _pct(part: int, whole: int) -> float:
 # ---------------------------------------------------------------------------
 
 DEFAULT_CALLS_MODULES = [
-    "modules/code-review/graph_engine/changes.py",
-    "modules/code-review/graph_engine/flows.py",
-    "modules/code-review/graph_engine/hints.py",
-    "modules/code-review/graph_engine/refactor.py",
-    "modules/code-review/graph_engine/search.py",
-    "modules/code-review/graph_engine/communities.py",
-    "modules/code-review/graph_engine/wiki.py",
+    "modules/reviewgraph/graph_engine/changes.py",
+    "modules/reviewgraph/graph_engine/flows.py",
+    "modules/reviewgraph/graph_engine/hints.py",
+    "modules/reviewgraph/graph_engine/refactor.py",
+    "modules/reviewgraph/graph_engine/search.py",
+    "modules/reviewgraph/graph_engine/communities.py",
+    "modules/reviewgraph/graph_engine/wiki.py",
 ]
 
 

@@ -187,7 +187,7 @@ def count_tokens(value: Any) -> int:
 # A sentinel that pushes any result cap past its hard ceiling.
 HUGE = 10**6
 
-# Tools whose result lists live in modules/code-review/graph_engine/tools/query.py. That
+# Tools whose result lists live in modules/reviewgraph/graph_engine/tools/query.py. That
 # module is owned elsewhere and its unbounded worst cases are reported, not
 # fixed, by this change:
 #   * find_large_functions -- limit is neither validated nor capped
@@ -652,7 +652,7 @@ def test_worst_case_args_stay_in_budget(name, repo):
     spec = BUDGETS[name]
     if spec["worst_max"] is None:
         pytest.skip(
-            f"{name} is bounded in modules/code-review/graph_engine/tools/query.py, which "
+            f"{name} is bounded in modules/reviewgraph/graph_engine/tools/query.py, which "
             "this change does not own; its unbounded worst case is reported "
             "rather than fixed (see QUERY_OWNED_UNBOUNDED)."
         )

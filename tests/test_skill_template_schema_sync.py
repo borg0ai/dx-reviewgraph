@@ -26,7 +26,7 @@ _IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 def _exported_tool_names() -> set[str]:
     """Collect function names registered via @mcp.tool() in main.py."""
-    src = (REPO_ROOT / "modules" / "code-review" / "graph_engine" / "main.py").read_text(encoding="utf-8")
+    src = (REPO_ROOT / "modules" / "reviewgraph" / "graph_engine" / "main.py").read_text(encoding="utf-8")
     tree = ast.parse(src)
     names: set[str] = set()
     for node in ast.walk(tree):
@@ -54,7 +54,7 @@ def _all_skill_files(tmp_path: Path) -> list[Path]:
     files = []
     for name in SKILL_NAMES:
         files.append(generated / name / "SKILL.md")
-        files.append(REPO_ROOT / "modules" / "code-review" / "skills" / name / "SKILL.md")
+        files.append(REPO_ROOT / "modules" / "reviewgraph" / "skills" / name / "SKILL.md")
     return files
 
 
@@ -81,7 +81,7 @@ def test_generated_and_bundled_skills_byte_identical(tmp_path):
     generated = generate_skills(tmp_path)
     for name in SKILL_NAMES:
         gen = (generated / name / "SKILL.md").read_text(encoding="utf-8")
-        bundled = (REPO_ROOT / "modules" / "code-review" / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
+        bundled = (REPO_ROOT / "modules" / "reviewgraph" / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
         assert gen == bundled, f"generated and bundled {name}/SKILL.md diverged"
 
 

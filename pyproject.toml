@@ -10,10 +10,10 @@ dependencies = [
 package = false
 
 [tool.uv.workspace]
-members = ["modules/code-review", "apps/cli"]
+members = ["modules/reviewgraph", "apps/cli"]
 
 [tool.uv.sources]
-code-review-engine = { workspace = true }
+reviewgraph-engine = { workspace = true }
 reviewgraph = { workspace = true }
 
 [dependency-groups]
@@ -39,8 +39,8 @@ exclude = [
 select = ["E", "F", "I", "N", "W"]
 
 [tool.ruff.lint.per-file-ignores]
-"modules/code-review/graph_engine/visualization.py" = ["E501"]
-"modules/code-review/graph_engine/_legacy_instructions.py" = ["E501"]
+"modules/reviewgraph/graph_engine/visualization.py" = ["E501"]
+"modules/reviewgraph/graph_engine/_legacy_instructions.py" = ["E501"]
 "tests/fixtures/sample_databricks_export.py" = ["F841", "W292"]
 "tests/fixtures/sample_notebook.ipynb" = ["F401", "I001"]
 "tests/test_multilang.py" = ["E501"]

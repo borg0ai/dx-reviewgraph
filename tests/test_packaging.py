@@ -59,7 +59,7 @@ from pathlib import Path, PurePosixPath
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PKG_DIR = REPO_ROOT / "modules" / "code-review" / "graph_engine"
+PKG_DIR = REPO_ROOT / "modules" / "reviewgraph" / "graph_engine"
 PKG_NAME = "graph_engine"
 
 # Generous: a cold interpreter, a pip resolve over the network and a full
@@ -198,7 +198,7 @@ def artefacts(builder_python: Path, tmp_path_factory: pytest.TempPathFactory) ->
     outdir = tmp_path_factory.mktemp("reviewgraph-dists")
     wheels: list[Path] = []
     sdists: list[Path] = []
-    for name, project in (("module", "modules/code-review"), ("cli", "apps/cli")):
+    for name, project in (("module", "modules/reviewgraph"), ("cli", "apps/cli")):
         project_out = outdir / name
         project_out.mkdir()
         _run(
@@ -446,7 +446,7 @@ def test_wheel_bundles_every_shipped_skill(wheel_names: list[str]) -> None:
     installed resource, the second the editable-install fallback. Regression
     #909 was exactly this set coming back empty.
     """
-    source_skills = REPO_ROOT / "modules" / "code-review" / "skills"
+    source_skills = REPO_ROOT / "modules" / "reviewgraph" / "skills"
     expected = {
         p.relative_to(source_skills).as_posix()
         for p in sorted(source_skills.rglob("*"))
@@ -481,7 +481,7 @@ def test_bundled_skill_files_match_the_generated_ones(wheel_names: list[str]) ->
     compared = 0
     for filename, skill in _SKILLS.items():
         name = filename.removesuffix(".md")
-        bundled = REPO_ROOT / "modules" / "code-review" / "skills" / name / "SKILL.md"
+        bundled = REPO_ROOT / "modules" / "reviewgraph" / "skills" / name / "SKILL.md"
         if not bundled.is_file():
             continue
         rendered = (
@@ -639,7 +639,7 @@ def _metadata_field(blob: str, field: str) -> str | None:
 @pytest.fixture(scope="session")
 def wheel_metadata(artefacts: Artefacts) -> str:
     for wheel in artefacts.wheel:
-        if wheel.name.startswith("code_review_engine-"):
+        if wheel.name.startswith("reviewgraph_engine-"):
             with zipfile.ZipFile(wheel) as archive:
                 name = next(n for n in archive.namelist() if n.endswith(".dist-info/METADATA"))
                 return archive.read(name).decode("utf-8")
@@ -763,7 +763,7 @@ def test_declared_dependencies_are_sufficient(wheel_env: InstalledEnv) -> None:
         "        importlib.import_module(m.name)\n"
         "    except Exception as exc:\n"
         "        failed.append(f'{m.name}: {type(exc).__name__}: {exc}')\n"
-        "core = sorted(md.requires('code-review-engine') or [])\n"
+        "core = sorted(md.requires('reviewgraph-engine') or [])\n"
         "print(json.dumps({'leaked': leaked, 'failed': failed, 'requires': core,\n"
         "                  'n_installed': len(installed)}))\n"
     )
@@ -852,13 +852,13 @@ def test_wheel_installs_and_runs_on_the_declared_python_floor(
 # of it importable as ``reviewgraph``, so a build can never reach back
 # into the package under test.
 _CORPUS_PY = (
-    "modules/code-review/graph_engine/config_keys.py",
-    "modules/code-review/graph_engine/constants.py",
-    "modules/code-review/graph_engine/memory.py",
-    "modules/code-review/graph_engine/graph_diff.py",
-    "modules/code-review/graph_engine/python_resolver.py",
-    "modules/code-review/graph_engine/hcl_resolver.py",
-    "modules/code-review/graph_engine/postprocessing.py",
+    "modules/reviewgraph/graph_engine/config_keys.py",
+    "modules/reviewgraph/graph_engine/constants.py",
+    "modules/reviewgraph/graph_engine/memory.py",
+    "modules/reviewgraph/graph_engine/graph_diff.py",
+    "modules/reviewgraph/graph_engine/python_resolver.py",
+    "modules/reviewgraph/graph_engine/hcl_resolver.py",
+    "modules/reviewgraph/graph_engine/postprocessing.py",
     "scripts/render_pr_comment.py",
 )
 _MCP_PROBE = '''
@@ -1131,8 +1131,8 @@ def test_install_command_works_from_the_installed_wheel(
         for p in (project / ".qoder" / "skills").rglob("SKILL.md")
     )
     expected = sorted(
-        p.relative_to(REPO_ROOT / "modules" / "code-review" / "skills").as_posix()
-        for p in (REPO_ROOT / "modules" / "code-review" / "skills").rglob("SKILL.md")
+        p.relative_to(REPO_ROOT / "modules" / "reviewgraph" / "skills").as_posix()
+        for p in (REPO_ROOT / "modules" / "reviewgraph" / "skills").rglob("SKILL.md")
     )
     assert bundled == expected, (
         f"Qoder install copied {bundled} but the checkout ships {expected}"

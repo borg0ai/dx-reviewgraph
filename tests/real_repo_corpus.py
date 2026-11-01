@@ -10,7 +10,7 @@ compares the result against numbers recorded in ``corpus_baselines.json``.
 
 Design notes:
 
-* The pins for repositories that ``modules/code-review/graph_engine/eval/configs`` already
+* The pins for repositories that ``modules/reviewgraph/graph_engine/eval/configs`` already
   tracks are *derived from* those configs rather than copied. ``repo_specs()``
   reads the YAML and fails loudly when the two disagree, so the project keeps a
   single source of truth for "which commit of fastapi do we measure".
@@ -44,7 +44,7 @@ from typing import Iterable, Optional
 TESTS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = TESTS_DIR.parent
 BASELINE_PATH = TESTS_DIR / "corpus_baselines.json"
-EVAL_CONFIGS_DIR = REPO_ROOT / "modules" / "code-review" / "graph_engine" / "eval" / "configs"
+EVAL_CONFIGS_DIR = REPO_ROOT / "modules" / "reviewgraph" / "graph_engine" / "eval" / "configs"
 
 #: Wall-clock ceiling for one clone. A stalled fetch must fail the check rather
 #: than hang a CI job forever.
@@ -64,7 +64,7 @@ class RepoSpec:
     language: str
     url: str
     commit: str
-    #: Name of the ``modules/code-review/graph_engine/eval/configs/<name>.yaml`` this pin is
+    #: Name of the ``modules/reviewgraph/graph_engine/eval/configs/<name>.yaml`` this pin is
     #: taken from, when the evaluation corpus already tracks the repository.
     eval_config: Optional[str] = None
 

@@ -588,7 +588,7 @@ def d8():
     els.append(TC(600, 20, "One Install, Every Platform", 36))
     els.append(TC(600, 70, "reviewgraph install", 20, sc=PRP, ff=3))
 
-    # 14 platforms \u2014 matches modules/code-review/graph_engine/skills.py PLATFORMS dict
+    # 14 platforms \u2014 matches modules/reviewgraph/graph_engine/skills.py PLATFORMS dict
     platforms = [
         # Row 1 (7)
         ("Claude Code",     ".mcp.json",                                BLU, BLU_BG),

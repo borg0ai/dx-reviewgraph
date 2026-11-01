@@ -188,7 +188,7 @@ jobs:
 <summary><strong>Token 效率：每个问题减少中位数约 63 倍（范围 35 倍到 358 倍；全语料对比图谱查询）</strong></summary>
 <br>
 
-对于典型的智能体问题（`"how does authentication work"`、`"what is the main entry point"` 等），图谱返回约 2,200 到 3,900 个 token 的搜索命中加邻接边，而不是每一个源文件。表格对 `modules/code-review/graph_engine/token_benchmark.py` 中定义的 5 个样例问题取平均。
+对于典型的智能体问题（`"how does authentication work"`、`"what is the main entry point"` 等），图谱返回约 2,200 到 3,900 个 token 的搜索命中加邻接边，而不是每一个源文件。表格对 `modules/reviewgraph/graph_engine/token_benchmark.py` 中定义的 5 个样例问题取平均。
 
 | 仓库 | 快照 SHA | naive_corpus_tokens | avg graph_tokens | 减少倍数 |
 |------|---|-----------------:|----------------:|----------:|
@@ -279,7 +279,7 @@ jobs:
 | **边置信度** | 两级置信度（EXTRACTED/INFERRED），边上带浮点分数 |
 | **图谱遍历** | 从任意节点出发的 BFS/DFS，深度和 token 预算可配置 |
 | **导出格式** | GraphML（Gephi/yEd）、Neo4j Cypher、Obsidian 知识库、JSON，以及 SVG（SVG 需要 `eval` 附加依赖中的 matplotlib） |
-| **Token 基准测试** | `modules/code-review/graph_engine/token_benchmark.py` 按问题测量全语料 token 与图谱查询 token |
+| **Token 基准测试** | `modules/reviewgraph/graph_engine/token_benchmark.py` 按问题测量全语料 token 与图谱查询 token |
 | **估算的上下文节省** | 在审查、影响、detect-changes 和架构响应上附带 `context_savings` 元数据（`estimated`、`saved_tokens`、`saved_percent`） |
 | **社区自动拆分** | 占图谱 25% 以上的社区用 Leiden 递归拆分 |
 | **执行流** | 从入口点出发的调用链，按加权关键度排序 |
@@ -652,7 +652,7 @@ pytest
 功能和修复 PR 直接提交到 `main`。版本从 `main` 打标签。完整流程见
 [CONTRIBUTING.md](CONTRIBUTING.md#branching)。
 
-要添加内置语言，编辑 `modules/code-review/graph_engine/parser.py`：把扩展名加入 `EXTENSION_TO_LANGUAGE`，并把节点类型映射加入 `_CLASS_TYPES`、`_FUNCTION_TYPES`、`_IMPORT_TYPES` 和 `_CALL_TYPES`。附上测试 fixture 并提交 PR。如果某种语言只在一个仓库里需要，请改用 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)。
+要添加内置语言，编辑 `modules/reviewgraph/graph_engine/parser.py`：把扩展名加入 `EXTENSION_TO_LANGUAGE`，并把节点类型映射加入 `_CLASS_TYPES`、`_FUNCTION_TYPES`、`_IMPORT_TYPES` 和 `_CALL_TYPES`。附上测试 fixture 并提交 PR。如果某种语言只在一个仓库里需要，请改用 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)。
 
 ## 许可证
 

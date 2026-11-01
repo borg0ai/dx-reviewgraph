@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "code-review-engine"
+name = "reviewgraph-engine"
 version = "2.3.10"
 description = "ReviewGraph: local-first knowledge graph for token-efficient code review through MCP and CLI"
 readme = "README.md"
@@ -69,12 +69,12 @@ wiki = [
     "ollama>=0.1.0",
 ]
 all = [
-    "code-review-engine[embeddings]",
-    "code-review-engine[google-embeddings]",
-    "code-review-engine[communities]",
-    "code-review-engine[enrichment]",
-    "code-review-engine[eval]",
-    "code-review-engine[wiki]",
+    "reviewgraph-engine[embeddings]",
+    "reviewgraph-engine[google-embeddings]",
+    "reviewgraph-engine[communities]",
+    "reviewgraph-engine[enrichment]",
+    "reviewgraph-engine[eval]",
+    "reviewgraph-engine[wiki]",
 ]
 enrichment = [
     "jedi>=0.19.2",

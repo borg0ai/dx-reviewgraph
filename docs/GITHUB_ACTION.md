@@ -82,7 +82,7 @@ To turn the review into a merge gate:
 
 `detect-changes` produces an overall risk score from 0.0 to 1.0: the maximum
 across changed functions. `compute_risk_score` in
-`modules/code-review/graph_engine/changes.py` adds up flow participation, community
+`modules/reviewgraph/graph_engine/changes.py` adds up flow participation, community
 crossing, test coverage, security-sensitive names and caller count. The
 action maps the score to levels:
 
@@ -135,7 +135,7 @@ database) with `actions/cache`:
   `Pipfile.lock`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`,
   `go.sum`, `Cargo.lock`, `Gemfile.lock` and `composer.lock`.
 - **Schema segment**: `schema13` tracks the database schema version
-  (`LATEST_VERSION` in `modules/code-review/graph_engine/migrations.py`). It is bumped when
+  (`LATEST_VERSION` in `modules/reviewgraph/graph_engine/migrations.py`). It is bumped when
   the schema changes so a stale cache is not restored across incompatible
   versions.
 - **Restore keys**: fall back to any cache for the same OS and schema, so a

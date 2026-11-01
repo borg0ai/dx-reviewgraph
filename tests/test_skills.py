@@ -147,7 +147,7 @@ class TestGenerateSkills:
     def test_skill_frontmatter_names_match_lowercase_directories(self, tmp_path):
         """Generated and bundled skills use the discovery-safe name format."""
         generated = generate_skills(tmp_path)
-        bundled = Path(__file__).parents[1] / "modules" / "code-review" / "skills"
+        bundled = Path(__file__).parents[1] / "modules" / "reviewgraph" / "skills"
 
         for skill_name in (
             "debug-issue",
@@ -180,7 +180,7 @@ class TestGenerateSkills:
 
     def test_skill_templates_use_exported_tool_names(self, tmp_path):
         generated = generate_skills(tmp_path)
-        bundled = Path(__file__).parents[1] / "modules" / "code-review" / "skills"
+        bundled = Path(__file__).parents[1] / "modules" / "reviewgraph" / "skills"
 
         expected_tools = {
             "explore-codebase": [

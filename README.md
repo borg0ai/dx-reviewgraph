@@ -188,7 +188,7 @@ All numbers come from the evaluation runner against 6 open-source repositories (
 <summary><strong>Token efficiency: ~63x median per-question reduction (range 35x to 358x; whole-corpus vs graph query)</strong></summary>
 <br>
 
-For a typical agent question (`"how does authentication work"`, `"what is the main entry point"`, and so on), the graph returns ~2,200 to 3,900 tokens of search hits plus neighbour edges instead of every source file. The table averages the 5 sample questions defined in `modules/code-review/graph_engine/token_benchmark.py`.
+For a typical agent question (`"how does authentication work"`, `"what is the main entry point"`, and so on), the graph returns ~2,200 to 3,900 tokens of search hits plus neighbour edges instead of every source file. The table averages the 5 sample questions defined in `modules/reviewgraph/graph_engine/token_benchmark.py`.
 
 | Repo | Snapshot SHA | naive_corpus_tokens | avg graph_tokens | Reduction |
 |------|---|-----------------:|----------------:|----------:|
@@ -279,7 +279,7 @@ From the same 2026-08-02 clean-room build at the pinned SHAs above. Embedding co
 | **Edge confidence** | Two-tier confidence (EXTRACTED/INFERRED) with float scores on edges |
 | **Graph traversal** | BFS/DFS from any node with configurable depth and token budget |
 | **Export formats** | GraphML (Gephi/yEd), Neo4j Cypher, Obsidian vault, JSON, and SVG (SVG needs matplotlib from the `eval` extra) |
-| **Token benchmarking** | `modules/code-review/graph_engine/token_benchmark.py` measures whole-corpus tokens against graph query tokens per question |
+| **Token benchmarking** | `modules/reviewgraph/graph_engine/token_benchmark.py` measures whole-corpus tokens against graph query tokens per question |
 | **Estimated context savings** | `context_savings` metadata (`estimated`, `saved_tokens`, `saved_percent`) on review, impact, detect-changes and architecture responses |
 | **Community auto-split** | Communities above 25% of the graph are split recursively with Leiden |
 | **Execution flows** | Call chains from entry points, sorted by weighted criticality |
@@ -652,7 +652,7 @@ pytest
 Open feature and fix pull requests directly against `main`. Releases are tagged
 from `main`. See [CONTRIBUTING.md](CONTRIBUTING.md#branching) for the workflow.
 
-To add a built-in language, edit `modules/code-review/graph_engine/parser.py`: add the extension to `EXTENSION_TO_LANGUAGE` and node type mappings to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`. Include a test fixture and open a PR. For a language you only need in one repository, use [`languages.toml`](docs/CUSTOM_LANGUAGES.md) instead.
+To add a built-in language, edit `modules/reviewgraph/graph_engine/parser.py`: add the extension to `EXTENSION_TO_LANGUAGE` and node type mappings to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`. Include a test fixture and open a PR. For a language you only need in one repository, use [`languages.toml`](docs/CUSTOM_LANGUAGES.md) instead.
 
 ## Licence
 

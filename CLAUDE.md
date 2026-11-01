@@ -18,7 +18,7 @@ All registered tool names end in `_tool`. The 30 tools are defined in `main.py`.
 
 ## Architecture
 
-Core module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cli/reviewgraph/`.
+Core module `modules/reviewgraph/graph_engine/` (Python 3.10+). CLI app `apps/cli/reviewgraph/`.
 
 - `main.py`: FastMCP server entry point. Registers 30 tools and 5 prompts.
 - `tools/`: tool implementations by domain: `build.py`, `query.py`, `review.py`, `context.py`, `flows_tools.py`, `community_tools.py`, `refactor_tools.py`, `docs.py`, `registry_tools.py`, `analysis_tools.py`; shared helpers in `_common.py`.
@@ -33,7 +33,7 @@ Core module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cl
 - `changes.py`: risk-scored change analysis. `refactor.py`: rename preview, dead code, suggestions. `hints.py`: `next_tool_suggestions`. `uncertainty.py`: `confidence` notes on empty results. `context_savings.py`: estimated context-savings metadata.
 - `visualization.py`: D3.js HTML graph (D3 is bundled in `assets/`). `exports.py`: JSON, GraphML, Neo4j Cypher, Obsidian, SVG. `wiki.py`: Markdown wiki. `graph_diff.py`: snapshot diffing. `memory.py`: stored Q&A feedback.
 - `skills.py`: `install` (platform MCP configs, hooks, skills, instruction blocks). `_legacy_instructions.py`: instruction blocks shipped by earlier releases. `jsonc.py`: comment-preserving JSONC tokenising and splices, shared by install and uninstall so neither flattens a commented config. `uninstall.py`: reverses `install`. `enrich.py`: PreToolUse hook enrichment. `forget.py`: drops files from the graph. `registry.py`: multi-repo registry. `http_origin_guard.py`: Host/Origin checks for `serve --http`. `token_benchmark.py` and `eval/`: benchmarks. `constants.py`: shared constants.
-- `modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.
+- `modules/reviewgraph/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.
 
 Database: `.reviewgraph/graph.db` (SQLite, WAL mode).
 
@@ -42,8 +42,8 @@ Database: `.reviewgraph/graph.db` (SQLite, WAL mode).
 ```bash
 # Development
 uv run pytest tests/ --tb=short -q
-uv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/
-uv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional
+uv run ruff check modules/reviewgraph/graph_engine/ apps/cli/reviewgraph/
+uv run mypy modules/reviewgraph/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional
 
 # Graph
 uv run reviewgraph build              # full build

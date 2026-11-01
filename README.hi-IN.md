@@ -188,7 +188,7 @@ jobs:
 <summary><strong>टोकन दक्षता: प्रति प्रश्न कमी का माध्यिका लगभग 63 गुना (दायरा 35 गुना से 358 गुना; पूरा कॉर्पस बनाम ग्राफ़ क्वेरी)</strong></summary>
 <br>
 
-एक सामान्य एजेंट प्रश्न (`"how does authentication work"`, `"what is the main entry point"` वगैरह) पर ग्राफ़ हर स्रोत फ़ाइल के बजाय लगभग 2,200 से 3,900 टोकन के खोज परिणाम और पड़ोसी एज लौटाता है। तालिका `modules/code-review/graph_engine/token_benchmark.py` में परिभाषित 5 नमूना प्रश्नों का औसत है।
+एक सामान्य एजेंट प्रश्न (`"how does authentication work"`, `"what is the main entry point"` वगैरह) पर ग्राफ़ हर स्रोत फ़ाइल के बजाय लगभग 2,200 से 3,900 टोकन के खोज परिणाम और पड़ोसी एज लौटाता है। तालिका `modules/reviewgraph/graph_engine/token_benchmark.py` में परिभाषित 5 नमूना प्रश्नों का औसत है।
 
 | रिपॉज़िटरी | स्नैपशॉट SHA | naive_corpus_tokens | avg graph_tokens | कमी |
 |------|---|-----------------:|----------------:|----------:|
@@ -279,7 +279,7 @@ jobs:
 | **एज विश्वास स्तर** | दो-स्तरीय विश्वास (EXTRACTED/INFERRED) और एज पर फ़्लोट स्कोर |
 | **ग्राफ़ ट्रैवर्सल** | किसी भी नोड से BFS/DFS, गहराई और टोकन बजट सेट किए जा सकते हैं |
 | **निर्यात प्रारूप** | GraphML (Gephi/yEd), Neo4j Cypher, Obsidian वॉल्ट, JSON, और SVG (SVG के लिए `eval` एक्स्ट्रा का matplotlib चाहिए) |
-| **टोकन बेंचमार्किंग** | `modules/code-review/graph_engine/token_benchmark.py` प्रति प्रश्न पूरे कॉर्पस के टोकन और ग्राफ़ क्वेरी के टोकन मापता है |
+| **टोकन बेंचमार्किंग** | `modules/reviewgraph/graph_engine/token_benchmark.py` प्रति प्रश्न पूरे कॉर्पस के टोकन और ग्राफ़ क्वेरी के टोकन मापता है |
 | **अनुमानित संदर्भ बचत** | रिव्यू, प्रभाव, detect-changes और आर्किटेक्चर उत्तरों पर `context_savings` मेटाडेटा (`estimated`, `saved_tokens`, `saved_percent`) |
 | **कम्युनिटी स्वतः विभाजन** | ग्राफ़ के 25% से बड़ी कम्युनिटी को Leiden से पुनरावर्ती रूप से बाँटा जाता है |
 | **निष्पादन प्रवाह** | प्रवेश बिंदुओं से कॉल श्रृंखलाएँ, भारित महत्ता के क्रम में |
@@ -652,7 +652,7 @@ pytest
 फ़ीचर और फ़िक्स पुल रिक्वेस्ट सीधे `main` पर भेजें। रिलीज़ `main` से टैग होती हैं। पूरा प्रवाह
 [CONTRIBUTING.md](CONTRIBUTING.md#branching) में देखें।
 
-अंतर्निहित भाषा जोड़ने के लिए `modules/code-review/graph_engine/parser.py` संपादित करें: एक्सटेंशन को `EXTENSION_TO_LANGUAGE` में और नोड प्रकार मैपिंग को `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` तथा `_CALL_TYPES` में जोड़ें। एक टेस्ट फ़िक्स्चर साथ दें और PR खोलें। अगर भाषा सिर्फ़ एक ही रिपॉज़िटरी में चाहिए, तो उसके बजाय [`languages.toml`](docs/CUSTOM_LANGUAGES.md) का उपयोग करें।
+अंतर्निहित भाषा जोड़ने के लिए `modules/reviewgraph/graph_engine/parser.py` संपादित करें: एक्सटेंशन को `EXTENSION_TO_LANGUAGE` में और नोड प्रकार मैपिंग को `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` तथा `_CALL_TYPES` में जोड़ें। एक टेस्ट फ़िक्स्चर साथ दें और PR खोलें। अगर भाषा सिर्फ़ एक ही रिपॉज़िटरी में चाहिए, तो उसके बजाय [`languages.toml`](docs/CUSTOM_LANGUAGES.md) का उपयोग करें।
 
 ## लाइसेंस
 

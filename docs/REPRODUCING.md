@@ -16,7 +16,7 @@ reviewgraph detect-changes --brief --verify    # also: update --brief --verify
 ```
 
 The panel gains a `Verified (tiktoken)` row computed with OpenAI's `cl100k_base` tokenizer
-(`verify_with_tiktoken()` in `modules/code-review/graph_engine/context_savings.py`). Example output:
+(`verify_with_tiktoken()` in `modules/reviewgraph/graph_engine/context_savings.py`). Example output:
 
 ```text
 ┌───────────────────────── Token Savings ─────────────────────────┐
@@ -83,7 +83,7 @@ pip install "reviewgraph[all]"
 
 ## Step 2: run the eval
 
-This clones the six repositories at the SHAs pinned in `modules/code-review/graph_engine/eval/configs/*.yaml`,
+This clones the six repositories at the SHAs pinned in `modules/reviewgraph/graph_engine/eval/configs/*.yaml`,
 builds a full graph for each (parser, resolvers, signatures, FTS5, flows, Leiden
 communities), embeds it, and runs the benchmarks.
 
@@ -161,7 +161,7 @@ Captured 2026-08-02 on macOS arm64 (Apple M4 Pro, 14 cores, 24 GB), Python 3.13.
 reviewgraph 2.3.7, sentence-transformers 5.6.1, `all-MiniLM-L6-v2`,
 `CRG_LEIDEN_SEED=42`, from clean clones at the pinned SHAs.
 
-### Standalone token benchmark (`modules/code-review/graph_engine/token_benchmark.py`)
+### Standalone token benchmark (`modules/reviewgraph/graph_engine/token_benchmark.py`)
 
 Each row averages the 5 sample questions (`how does authentication work`, `what is the main
 entry point`, `how are database connections managed`, `what error handling patterns are
@@ -189,14 +189,14 @@ per-node embedding text grew, so a 5-hit response carries more text; and fastapi
 at its current pin `22381558` instead of the retired `0227991a`. `naive_corpus_tokens` is
 unchanged for `reviewgraph` and `gin`, so the movement is on the graph-response side.
 
-### Formal `token_efficiency` benchmark (`modules/code-review/graph_engine/eval/benchmarks/token_efficiency.py`)
+### Formal `token_efficiency` benchmark (`modules/reviewgraph/graph_engine/eval/benchmarks/token_efficiency.py`)
 
 A different denominator: the changed-file content of each commit against the full
 `get_review_context()` JSON. For small commits the response is larger than the input (it
 carries impact-radius edges and source snippets), so ratios below 1.0 are expected here.
 Per-commit rows are in `evaluate/results/<repo>_token_efficiency_*.csv`.
 
-### Impact accuracy (`modules/code-review/graph_engine/eval/benchmarks/impact_accuracy.py`)
+### Impact accuracy (`modules/reviewgraph/graph_engine/eval/benchmarks/impact_accuracy.py`)
 
 13 commits across the 6 repos, in `evaluate/results/<repo>_impact_accuracy_2026-08-02.csv`.
 Each commit is graded in two ground-truth modes, told apart by the `ground_truth_mode`
@@ -225,7 +225,7 @@ The co-change rows are not usable yet: all 11 graded commits came back with
 co-change number is quoted until that is fixed. The two single-file commits (express) are
 recorded with `status=skipped` because there is nothing independent to grade against.
 
-### Multi-hop retrieval (`modules/code-review/graph_engine/eval/benchmarks/multi_hop_retrieval.py`)
+### Multi-hop retrieval (`modules/reviewgraph/graph_engine/eval/benchmarks/multi_hop_retrieval.py`)
 
 11 hand-written tasks across the 6 repos, in
 `evaluate/results/<repo>_multi_hop_retrieval_2026-05-25.csv`. Each task is a two-step chain:
@@ -269,7 +269,7 @@ The first version of this benchmark scored 0.545 (6 of 11). Two changes took it 
    `Context.Next` from rank 11 to rank 0.
 
 To add tasks, append `multi_hop_tasks:` entries to a config under
-`modules/code-review/graph_engine/eval/configs/`:
+`modules/reviewgraph/graph_engine/eval/configs/`:
 
 ```yaml
 multi_hop_tasks:
@@ -338,7 +338,7 @@ Earlier versions quoted "under 2 seconds on a ~2,900-file repo". At that size it
 for the no-op case; an edit on the hook path is about 2.5 s, and about 10 s with flow and
 community detection.
 
-## Agent baseline benchmark (`modules/code-review/graph_engine/eval/benchmarks/agent_baseline.py`)
+## Agent baseline benchmark (`modules/reviewgraph/graph_engine/eval/benchmarks/agent_baseline.py`)
 
 The whole-corpus baseline in the standalone benchmark is an upper bound no real agent pays.
 This benchmark simulates an agent without the graph:
@@ -358,7 +358,7 @@ per question. Rows where either side is zero get `status=no_graph_results` or
 `status=no_baseline_match` and are excluded from `agent_baseline.aggregate()`. No canonical
 capture exists yet; numbers will be added above once measured.
 
-## Incremental fidelity (`modules/code-review/graph_engine/eval/benchmarks/incremental_fidelity.py`)
+## Incremental fidelity (`modules/reviewgraph/graph_engine/eval/benchmarks/incremental_fidelity.py`)
 
 A persistent graph rots invisibly. Nothing errors, caller lists quietly get shorter, and a
 reviewer gets a confidently incomplete answer. A clean rebuild of the same tree is a free
@@ -402,7 +402,7 @@ other divergence traces to one of three defects, none of which is fixed here.
 **1. `flow_memberships` is orphaned by every re-parse.** `flow_memberships.node_id` is a
 bare integer with no foreign key and no cascade, and `GraphStore._replace_file_data` deletes
 and re-inserts a re-parsed file's nodes with fresh ids. After appending one comment to
-`modules/code-review/graph_engine/parser.py`, 1,595 of the incremental graph's 4,494 membership rows point
+`modules/reviewgraph/graph_engine/parser.py`, 1,595 of the incremental graph's 4,494 membership rows point
 at node ids that no longer exist; the rebuild has 0. Because `incremental_trace_flows` finds
 affected flows by joining `flow_memberships` to `nodes`, the dangling rows are invisible to
 the repair path as well, so a full rebuild is the only way back.
@@ -417,8 +417,8 @@ edit its `key_symbols` for `code-review-graph-name` read
 `["CodeParser", "main", "GraphStore", "close", "NodeInfo"]`.
 
 **3. Deleting a file silently shortens other files' caller lists.** Deleting
-`modules/code-review/graph_engine/graph.py` leaves the incremental graph with 52,913 edges against the
-rebuild's 56,272, and 3,377 edge rows differ. `modules/code-review/graph_engine/analysis.py::find_bridge_nodes`
+`modules/reviewgraph/graph_engine/graph.py` leaves the incremental graph with 52,913 edges against the
+rebuild's 56,272, and 3,377 edge rows differ. `modules/reviewgraph/graph_engine/analysis.py::find_bridge_nodes`
 has no outgoing `CALLS` edge at all at lines 73 and 100 in the incremental graph; the
 rebuild has two (`_build_networkx_graph` and `_sanitize_name`). Those edges had been
 resolved into `graph.py`, were removed with it, and `analysis.py` was never re-parsed to
@@ -446,11 +446,11 @@ job-summary table. Regressions do not fail the default branch.
 
 | Benchmark | Baseline | Graph cost | Question |
 |---|---|---|---|
-| `modules/code-review/graph_engine/eval/benchmarks/token_efficiency.py` | changed-file content of one commit | full `get_review_context()` JSON | Is the graph cheaper than reading the diffed files? |
-| `modules/code-review/graph_engine/eval/benchmarks/agent_baseline.py` | grep, top 3 files for the question's identifiers | 5 search hits + 5 neighbour edges per hit | Is the graph cheaper than a grep-and-read agent? |
-| `modules/code-review/graph_engine/eval/token_benchmark.py` | none; absolute cost | sum of the tool responses in simulated review, architecture and debug workflows | What does a complete agent workflow cost? |
-| `modules/code-review/graph_engine/token_benchmark.py` (standalone) | all source files in the repo | 5 search hits + 5 neighbour edges per hit | Is the graph cheaper than reading the whole repo? |
-| `modules/code-review/graph_engine/eval/benchmarks/incremental_fidelity.py` | a clean rebuild of the same tree | the same graph after `incremental_update` | Does an incremental update equal a rebuild? |
+| `modules/reviewgraph/graph_engine/eval/benchmarks/token_efficiency.py` | changed-file content of one commit | full `get_review_context()` JSON | Is the graph cheaper than reading the diffed files? |
+| `modules/reviewgraph/graph_engine/eval/benchmarks/agent_baseline.py` | grep, top 3 files for the question's identifiers | 5 search hits + 5 neighbour edges per hit | Is the graph cheaper than a grep-and-read agent? |
+| `modules/reviewgraph/graph_engine/eval/token_benchmark.py` | none; absolute cost | sum of the tool responses in simulated review, architecture and debug workflows | What does a complete agent workflow cost? |
+| `modules/reviewgraph/graph_engine/token_benchmark.py` (standalone) | all source files in the repo | 5 search hits + 5 neighbour edges per hit | Is the graph cheaper than reading the whole repo? |
+| `modules/reviewgraph/graph_engine/eval/benchmarks/incremental_fidelity.py` | a clean rebuild of the same tree | the same graph after `incremental_update` | Does an incremental update equal a rebuild? |
 
 `token_efficiency` can be below 1.0x for small commits. The standalone numbers are always
 large because the baseline is the whole repo, which is why the README leads with the median
@@ -479,7 +479,7 @@ with the failing config so it can be re-pinned.
 **`No embeddings found in this graph`** during the standalone benchmark: run Step 3.
 
 **Different community IDs between runs**: check `grep _LEIDEN_SEED
-modules/code-review/graph_engine/communities.py` and that everyone uses the same `CRG_LEIDEN_SEED`.
+modules/reviewgraph/graph_engine/communities.py` and that everyone uses the same `CRG_LEIDEN_SEED`.
 
 **Different `naive_corpus_tokens` from the canonical table**: `git rev-parse HEAD` inside
 `evaluate/test_repos/<name>` must match the `commit:` field of the config. If not, delete
@@ -507,7 +507,7 @@ job pays for it. Clones are shallow single-commit fetches (~115 MB total). A col
 about 1 minute on a warm network and roughly 40 seconds once the clones are cached; budget a
 few minutes on CI hardware.
 
-`fastapi` and `gin` reuse the pins in `modules/code-review/graph_engine/eval/configs/`, so the project keeps
+`fastapi` and `gin` reuse the pins in `modules/reviewgraph/graph_engine/eval/configs/`, so the project keeps
 one answer to "which commit of fastapi do we measure". `tests/test_real_repo_corpus_guard.py`
 fails if those two ever drift apart.
 

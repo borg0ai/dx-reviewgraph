@@ -13,7 +13,7 @@ that realistic baseline:
    (``token_benchmark.estimate_tokens``) as ``baseline_tokens``.
 4. Compare against the graph-query cost for the same question — hybrid
    search hits plus one hop of neighbor edges, the same accounting used by
-   ``modules/code-review/graph_engine/token_benchmark.py``.
+   ``modules/reviewgraph/graph_engine/token_benchmark.py``.
 
 Questions come from ``agent_questions:`` in the repo config, falling back to
 the ``search_queries`` query strings when absent.

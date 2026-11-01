@@ -24,7 +24,7 @@ SVG_INSTALL_HINT = (
 
 
 def _optional_dependencies() -> dict[str, list[str]]:
-    with (ROOT / "modules" / "code-review" / "pyproject.toml").open("rb") as pyproject:
+    with (ROOT / "modules" / "reviewgraph" / "pyproject.toml").open("rb") as pyproject:
         return tomllib.load(pyproject)["project"]["optional-dependencies"]
 
 
@@ -35,7 +35,7 @@ def test_google_embeddings_extra_installs_current_google_sdk():
 
 def test_all_extra_includes_google_embeddings():
     optional = _optional_dependencies()
-    assert "code-review-engine[google-embeddings]" in optional["all"]
+    assert "reviewgraph-engine[google-embeddings]" in optional["all"]
 
 
 def test_matplotlib_ships_in_the_extra_the_svg_hint_names():

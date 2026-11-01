@@ -61,7 +61,7 @@ TEST_PATHS = [
 ]
 
 PRODUCTION_PATHS = [
-    "/repo/modules/code-review/graph_engine/changes.py",
+    "/repo/modules/reviewgraph/graph_engine/changes.py",
     "/repo/src/button.ts",
     "/repo/src/latest/index.ts",
     "/repo/pkg/server.go",
@@ -115,7 +115,7 @@ def test_repo_relative_paths_need_no_root(path):
 
 @pytest.mark.parametrize("workspace", ["test", "tests", "spec", "specs"])
 @pytest.mark.parametrize("path", PRODUCTION_PATHS + [
-    "/modules/code-review/graph_engine/parser.py",
+    "/modules/reviewgraph/graph_engine/parser.py",
     "/src/index.ts",
 ])
 def test_checkout_under_a_test_named_directory_stays_production(workspace, path):
@@ -382,20 +382,20 @@ class TestGapsExcludeTestFiles:
         assert result["test_gaps"] == []
 
     def test_production_gaps_are_still_reported(self):
-        self._add("Function", "analyze_changes", "modules/code-review/graph_engine/changes.py",
+        self._add("Function", "analyze_changes", "modules/reviewgraph/graph_engine/changes.py",
                   line_start=1, line_end=10)
-        self._add("Class", "GraphStore", "modules/code-review/graph_engine/graph.py",
+        self._add("Class", "GraphStore", "modules/reviewgraph/graph_engine/graph.py",
                   line_start=1, line_end=10)
 
         result = analyze_changes(
             self.store,
             changed_files=[
-                "modules/code-review/graph_engine/changes.py",
-                "modules/code-review/graph_engine/graph.py",
+                "modules/reviewgraph/graph_engine/changes.py",
+                "modules/reviewgraph/graph_engine/graph.py",
             ],
             changed_ranges={
-                "modules/code-review/graph_engine/changes.py": [(1, 10)],
-                "modules/code-review/graph_engine/graph.py": [(1, 10)],
+                "modules/reviewgraph/graph_engine/changes.py": [(1, 10)],
+                "modules/reviewgraph/graph_engine/graph.py": [(1, 10)],
             },
         )
         names = {g["name"] for g in result["test_gaps"]}
@@ -403,7 +403,7 @@ class TestGapsExcludeTestFiles:
 
     def test_mixed_diff_keeps_production_and_drops_test_files(self):
         self._add("Function", "compute_risk_score",
-                  "modules/code-review/graph_engine/changes.py", line_start=1, line_end=10)
+                  "modules/reviewgraph/graph_engine/changes.py", line_start=1, line_end=10)
         self._add("Class", "TestChanges", "tests/test_changes.py",
                   line_start=1, line_end=10)
         self._add("Function", "_add_func", "tests/test_changes.py",
@@ -412,11 +412,11 @@ class TestGapsExcludeTestFiles:
         result = analyze_changes(
             self.store,
             changed_files=[
-                "modules/code-review/graph_engine/changes.py",
+                "modules/reviewgraph/graph_engine/changes.py",
                 "tests/test_changes.py",
             ],
             changed_ranges={
-                "modules/code-review/graph_engine/changes.py": [(1, 10)],
+                "modules/reviewgraph/graph_engine/changes.py": [(1, 10)],
                 "tests/test_changes.py": [(1, 20)],
             },
         )
@@ -460,8 +460,8 @@ def test_review_guidance_ignores_test_file_helpers():
                         "tests/test_upgrade_path.py::_check",
                         "tests/test_upgrade_path.py"),
             _graph_node(2, "Function", "analyze_changes",
-                        "modules/code-review/graph_engine/changes.py::analyze_changes",
-                        "modules/code-review/graph_engine/changes.py"),
+                        "modules/reviewgraph/graph_engine/changes.py::analyze_changes",
+                        "modules/reviewgraph/graph_engine/changes.py"),
         ],
         "edges": [],
         "impacted_nodes": [],
@@ -484,15 +484,15 @@ def test_review_guidance_under_a_test_named_checkout_still_warns():
                         f"{root}/tests/test_upgrade_path.py::_check",
                         f"{root}/tests/test_upgrade_path.py"),
             _graph_node(2, "Function", "analyze_changes",
-                        f"{root}/modules/code-review/graph_engine/changes.py::analyze_changes",
-                        f"{root}/modules/code-review/graph_engine/changes.py"),
+                        f"{root}/modules/reviewgraph/graph_engine/changes.py::analyze_changes",
+                        f"{root}/modules/reviewgraph/graph_engine/changes.py"),
         ],
         "edges": [],
         "impacted_nodes": [],
         "impacted_files": [],
     }
     guidance = _generate_review_guidance(
-        impact, [f"{root}/modules/code-review/graph_engine/changes.py"], root,
+        impact, [f"{root}/modules/reviewgraph/graph_engine/changes.py"], root,
     )
     assert "_check" not in guidance
     assert "1 changed function(s) have no direct test: analyze_changes" in guidance
@@ -547,11 +547,11 @@ class TestCheckoutUnderATestDirectory:
         assert self.store.get_repo_root() == str(self.root)
 
     def test_production_gaps_survive(self):
-        self._add("Function", "analyze_changes", "modules/code-review/graph_engine/changes.py")
+        self._add("Function", "analyze_changes", "modules/reviewgraph/graph_engine/changes.py")
         self._add("Function", "_check", "tests/test_upgrade_path.py")
         result = analyze_changes(
             self.store,
-            changed_files=["modules/code-review/graph_engine/changes.py",
+            changed_files=["modules/reviewgraph/graph_engine/changes.py",
                            "tests/test_upgrade_path.py"],
             repo_root=str(self.root),
         )
@@ -559,10 +559,10 @@ class TestCheckoutUnderATestDirectory:
 
     def test_production_gaps_survive_without_an_explicit_repo_root(self):
         """MCP callers pass absolute paths and no root; the graph knows it."""
-        self._add("Function", "analyze_changes", "modules/code-review/graph_engine/changes.py")
+        self._add("Function", "analyze_changes", "modules/reviewgraph/graph_engine/changes.py")
         result = analyze_changes(
             self.store,
-            changed_files=[str(self.root / "modules/code-review/graph_engine/changes.py")],
+            changed_files=[str(self.root / "modules/reviewgraph/graph_engine/changes.py")],
         )
         assert {g["name"] for g in result["test_gaps"]} == {"analyze_changes"}
 
@@ -577,7 +577,7 @@ class TestCheckoutUnderATestDirectory:
     def test_dead_code_candidates_survive(self):
         from graph_engine.refactor import find_dead_code
 
-        self._add("Function", "orphaned_helper", "modules/code-review/graph_engine/util.py")
+        self._add("Function", "orphaned_helper", "modules/reviewgraph/graph_engine/util.py")
         self._add("Function", "test_only_helper", "tests/support.py")
         names = {d["name"] for d in find_dead_code(self.store)}
         assert names == {"orphaned_helper"}

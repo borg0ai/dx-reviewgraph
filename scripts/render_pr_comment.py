@@ -84,7 +84,7 @@ def relativize_path(value: Any) -> str:
     repo is checked out under an absolute prefix
     (``/home/runner/work/<repo>/<repo>/...``), which is ugly in a PR comment
     and leaks the runner layout. We strip that prefix so the reader sees
-    ``modules/code-review/graph_engine/embeddings.py`` instead.
+    ``modules/reviewgraph/graph_engine/embeddings.py`` instead.
 
     Handles both bare paths and ``path::symbol`` qualified names (the
     ``::symbol`` suffix is preserved). Already-relative paths and non-path

@@ -188,7 +188,7 @@ jobs:
 <summary><strong>토큰 효율: 질문당 감소 중앙값 약 63배(범위 35배에서 358배. 코퍼스 전체 대 그래프 질의)</strong></summary>
 <br>
 
-전형적인 에이전트 질문(`"how does authentication work"`, `"what is the main entry point"` 등)에 대해 그래프는 모든 소스 파일 대신 검색 결과와 이웃 엣지로 이루어진 약 2,200에서 3,900 토큰을 돌려줍니다. 표는 `modules/code-review/graph_engine/token_benchmark.py`에 정의된 샘플 질문 5개를 평균한 값입니다.
+전형적인 에이전트 질문(`"how does authentication work"`, `"what is the main entry point"` 등)에 대해 그래프는 모든 소스 파일 대신 검색 결과와 이웃 엣지로 이루어진 약 2,200에서 3,900 토큰을 돌려줍니다. 표는 `modules/reviewgraph/graph_engine/token_benchmark.py`에 정의된 샘플 질문 5개를 평균한 값입니다.
 
 | 저장소 | 스냅샷 SHA | naive_corpus_tokens | avg graph_tokens | 감소 배수 |
 |------|---|-----------------:|----------------:|----------:|
@@ -279,7 +279,7 @@ jobs:
 | **엣지 신뢰도** | 2단계 신뢰도(EXTRACTED/INFERRED)와 엣지의 실수 점수 |
 | **그래프 순회** | 아무 노드에서 시작하는 BFS/DFS. 깊이와 토큰 예산 설정 가능 |
 | **내보내기 형식** | GraphML(Gephi/yEd), Neo4j Cypher, Obsidian 볼트, JSON, 그리고 SVG(SVG는 `eval` 엑스트라의 matplotlib 필요) |
-| **토큰 벤치마크** | `modules/code-review/graph_engine/token_benchmark.py`가 질문마다 코퍼스 전체 토큰과 그래프 질의 토큰을 측정 |
+| **토큰 벤치마크** | `modules/reviewgraph/graph_engine/token_benchmark.py`가 질문마다 코퍼스 전체 토큰과 그래프 질의 토큰을 측정 |
 | **맥락 절감 추정치** | 리뷰, 영향 분석, detect-changes, 아키텍처 응답에 붙는 `context_savings` 메타데이터(`estimated`, `saved_tokens`, `saved_percent`) |
 | **커뮤니티 자동 분할** | 그래프의 25%를 넘는 커뮤니티를 Leiden으로 재귀 분할 |
 | **실행 흐름** | 진입점에서 이어지는 호출 사슬을 가중 중요도로 정렬 |
@@ -652,7 +652,7 @@ pytest
 기능 및 수정 풀 리퀘스트는 `main`으로 바로 보내 주세요. 릴리스는 `main`에서 태그합니다. 전체 흐름은
 [CONTRIBUTING.md](CONTRIBUTING.md#branching)를 보세요.
 
-내장 언어를 추가하려면 `modules/code-review/graph_engine/parser.py`를 고치세요. 확장자를 `EXTENSION_TO_LANGUAGE`에, 노드 타입 매핑을 `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES`, `_CALL_TYPES`에 추가하면 됩니다. 테스트 픽스처를 함께 넣어 PR을 보내 주세요. 저장소 하나에서만 필요한 언어라면 대신 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)을 쓰세요.
+내장 언어를 추가하려면 `modules/reviewgraph/graph_engine/parser.py`를 고치세요. 확장자를 `EXTENSION_TO_LANGUAGE`에, 노드 타입 매핑을 `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES`, `_CALL_TYPES`에 추가하면 됩니다. 테스트 픽스처를 함께 넣어 PR을 보내 주세요. 저장소 하나에서만 필요한 언어라면 대신 [`languages.toml`](docs/CUSTOM_LANGUAGES.md)을 쓰세요.
 
 ## 라이선스
 

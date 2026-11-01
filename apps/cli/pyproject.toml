@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 dependencies = [
-    "code-review-engine==2.3.10",
+    "reviewgraph-engine==2.3.10",
 ]
 
 [project.urls]
@@ -24,13 +24,13 @@ reviewgraph = "reviewgraph.cli:main"
 reviewgraph-daemon = "reviewgraph.daemon_cli:main"
 
 [project.optional-dependencies]
-all = ["code-review-engine[all]"]
-eval = ["code-review-engine[eval]"]
-google-embeddings = ["code-review-engine[google-embeddings]"]
-embeddings = ["code-review-engine[embeddings]"]
-communities = ["code-review-engine[communities]"]
-enrichment = ["code-review-engine[enrichment]"]
-wiki = ["code-review-engine[wiki]"]
+all = ["reviewgraph-engine[all]"]
+eval = ["reviewgraph-engine[eval]"]
+google-embeddings = ["reviewgraph-engine[google-embeddings]"]
+embeddings = ["reviewgraph-engine[embeddings]"]
+communities = ["reviewgraph-engine[communities]"]
+enrichment = ["reviewgraph-engine[enrichment]"]
+wiki = ["reviewgraph-engine[wiki]"]
 browser-test = ["playwright>=1.45,<2", "pytest-playwright>=0.5,<1"]
 dev = [
     "mypy>=1.10,<3",
@@ -48,4 +48,4 @@ packages = ["reviewgraph"]
 include = ["reviewgraph/", "README.md", "pyproject.toml"]
 
 [tool.uv.sources]
-code-review-engine = { workspace = true }
+reviewgraph-engine = { workspace = true }

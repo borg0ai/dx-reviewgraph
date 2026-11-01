@@ -20,7 +20,7 @@ so a run stays green while the report stays honest.
 
 Note on ``graph_diff``: the task brief placed ``take_snapshot`` and
 ``diff_snapshots`` in ``graph.py``; they actually live in
-``modules/code-review/graph_engine/graph_diff.py`` and nothing called them before this
+``modules/reviewgraph/graph_engine/graph_diff.py`` and nothing called them before this
 module. They are used here for the headline node/edge add/remove summary.
 They are not sufficient on their own: a snapshot records only
 ``(kind, file, community_id)`` per node and ``source->target:kind`` per edge,

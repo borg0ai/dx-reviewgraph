@@ -65,7 +65,7 @@ from reviewgraph import cli
 pytestmark = pytest.mark.cli_surface
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_DIR = REPO_ROOT / "modules" / "code-review" / "graph_engine"
+PACKAGE_DIR = REPO_ROOT / "modules" / "reviewgraph" / "graph_engine"
 
 # One CLI run is ~0.2s; anything blocking (serve, watch) is killed well
 # before this. A generous ceiling keeps a loaded CI box from flaking.

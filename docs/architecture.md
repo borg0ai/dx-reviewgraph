@@ -51,7 +51,7 @@ Claude Code is one supported client among several.
 
 ## Modules
 
-Reusable library code lives in `modules/code-review/graph_engine/`. CLI commands live in `apps/cli/reviewgraph/`.
+Reusable library code lives in `modules/reviewgraph/graph_engine/`. CLI commands live in `apps/cli/reviewgraph/`.
 
 | Module | Role |
 |---|---|

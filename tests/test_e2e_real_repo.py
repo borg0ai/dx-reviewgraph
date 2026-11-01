@@ -58,7 +58,7 @@ pytestmark = [
     ),
 ]
 
-PACKAGE = REPO_ROOT / "modules" / "code-review" / "graph_engine"
+PACKAGE = REPO_ROOT / "modules" / "reviewgraph" / "graph_engine"
 INCREMENTAL_PY = PACKAGE / "incremental.py"
 GRAPH_PY = PACKAGE / "graph.py"
 CLI_PY = REPO_ROOT / "apps" / "cli" / "reviewgraph" / "cli.py"
@@ -298,7 +298,7 @@ def test_repository_local_python_import_resolves_to_the_imported_file(
     }
 
     assert GRAPH_ID in targets, (
-        "no IMPORTS_FROM edge from tests/test_graph.py to modules/code-review/graph_engine/graph.py"
+        "no IMPORTS_FROM edge from tests/test_graph.py to modules/reviewgraph/graph_engine/graph.py"
     )
 
 

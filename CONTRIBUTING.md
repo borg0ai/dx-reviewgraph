@@ -27,11 +27,11 @@ checks configured dispatch names; language fixtures still verify extraction beha
 ## Linting and Type Checking
 
 ```bash
-uv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/
-uv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional
+uv run ruff check modules/reviewgraph/graph_engine/ apps/cli/reviewgraph/
+uv run mypy modules/reviewgraph/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional
 ```
 
-CI also runs `bandit -r modules/code-review/graph_engine/ -c pyproject.toml`.
+CI also runs `bandit -r modules/reviewgraph/graph_engine/ -c pyproject.toml`.
 
 ## Code Style
 
@@ -73,9 +73,9 @@ The module list is in the Architecture section of `CLAUDE.md`. In outline:
 ```
 apps/cli/pyproject.toml                 # CLI application package and entry points
 apps/cli/reviewgraph/               # reviewgraph and reviewgraph-daemon commands
-modules/code-review/pyproject.toml       # reusable core module package
-modules/code-review/graph_engine/        # core library, MCP server, tools and eval
-modules/code-review/skills/             # skills bundled into the core wheel
+modules/reviewgraph/pyproject.toml       # reusable core module package
+modules/reviewgraph/graph_engine/        # core library, MCP server, tools and eval
+modules/reviewgraph/skills/             # skills bundled into the core wheel
 tests/                                  # pytest suite and language fixtures
 docs/                                   # user documentation
 ```
@@ -97,10 +97,10 @@ Start with a platform request issue (https://github.com/borg0ai/dx-reviewgraph/i
 
 1. A link to the platform's official MCP configuration documentation. Blog posts, forum replies and screenshots of a settings dialog are not enough.
 2. The exact config file path and the exact schema of a server entry: which top-level key holds the servers, whether that value is an object or an array, and whether a `type` field is required.
-3. The entry added through the existing `PLATFORMS` table in `modules/code-review/graph_engine/skills.py`, plus `_PLATFORM_CHOICES` in `apps/cli/reviewgraph/cli.py`. Use the fields already there: `name`, `config_path`, `key`, `detect`, `format`, `needs_type`, and where needed `legacy_keys`, `server_type`, `entry_fields`. If the client needs something the table cannot express, say so in the pull request and explain why, rather than adding a separate code path beside it.
+3. The entry added through the existing `PLATFORMS` table in `modules/reviewgraph/graph_engine/skills.py`, plus `_PLATFORM_CHOICES` in `apps/cli/reviewgraph/cli.py`. Use the fields already there: `name`, `config_path`, `key`, `detect`, `format`, `needs_type`, and where needed `legacy_keys`, `server_type`, `entry_fields`. If the client needs something the table cannot express, say so in the pull request and explain why, rather than adding a separate code path beside it.
 4. Preservation of unrelated user settings. Install must merge only the `reviewgraph` server entry and leave every other server, key and top-level setting intact. If the file cannot be parsed, install must skip it rather than rewrite it.
 5. A byte-idempotent reinstall. Running install twice must leave the config file and any generated instruction file byte for byte identical.
-6. A working uninstall in `modules/code-review/graph_engine/uninstall.py` that removes only what install added, including any legacy keys, and leaves the rest of the file untouched.
+6. A working uninstall in `modules/reviewgraph/graph_engine/uninstall.py` that removes only what install added, including any legacy keys, and leaves the rest of the file untouched.
 7. Lifecycle tests matching the existing ones: an install, reinstall and uninstall test in `tests/test_cli_install.py` shaped like `test_copilot_cli_install_reinstall_uninstall_lifecycle`, and a passing run of the all-platforms sweep in `tests/test_uninstall.py` (`test_uninstall_removes_mcp_entry_for_every_current_platform_spec`), which covers every new entry automatically.
 8. Evidence from a real released client: a screenshot or transcript of a session in that client where a reviewgraph tool is invoked and returns a result. A rendered image of text, a mockup or a description of what should happen is not evidence.
 

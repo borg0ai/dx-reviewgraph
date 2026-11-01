@@ -1311,7 +1311,7 @@ def _c0_controls(text: str) -> set[str]:
 
 
 # Fields that reach the client carrying an unsanitised, uncapped node name.
-# modules/code-review/graph_engine/analysis.py sanitises the ``name`` of every record it
+# modules/reviewgraph/graph_engine/analysis.py sanitises the ``name`` of every record it
 # builds but passes ``qualified_name`` / ``source_qualified`` / ``target``
 # through verbatim, unlike graph.node_to_dict which sanitises both. A NUL or
 # an ESC planted in a node name therefore reaches an MCP client through these

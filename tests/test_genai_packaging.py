@@ -21,7 +21,7 @@ ROOT = Path(__file__).parents[1]
 
 
 def _pyproject() -> dict:
-    with (ROOT / "modules" / "code-review" / "pyproject.toml").open("rb") as f:
+    with (ROOT / "modules" / "reviewgraph" / "pyproject.toml").open("rb") as f:
         return tomllib.load(f)
 
 
@@ -48,7 +48,7 @@ def test_all_extra_covers_every_optional_group():
     referenced = {
         req.split("[", 1)[1].rstrip("]")
         for req in optional["all"]
-        if req.startswith("code-review-engine[")
+        if req.startswith("reviewgraph-engine[")
     }
     expected = set(optional) - {"all"} - CONTRIBUTOR_EXTRAS
     assert referenced == expected
@@ -60,7 +60,7 @@ def test_all_extra_excludes_contributor_only_extras():
     app_optional = _app_pyproject()["project"]["optional-dependencies"]
     for extra in CONTRIBUTOR_EXTRAS:
         assert extra in app_optional, f"{extra} extra is missing from CLI app metadata"
-        assert f"code-review-engine[{extra}]" not in optional["all"]
+        assert f"reviewgraph-engine[{extra}]" not in optional["all"]
 
 
 def test_all_extra_contains_only_self_referential_extras():
@@ -68,7 +68,7 @@ def test_all_extra_contains_only_self_referential_extras():
     resolve it against this same distribution."""
     optional = _pyproject()["project"]["optional-dependencies"]
     for req in optional["all"]:
-        assert req.startswith("code-review-engine["), req
+        assert req.startswith("reviewgraph-engine["), req
         assert req.endswith("]"), req
 
 
@@ -114,7 +114,7 @@ def test_lock_requires_dist_matches_pyproject():
     crg = next(
         pkg
         for pkg in lock["package"]
-        if pkg["name"] == "code-review-engine"
+        if pkg["name"] == "reviewgraph-engine"
     )
     requires = crg["metadata"]["requires-dist"]
     google = [r for r in requires if r["name"] == "google-genai"]
@@ -125,7 +125,7 @@ def test_lock_requires_dist_matches_pyproject():
     all_extras = [
         r["extras"]
         for r in requires
-        if r["name"] == "code-review-engine" and r.get("marker") == "extra == 'all'"
+        if r["name"] == "reviewgraph-engine" and r.get("marker") == "extra == 'all'"
     ]
     assert ["google-embeddings"] in all_extras
 

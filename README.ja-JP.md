@@ -188,7 +188,7 @@ jobs:
 <summary><strong>トークン効率: 1 質問あたりの削減は中央値で約 63 倍（範囲は 35 倍から 358 倍。コーパス全体対グラフ照会）</strong></summary>
 <br>
 
-典型的なエージェントの質問（`"how does authentication work"`、`"what is the main entry point"` など）に対して、グラフはすべてのソースファイルではなく、検索ヒットと近傍エッジからなる約 2,200 から 3,900 トークンを返します。表は `modules/code-review/graph_engine/token_benchmark.py` で定義された 5 つのサンプル質問を平均したものです。
+典型的なエージェントの質問（`"how does authentication work"`、`"what is the main entry point"` など）に対して、グラフはすべてのソースファイルではなく、検索ヒットと近傍エッジからなる約 2,200 から 3,900 トークンを返します。表は `modules/reviewgraph/graph_engine/token_benchmark.py` で定義された 5 つのサンプル質問を平均したものです。
 
 | リポジトリ | スナップショット SHA | naive_corpus_tokens | avg graph_tokens | 削減率 |
 |------|---|-----------------:|----------------:|----------:|
@@ -279,7 +279,7 @@ jobs:
 | **エッジの信頼度** | 2 段階の信頼度（EXTRACTED/INFERRED）と、エッジ上の浮動小数点スコア |
 | **グラフ探索** | 任意のノードからの BFS/DFS。深さとトークン予算を設定可能 |
 | **エクスポート形式** | GraphML（Gephi/yEd）、Neo4j Cypher、Obsidian vault、JSON、そして SVG（SVG には `eval` エクストラの matplotlib が必要） |
-| **トークンのベンチマーク** | `modules/code-review/graph_engine/token_benchmark.py` が、質問ごとにコーパス全体のトークンとグラフ照会のトークンを計測 |
+| **トークンのベンチマーク** | `modules/reviewgraph/graph_engine/token_benchmark.py` が、質問ごとにコーパス全体のトークンとグラフ照会のトークンを計測 |
 | **文脈削減量の推定** | レビュー、影響分析、detect-changes、アーキテクチャの応答に付く `context_savings` メタデータ（`estimated`、`saved_tokens`、`saved_percent`） |
 | **コミュニティの自動分割** | グラフの 25% を超えるコミュニティを Leiden で再帰的に分割 |
 | **実行フロー** | エントリポイントからの呼び出し連鎖を、重み付けした重要度で並べ替え |
@@ -652,7 +652,7 @@ pytest
 機能追加と修正のプルリクエストは直接 `main` に出してください。リリースは `main` からタグを打ちます。全体の流れは
 [CONTRIBUTING.md](CONTRIBUTING.md#branching) を参照してください。
 
-組み込みの言語を追加するには `modules/code-review/graph_engine/parser.py` を編集します。拡張子を `EXTENSION_TO_LANGUAGE` に、ノード型の対応を `_CLASS_TYPES`、`_FUNCTION_TYPES`、`_IMPORT_TYPES`、`_CALL_TYPES` に追加してください。テスト用のフィクスチャを添えて PR を出してください。1 つのリポジトリだけで必要な言語なら、代わりに [`languages.toml`](docs/CUSTOM_LANGUAGES.md) を使ってください。
+組み込みの言語を追加するには `modules/reviewgraph/graph_engine/parser.py` を編集します。拡張子を `EXTENSION_TO_LANGUAGE` に、ノード型の対応を `_CLASS_TYPES`、`_FUNCTION_TYPES`、`_IMPORT_TYPES`、`_CALL_TYPES` に追加してください。テスト用のフィクスチャを添えて PR を出してください。1 つのリポジトリだけで必要な言語なら、代わりに [`languages.toml`](docs/CUSTOM_LANGUAGES.md) を使ってください。
 
 ## ライセンス
 

@@ -9,7 +9,7 @@ this module stores.
 The list is append-only. Dropping an entry means anyone still carrying that block
 stops being upgraded and gets reported as hand-edited instead. Entries were
 recovered by walking git history twice: an AST evaluation of every past revision
-of ``modules/code-review/graph_engine/skills.py``, and a scan of the instruction files this repo
+of ``modules/reviewgraph/graph_engine/skills.py``, and a scan of the instruction files this repo
 ships, which caught blocks a markdown formatter rewrote after generation.
 """
 

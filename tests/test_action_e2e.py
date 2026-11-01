@@ -1391,7 +1391,7 @@ def test_docs_cache_key_matches_action_yml():
 
 def test_action_yml_comment_points_at_migrations():
     text = ACTION_YML.read_text(encoding="utf-8")
-    assert "LATEST_VERSION in modules/code-review/graph_engine/migrations.py" in text
+    assert "LATEST_VERSION in modules/reviewgraph/graph_engine/migrations.py" in text
     assert f"schema{LATEST_VERSION}" in text
 
 

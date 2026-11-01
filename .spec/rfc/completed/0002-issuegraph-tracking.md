@@ -24,7 +24,7 @@ The project no longer uses Beads. Leaving `bd` commands and `.beads/` rules in r
 
 ## Design
 
-Update `AGENTS.md` and `CLAUDE.md` with IssueGraph commands and conservative Git ownership. Update root `.gitignore` to ignore IssueGraph local database files while allowing its snapshots and formulas to be tracked. Remove `.beads/` files and the obsolete Beads source-distribution exclusion from `modules/code-review/pyproject.toml`. Leave unrelated rebrand/code changes untouched.
+Update `AGENTS.md` and `CLAUDE.md` with IssueGraph commands and conservative Git ownership. Update root `.gitignore` to ignore IssueGraph local database files while allowing its snapshots and formulas to be tracked. Remove `.beads/` files and the obsolete Beads source-distribution exclusion from `modules/reviewgraph/pyproject.toml`. Leave unrelated rebrand/code changes untouched.
 
 ## Acceptance
 

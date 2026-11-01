@@ -19,7 +19,7 @@ For each task the benchmark records:
 - ``score`` — ``int(anchor_found) * neighbor_recall``. Range 0–1.
 
 Tasks are defined per-config under ``multi_hop_tasks:`` in
-``modules/code-review/graph_engine/eval/configs/*.yaml``. See
+``modules/reviewgraph/graph_engine/eval/configs/*.yaml``. See
 ``docs/REPRODUCING.md`` for the schema and the curated canonical task set.
 """
 

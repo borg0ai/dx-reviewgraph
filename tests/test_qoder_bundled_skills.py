@@ -21,7 +21,7 @@ def test_qoder_install_without_repository_skills(tmp_path):
     destination = install_qoder_skills(root)
     assert destination == root / ".qoder" / "skills"
     assert {p.parent.name for p in destination.glob("*/SKILL.md")} == SHIPPED_SKILLS
-    bundled = Path(__file__).resolve().parents[1] / "modules" / "code-review" / "skills"
+    bundled = Path(__file__).resolve().parents[1] / "modules" / "reviewgraph" / "skills"
     for name in SHIPPED_SKILLS:
         assert (destination / name / "SKILL.md").read_bytes() == (
             bundled / name / "SKILL.md"
