@@ -17,6 +17,8 @@ The Homebrew formula supports macOS. Linux and Windows package channels are plan
 
 `init` is the per-repository half. It creates `.reviewgraph/`, adds it to `.gitignore`, installs the git pre-commit hook and builds the graph. It configures no agent. `--no-build` seeds without building; `--dry-run` shows what would be done.
 
+On an interactive terminal both commands draw a banner, one live row per step (green done, yellow skipped, red failed), a platform table, a styled confirm prompt and a closing summary panel with next steps. A failed step is listed in the summary with its reason. When stdout is piped, `NO_COLOR` is set, `TERM=dumb`, or you pass `--plain`, they print the plain log instead, and MCP stdio output is never styled.
+
 To configure one platform only:
 
 ```bash

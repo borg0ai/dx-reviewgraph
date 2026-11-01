@@ -54,6 +54,8 @@ from graph_engine.errors import CodeReviewGraphError, is_lock_error
 from graph_engine.neighbourhood import DEFAULT_DEPTH as NB_DEFAULT_DEPTH
 from graph_engine.neighbourhood import DEFAULT_MAX_NODES as NB_DEFAULT_MAX_NODES
 
+from reviewgraph.init_ui import make_reporter
+
 logger = logging.getLogger(__name__)
 
 # Shared platform choices for install and init commands
@@ -301,26 +303,25 @@ def _handle_install(args: argparse.Namespace) -> None:
     auto_yes = getattr(args, "yes", False)
     skip_instructions = getattr(args, "no_instructions", False)
 
-    print("Installing MCP server config...")
-    configured = install_platform_configs(
-        repo_root, target=target, dry_run=dry_run, user_scope=True
-    )
+    ui = make_reporter(_get_version(), plain=getattr(args, "plain", False))
+    ui.start("install", "Installing MCP server config...", detail=str(repo_root))
+    with ui.step("Writing MCP server config"):
+        configured = install_platform_configs(
+            repo_root, target=target, dry_run=dry_run, user_scope=True
+        )
 
     if not configured:
-        print("No platforms detected.")
+        ui.note("No platforms detected.")
     else:
-        print(f"\nConfigured {len(configured)} platform(s): {', '.join(configured)}")
+        ui.platforms(configured, dry_run=dry_run)
 
     # Preview the instruction files that would be touched (#173).
     instr_targets = _user_instruction_files_to_modify(repo_root, target)
     if instr_targets:
-        print()
-        print("Graph instructions will be injected into:")
-        for t in instr_targets:
-            print(f"  {t}")
+        ui.preview("Graph instructions will be injected into:", instr_targets)
 
     if dry_run:
-        print("\n[dry-run] No files were modified.")
+        ui.note("\n[dry-run] No files were modified.")
         return
 
     # Platform-native skills and hooks are installed by default where supported
@@ -349,102 +350,109 @@ def _handle_install(args: argparse.Namespace) -> None:
     if not skip_skills:
         # Claude Code skills are only relevant for Claude (or full install).
         if target in ("claude", "all"):
-            skills_dir = generate_skills(repo_root)
-            print(f"Generated Claude Code skills in {skills_dir}")
+            with ui.step("Claude Code skills") as step:
+                step.done(f"Generated Claude Code skills in {generate_skills(repo_root)}")
 
         # Gemini CLI skills are workspace-scoped under .gemini/.
         if target in ("gemini-cli", "all"):
-            gemini_skills_dir = install_gemini_cli_skills(repo_root)
-            print(f"Installed Gemini CLI skills in {gemini_skills_dir}")
+            with ui.step("Gemini CLI skills") as step:
+                step.done(f"Installed Gemini CLI skills in {install_gemini_cli_skills(repo_root)}")
 
         # CodeBuddy discovers project skills under .codebuddy/skills/.
         if target in ("codebuddy", "all"):
-            codebuddy_skills_dir = install_codebuddy_skills(repo_root)
-            print(f"Installed CodeBuddy skills in {codebuddy_skills_dir}")
+            with ui.step("CodeBuddy skills") as step:
+                step.done(f"Installed CodeBuddy skills in {install_codebuddy_skills(repo_root)}")
 
         # Hermes Agent discovers skills under <HERMES_HOME>/skills/.
         if target == "hermes" or (target == "all" and PLATFORMS["hermes"]["detect"]()):
-            hermes_skills_dir = install_hermes_skills(repo_root)
-            print(f"Installed Hermes Agent skills in {hermes_skills_dir}")
+            with ui.step("Hermes Agent skills") as step:
+                step.done(f"Installed Hermes Agent skills in {install_hermes_skills(repo_root)}")
 
     # Confirm before writing instruction files (#173). --yes skips the
     # prompt; --no-instructions skips the whole block.
     if not skip_instructions and instr_targets:
-        if auto_yes or _confirm_yes_no(
-            "Inject graph instructions into the files above?",
-            default_yes=True,
+        if auto_yes or ui.confirm(
+            "Inject graph instructions into the files above?", _confirm_yes_no
         ):
-            outcomes = inject_instruction_files(repo_root, target=target, user_scope=True)
-            for label, wording in (
-                ("created", "Injected graph instructions into"),
-                ("updated", "Updated graph instructions in"),
-            ):
-                names = [f for f, o in outcomes.items() if o == label]
-                if names:
-                    print(f"{wording}: {', '.join(names)}")
+            with ui.step("Graph instructions") as step:
+                outcomes = inject_instruction_files(repo_root, target=target, user_scope=True)
+                texts = []
+                for label, wording in (
+                    ("created", "Injected graph instructions into"),
+                    ("updated", "Updated graph instructions in"),
+                ):
+                    names = [f for f, o in outcomes.items() if o == label]
+                    if names:
+                        texts.append(f"{wording}: {', '.join(names)}")
+                if texts:
+                    step.done("\n".join(texts))
             # A hand-edited block is never overwritten, so say which file it is
             # rather than reporting success the user did not get (#314).
             stale = [f for f, o in outcomes.items() if o == "conflict"]
             if stale:
-                print(
+                ui.skip(
                     "Left edited graph instructions alone in: "
                     f"{', '.join(stale)}. Delete the section between "
                     "<!-- reviewgraph MCP tools --> and its closing marker "
                     "and reinstall to pick up the current text."
                 )
         else:
-            print("Skipped instruction injection (user declined).")
+            ui.skip("Skipped instruction injection (user declined).")
     elif skip_instructions:
-        print("Skipped instruction injection (--no-instructions).")
+        ui.skip("Skipped instruction injection (--no-instructions).")
 
 
     # Install Qoder skills (global user-level skills directory)
     if not skip_skills and target in ("qoder", "all"):
-        qoder_skills_dir = install_qoder_skills(repo_root)
-        if qoder_skills_dir:
-            print(f"Installed Qoder skills to {qoder_skills_dir}")
+        with ui.step("Qoder skills") as step:
+            qoder_skills_dir = install_qoder_skills(repo_root)
+            if qoder_skills_dir:
+                step.done(f"Installed Qoder skills to {qoder_skills_dir}")
     if not skip_hooks and target in ("codebuddy", "all"):
         try:
-            codebuddy_settings = install_codebuddy_hooks(repo_root)
-            print(f"Installed CodeBuddy hooks in {codebuddy_settings}")
+            with ui.step("CodeBuddy hooks") as step:
+                step.done(f"Installed CodeBuddy hooks in {install_codebuddy_hooks(repo_root)}")
         except Exception as exc:
             logger.warning("Could not install CodeBuddy hooks: %s", exc)
     if not skip_hooks and target in ("codex", "all"):
-        hooks_path = install_codex_hooks(repo_root)
-        print(f"Installed Codex hooks in {hooks_path}")
+        with ui.step("Codex hooks") as step:
+            step.done(f"Installed Codex hooks in {install_codex_hooks(repo_root)}")
     if not skip_hooks and target in ("claude", "qoder", "all"):
         platforms_to_install = [target] if target != "all" else ["claude", "qoder"]
         for plat in platforms_to_install:
-            install_hooks(repo_root, platform=plat)
-            print(f"Installed hooks in {repo_root / f'.{plat}' / 'settings.json'}")
+            with ui.step(f"{plat} hooks") as step:
+                install_hooks(repo_root, platform=plat)
+                step.done(f"Installed hooks in {repo_root / f'.{plat}' / 'settings.json'}")
 
     # Cursor hooks (user-level, only if ~/.cursor exists — matching MCP detect)
     if not skip_hooks and target in ("all", "cursor") and PLATFORMS["cursor"]["detect"]():
         try:
-            hooks_path = install_cursor_hooks()
-            print(f"Installed Cursor hooks in {hooks_path}")
+            with ui.step("Cursor hooks") as step:
+                step.done(f"Installed Cursor hooks in {install_cursor_hooks()}")
         except Exception as exc:
             logger.warning("Could not install Cursor hooks: %s", exc)
 
     if not skip_hooks and target in ("gemini-cli", "all"):
         try:
-            gemini_settings = install_gemini_cli_hooks(repo_root)
-            print(f"Installed Gemini CLI hooks in {gemini_settings}")
+            with ui.step("Gemini CLI hooks") as step:
+                step.done(f"Installed Gemini CLI hooks in {install_gemini_cli_hooks(repo_root)}")
         except Exception as exc:
             logger.warning("Could not install Gemini CLI hooks: %s", exc)
 
     # OpenCode plugin (user-level, gated by same detect() as MCP config)
     if not skip_hooks and target in ("all", "opencode") and PLATFORMS["opencode"]["detect"]():
         try:
-            plugin_path = install_opencode_plugin()
-            print(f"Installed OpenCode plugin in {plugin_path}")
+            with ui.step("OpenCode plugin") as step:
+                step.done(f"Installed OpenCode plugin in {install_opencode_plugin()}")
         except Exception as exc:
             logger.warning("Could not install OpenCode plugin: %s", exc)
 
-    print()
-    print("Next steps:")
-    print("  1. Restart your AI coding tool to pick up the new config")
-    print("  2. In each repository run: reviewgraph init    # seed it and build the graph")
+    ui.finish(
+        [
+            "  1. Restart your AI coding tool to pick up the new config",
+            "  2. In each repository run: reviewgraph init    # seed it and build the graph",
+        ]
+    )
 
 
 def _user_instruction_files_to_modify(home: Path, target: str) -> list[str]:
@@ -487,47 +495,52 @@ def _handle_init(args: argparse.Namespace) -> None:
     dry_run = getattr(args, "dry_run", False)
     no_build = getattr(args, "no_build", False)
 
+    ui = make_reporter(_get_version(), plain=getattr(args, "plain", False))
     if dry_run:
-        print(f"[dry-run] Would seed {repo_root}:")
-        print("  create .reviewgraph/")
-        print("  ensure .gitignore ignores .reviewgraph/")
-        print("  install the git pre-commit hook")
-        print("  skip the graph build (--no-build)" if no_build else "  build the graph")
-        print("[dry-run] No files were modified.")
+        ui.start("init (dry run)", f"[dry-run] Would seed {repo_root}:", detail=str(repo_root))
+        ui.would("  create .reviewgraph/")
+        ui.would("  ensure .gitignore ignores .reviewgraph/")
+        ui.would("  install the git pre-commit hook")
+        ui.would("  skip the graph build (--no-build)" if no_build else "  build the graph")
+        ui.note("[dry-run] No files were modified.")
         return
 
-    (repo_root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
-    gitignore_state = ensure_repo_gitignore_excludes_crg(repo_root)
-    if gitignore_state == "created":
-        print("Created .gitignore and added .reviewgraph/.")
-    elif gitignore_state == "updated":
-        print("Updated .gitignore with .reviewgraph/.")
-    else:
-        print(".gitignore already contains .reviewgraph/.")
+    ui.start("init", detail=str(repo_root))
+    with ui.step("Seeding .reviewgraph/ and .gitignore") as step:
+        (repo_root / ".reviewgraph").mkdir(parents=True, exist_ok=True)
+        gitignore_state = ensure_repo_gitignore_excludes_crg(repo_root)
+        if gitignore_state == "created":
+            step.done("Created .gitignore and added .reviewgraph/.")
+        elif gitignore_state == "updated":
+            step.done("Updated .gitignore with .reviewgraph/.")
+        else:
+            step.done(".gitignore already contains .reviewgraph/.")
 
-    git_hook = install_git_hook(repo_root)
-    if git_hook:
-        print(f"Installed git pre-commit hook in {git_hook}")
+    with ui.step("Git pre-commit hook") as step:
+        git_hook = install_git_hook(repo_root)
+        if git_hook:
+            step.done(f"Installed git pre-commit hook in {git_hook}")
+        else:
+            step.skip("")
 
     if no_build:
-        print("Skipped graph build (--no-build).")
+        ui.skip("Skipped graph build (--no-build).")
     else:
         from graph_engine.tools.build import build_or_update_graph
 
-        result = build_or_update_graph(
-            full_rebuild=True, repo_root=str(repo_root), postprocess="full"
-        )
-        print(
-            f"Full build: {result.get('files_parsed', 0)} files, "
-            f"{result.get('total_nodes', 0)} nodes, {result.get('total_edges', 0)} edges "
-            "(postprocess=full)"
-        )
+        with ui.step("Building the graph") as step:
+            result = build_or_update_graph(
+                full_rebuild=True, repo_root=str(repo_root), postprocess="full"
+            )
+            step.done(
+                f"Full build: {result.get('files_parsed', 0)} files, "
+                f"{result.get('total_nodes', 0)} nodes, {result.get('total_edges', 0)} edges "
+                "(postprocess=full)"
+            )
         if result.get("errors"):
-            print(f"Errors: {len(result['errors'])}")
+            ui.note(f"Errors: {len(result['errors'])}")
 
-    print()
-    print("Next steps:")
-    print("  reviewgraph install    # once per machine: set up your AI coding tools")
+    ui.finish(["  reviewgraph install    # once per machine: set up your AI coding tools"])
 
 
 def _handle_data_dir_option(args, repo_root: Path) -> None:
@@ -1003,6 +1016,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Auto-confirm instruction injection without an interactive prompt",
     )
+    install_cmd.add_argument(
+        "--plain",
+        action="store_true",
+        help="Plain log output (no colour, banner or live progress)",
+    )
     # Legacy flags (kept for backwards compat, now no-ops since all is default)
     install_cmd.add_argument("--skills", action="store_true", help=argparse.SUPPRESS)
     install_cmd.add_argument("--hooks", action="store_true", help=argparse.SUPPRESS)
@@ -1030,6 +1048,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-build",
         action="store_true",
         help="Seed the repository without building the graph",
+    )
+    init_cmd.add_argument(
+        "--plain",
+        action="store_true",
+        help="Plain log output (no colour, banner or live progress)",
     )
 
     uninstall_cmd = sub.add_parser(
