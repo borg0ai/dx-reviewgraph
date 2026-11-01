@@ -1,6 +1,6 @@
 # User Guide
 
-Applies to reviewgraph 2.3.10.
+Applies to reviewgraph 2.3.11.
 
 ## Installation
 

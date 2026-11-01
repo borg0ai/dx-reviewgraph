@@ -4,6 +4,9 @@
 
 ### Changed
 
+- The core package is now `reviewgraph-engine` (wheel `reviewgraph_engine-*.whl`, was
+  `code-review-engine`) and lives in `modules/reviewgraph`. The `graph_engine` import
+  package is unchanged.
 - Branching guidance now uses short-lived feature branches and pull requests directly to
   `main`.
 - The MCP server instructions now route by question type instead of introducing

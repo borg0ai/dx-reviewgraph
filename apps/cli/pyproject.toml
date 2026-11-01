@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "reviewgraph"
-version = "2.3.10"
+version = "2.3.11"
 description = "ReviewGraph command line application"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 dependencies = [
-    "reviewgraph-engine==2.3.10",
+    "reviewgraph-engine==2.3.11",
 ]
 
 [project.urls]

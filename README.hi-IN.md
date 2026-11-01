@@ -165,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: borg0ai/dx-reviewgraph@v2.3.9
+      - uses: borg0ai/dx-reviewgraph@v2.3.11
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
