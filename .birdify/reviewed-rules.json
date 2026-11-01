@@ -1,0 +1,32 @@
+{
+  "revision": "f0d769d003442e3bf8eed44057112230eb4609f5",
+  "scope": "Partial review of root repository instructions for cleanup of references to removed GitHub workflows. Agent skills, external user instructions and historical notes were not classified as project-wide constraints. Birdify found GEMINI.md pointing to the removed .github/copilot-instructions.md; that gap is included in the cleanup plan.",
+  "groups": [
+    {
+      "sourcePath": "AGENTS.md",
+      "category": "delivery",
+      "topic": {
+        "id": "change-handoff",
+        "name": "Change handoff"
+      },
+      "rules": [
+        {
+          "id": "report-checks-and-files",
+          "name": "Report changed files and checks",
+          "anchor": "- Before handoff, run relevant quality checks and report changed files and validation results.",
+          "condition": "Before handing off repository changes",
+          "explanation": "State the files changed and checks actually run. A missing or blocked check must remain explicit.",
+          "verification": "Inspect the final diff and report command results without claiming unrun checks passed."
+        },
+        {
+          "id": "preserve-git-state",
+          "name": "Preserve Git state unless authorized",
+          "anchor": "- Do not create branches, commit, push, merge, or sync IssueGraph remotes unless the user explicitly asks. When asked for a PR, target `main`.",
+          "condition": "When cleanup touches repository history or remote state",
+          "explanation": "Documentation cleanup does not authorize branch, commit, push, merge or tracker-sync operations.",
+          "verification": "Check Git status and ensure cleanup does not change repository history or remote state."
+        }
+      ]
+    }
+  ]
+}

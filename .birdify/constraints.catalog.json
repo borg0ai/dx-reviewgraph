@@ -1,0 +1,870 @@
+{
+  "schema": "birdify.constraint-catalog/v1",
+  "project": {
+    "name": "ReviewGraph",
+    "revision": "f0d769d003442e3bf8eed44057112230eb4609f5"
+  },
+  "coverage": {
+    "checkedAt": "2026-10-31T23:51:11.871Z",
+    "snapshot": "committed-HEAD",
+    "shallow": false,
+    "entries": [
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "GEMINI.md",
+      "modules/code-review/skills/build-graph/SKILL.md",
+      "modules/code-review/skills/debug-issue/SKILL.md",
+      "modules/code-review/skills/explore-codebase/SKILL.md",
+      "modules/code-review/skills/refactor-safely/SKILL.md",
+      "modules/code-review/skills/review-changes/SKILL.md",
+      "modules/code-review/skills/review-delta/SKILL.md",
+      "modules/code-review/skills/review-pr/SKILL.md"
+    ],
+    "checkedPaths": [
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "GEMINI.md",
+      "modules/code-review/skills/build-graph/SKILL.md",
+      "modules/code-review/skills/debug-issue/SKILL.md",
+      "modules/code-review/skills/explore-codebase/SKILL.md",
+      "modules/code-review/skills/refactor-safely/SKILL.md",
+      "modules/code-review/skills/review-changes/SKILL.md",
+      "modules/code-review/skills/review-delta/SKILL.md",
+      "modules/code-review/skills/review-pr/SKILL.md",
+      "CLAUDE.md",
+      "docs/CUSTOM_LANGUAGES.md",
+      "modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md"
+    ],
+    "excluded": [],
+    "unresolved": [
+      {
+        "from": "GEMINI.md",
+        "target": ".github/copilot-instructions.md",
+        "reason": "outside-or-missing"
+      }
+    ],
+    "uninspectedPaths": [],
+    "semanticReview": "pending",
+    "limitations": [
+      "Only tracked entry files and their local Markdown references are collected.",
+      "Uncommitted files, external references, implicit contracts and host/user instructions need separate inspection.",
+      "Sections are source material, not automatically effective or verified rules.",
+      "History counts use current file paths; rename ancestry is not followed."
+    ]
+  },
+  "references": [
+    {
+      "from": "AGENTS.md",
+      "to": "CLAUDE.md",
+      "target": "CLAUDE.md"
+    },
+    {
+      "from": "CONTRIBUTING.md",
+      "to": "docs/CUSTOM_LANGUAGES.md",
+      "target": "docs/CUSTOM_LANGUAGES.md"
+    },
+    {
+      "from": "CONTRIBUTING.md",
+      "to": "CLAUDE.md",
+      "target": "CLAUDE.md"
+    },
+    {
+      "from": "GEMINI.md",
+      "to": "AGENTS.md",
+      "target": "AGENTS.md"
+    },
+    {
+      "from": "GEMINI.md",
+      "to": "CLAUDE.md",
+      "target": "CLAUDE.md"
+    },
+    {
+      "from": "CLAUDE.md",
+      "to": "modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md",
+      "target": "modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md"
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-a54ff182c7e8acf5",
+      "path": "AGENTS.md",
+      "kind": "instruction",
+      "scope": ".",
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "# Agent Instructions\n\nProject context (architecture, commands, conventions, tests) is in `CLAUDE.md`. This file holds the rules for every coding agent working in this repository.\n\n## Non-Interactive Shell Commands\n\n`cp`, `mv` and `rm` may be aliased with `-i` on some systems, which leaves an agent waiting for a y/n answer that never comes. Always pass the non-interactive flag:\n\n```bash\ncp -f source dest\nmv -f source dest\nrm -f file\nrm -rf directory\ncp -rf source dest\n```\n\nOther commands that may prompt: `scp` and `ssh` (`-o BatchMode=yes`), `apt-get` (`-y`), `brew` (`HOMEBREW_NO_AUTO_UPDATE=1`).\n\n## IssueGraph issue tracking\n\nThis project uses IssueGraph. Run `issuegraph prime` for current workflow and command guidance.\n\n```bash\nissuegraph ready\nissuegraph show <id>\nissuegraph update <id> --claim\nissuegraph close <id>\nissuegraph remember \"insight\"\n```\n\n- Use IssueGraph for task tracking. Do not create Markdown TODO lists.\n- IssueGraph stores the local database under `.issuegraph/` and tracks `issues.jsonl` plus `manifest.json` in Git.\n- Do not create branches, commit, push, merge, or sync IssueGraph remotes unless the user explicitly asks. When asked for a PR, target `main`.\n- Before handoff, run relevant quality checks and report changed files and validation results.\n\n<!-- reviewgraph MCP tools -->\n## MCP Tools: reviewgraph\n\n**This project has a knowledge graph. Start with the reviewgraph\nMCP tools to narrow scope, then read the source.** The graph is cheaper than scanning files and\ngives you structural context (callers, dependents, test coverage) that file search cannot.\n\n### When to use graph tools FIRST\n\n- **Exploring code**: `semantic_search_nodes_tool` or `query_graph_tool` instead of Grep\n- **Understanding impact**: `get_impact_radius_tool` instead of manually tracing imports\n- **Code review**: `detect_changes_tool` + `get_review_context_tool` instead of reading entire files\n- **Finding relationships**: `query_graph_tool` with callers_of/callees_of/imports_of/tests_for\n- **Architecture questions**: `get_architecture_overview_tool` + `list_communities_tool`\n\n### Verify in the source\n\n- Narrow scope with the graph, then read the source. Do not change code from graph output alone.\n- For any non-trivial change, read the implementation and the relevant tests before concluding.\n- Verify the exact source when touching behavior, database logic, migrations, retries, fallbacks,\n  recovery, or compatibility code.\n- When the graph and the source disagree, the source wins. The graph may be stale or may not\n  model that relationship.\n- An empty graph result can mean \"not indexed\" or \"not statically visible\", not \"does not exist\".\n\n### Key Tools\n\n| Tool | Use when |\n| ------ | ---------- |\n| `detect_changes_tool` | Reviewing code changes — gives risk-scored analysis |\n| `get_review_context_tool` | Need source snippets for review — token-efficient |\n| `get_impact_radius_tool` | Understanding blast radius of a change |\n| `get_affected_flows_tool` | Finding which execution paths are impacted |\n| `query_graph_tool` | Tracing callers, callees, imports, tests, dependencies |\n| `semantic_search_nodes_tool` | Finding functions/classes by name or keyword |\n| `get_architecture_overview_tool` | Understanding high-level codebase structure |\n| `refactor_tool` | Planning renames, finding dead code |\n\n### Workflow\n\n1. The graph auto-updates on file changes (via hooks).\n2. Use `detect_changes_tool` for code review.\n3. Use `get_affected_flows_tool` to understand impact.\n4. Use `query_graph_tool` pattern=\"tests_for\" to check coverage.\n<!-- /reviewgraph MCP tools -->",
+      "sections": [
+        {
+          "id": "source-a54ff182c7e8acf5-s1",
+          "title": "Agent Instructions",
+          "level": 1,
+          "line": 1,
+          "endLine": 4,
+          "text": "# Agent Instructions\n\nProject context (architecture, commands, conventions, tests) is in `CLAUDE.md`. This file holds the rules for every coding agent working in this repository.\n"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s2",
+          "title": "Non-Interactive Shell Commands",
+          "level": 2,
+          "line": 5,
+          "endLine": 18,
+          "text": "## Non-Interactive Shell Commands\n\n`cp`, `mv` and `rm` may be aliased with `-i` on some systems, which leaves an agent waiting for a y/n answer that never comes. Always pass the non-interactive flag:\n\n```bash\ncp -f source dest\nmv -f source dest\nrm -f file\nrm -rf directory\ncp -rf source dest\n```\n\nOther commands that may prompt: `scp` and `ssh` (`-o BatchMode=yes`), `apt-get` (`-y`), `brew` (`HOMEBREW_NO_AUTO_UPDATE=1`).\n"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s3",
+          "title": "IssueGraph issue tracking",
+          "level": 2,
+          "line": 19,
+          "endLine": 36,
+          "text": "## IssueGraph issue tracking\n\nThis project uses IssueGraph. Run `issuegraph prime` for current workflow and command guidance.\n\n```bash\nissuegraph ready\nissuegraph show <id>\nissuegraph update <id> --claim\nissuegraph close <id>\nissuegraph remember \"insight\"\n```\n\n- Use IssueGraph for task tracking. Do not create Markdown TODO lists.\n- IssueGraph stores the local database under `.issuegraph/` and tracks `issues.jsonl` plus `manifest.json` in Git.\n- Do not create branches, commit, push, merge, or sync IssueGraph remotes unless the user explicitly asks. When asked for a PR, target `main`.\n- Before handoff, run relevant quality checks and report changed files and validation results.\n\n<!-- reviewgraph MCP tools -->"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s4",
+          "title": "MCP Tools: reviewgraph",
+          "level": 2,
+          "line": 37,
+          "endLine": 42,
+          "text": "## MCP Tools: reviewgraph\n\n**This project has a knowledge graph. Start with the reviewgraph\nMCP tools to narrow scope, then read the source.** The graph is cheaper than scanning files and\ngives you structural context (callers, dependents, test coverage) that file search cannot.\n"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s5",
+          "title": "When to use graph tools FIRST",
+          "level": 3,
+          "line": 43,
+          "endLine": 50,
+          "text": "### When to use graph tools FIRST\n\n- **Exploring code**: `semantic_search_nodes_tool` or `query_graph_tool` instead of Grep\n- **Understanding impact**: `get_impact_radius_tool` instead of manually tracing imports\n- **Code review**: `detect_changes_tool` + `get_review_context_tool` instead of reading entire files\n- **Finding relationships**: `query_graph_tool` with callers_of/callees_of/imports_of/tests_for\n- **Architecture questions**: `get_architecture_overview_tool` + `list_communities_tool`\n"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s6",
+          "title": "Verify in the source",
+          "level": 3,
+          "line": 51,
+          "endLine": 60,
+          "text": "### Verify in the source\n\n- Narrow scope with the graph, then read the source. Do not change code from graph output alone.\n- For any non-trivial change, read the implementation and the relevant tests before concluding.\n- Verify the exact source when touching behavior, database logic, migrations, retries, fallbacks,\n  recovery, or compatibility code.\n- When the graph and the source disagree, the source wins. The graph may be stale or may not\n  model that relationship.\n- An empty graph result can mean \"not indexed\" or \"not statically visible\", not \"does not exist\".\n"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s7",
+          "title": "Key Tools",
+          "level": 3,
+          "line": 61,
+          "endLine": 73,
+          "text": "### Key Tools\n\n| Tool | Use when |\n| ------ | ---------- |\n| `detect_changes_tool` | Reviewing code changes — gives risk-scored analysis |\n| `get_review_context_tool` | Need source snippets for review — token-efficient |\n| `get_impact_radius_tool` | Understanding blast radius of a change |\n| `get_affected_flows_tool` | Finding which execution paths are impacted |\n| `query_graph_tool` | Tracing callers, callees, imports, tests, dependencies |\n| `semantic_search_nodes_tool` | Finding functions/classes by name or keyword |\n| `get_architecture_overview_tool` | Understanding high-level codebase structure |\n| `refactor_tool` | Planning renames, finding dead code |\n"
+        },
+        {
+          "id": "source-a54ff182c7e8acf5-s8",
+          "title": "Workflow",
+          "level": 3,
+          "line": 74,
+          "endLine": 80,
+          "text": "### Workflow\n\n1. The graph auto-updates on file changes (via hooks).\n2. Use `detect_changes_tool` for code review.\n3. Use `get_affected_flows_tool` to understand impact.\n4. Use `query_graph_tool` pattern=\"tests_for\" to check coverage.\n<!-- /reviewgraph MCP tools -->"
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 7,
+        "lastEdited": "2026-10-31T16:28:26-07:00",
+        "commit": "d8c7eb7dc62334b57536e4d95b135b17b515b5d7"
+      }
+    },
+    {
+      "id": "source-eca12c0a30e25b4b",
+      "path": "CONTRIBUTING.md",
+      "kind": "instruction",
+      "scope": ".",
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "# Contributing to ReviewGraph\n\n## Development Setup\n\n```bash\ngit clone https://github.com/borg0ai/dx-reviewgraph.git\ncd dx-reviewgraph\nuv sync --group dev                  # requires uv\nuv run pytest tests/ --tb=short -q   # check the setup\n```\n\n## Running Tests\n\n```bash\nuv run pytest tests/ --tb=short -q                                                    # all tests\nuv run pytest --cov=graph_engine --cov-report=term-missing --cov-fail-under=65   # with the CI coverage gate\nuv run pytest tests/test_parser.py -v                                                 # one file\n```\n\nCI runs the suite on Python 3.10, 3.11, 3.12 and 3.13 and fails below 65% coverage.\n\n`tests/test_parser_grammar_contract.py` checks every built-in class, function, import,\nand call dispatch name against its bundled Tree-sitter grammar. When updating a grammar\nor adding dispatch entries, use the grammar's actual named node types. This contract\nchecks configured dispatch names; language fixtures still verify extraction behavior.\n\n## Linting and Type Checking\n\n```bash\nuv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/\nuv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional\n```\n\nCI also runs `bandit -r modules/code-review/graph_engine/ -c pyproject.toml`.\n\n## Code Style\n\n- Line length: 100 characters.\n- Target: Python 3.10+.\n- Linter: ruff with rules E, F, I, N, W. Imports are sorted by ruff.\n- SQL: parameterised queries (`?` placeholders) only.\n\n## Making Changes\n\n1. Fork the repository and create a branch from `main`: `git switch -c feature/your-feature origin/main`.\n2. Make the change and add tests for new behaviour.\n3. Run the tests, ruff and mypy as above.\n4. Update docs where behaviour changed (README, `docs/`, docstrings).\n5. Open a pull request against `main`. The template asks for the linked issue, what changed and why, and the commands you ran.\n\n## Branching\n\nCreate a short-lived feature branch from `origin/main` and send every change\nthrough a pull request directly to `main`:\n\n```bash\ngit fetch origin\ngit switch -c feature/your-change origin/main\n```\n\nRun the checks listed in Development Setup, then open a PR against `main`. CI and the\nReviewGraph PR review workflow run on the PR. Merge through GitHub. Tag releases from `main`.\n\nThe optional release gate is separate from routine PR CI. Run\n`.github/workflows/release-gate.yml` manually before a release when slow upgrade,\npackaging, determinism, E2E, corpus and browser checks are needed. It reports to the\nworkflow summary and a `release-gate` issue; it does not open or merge pull requests.\n\n## Project Structure\n\nThe module list is in the Architecture section of `CLAUDE.md`. In outline:\n\n```\napps/cli/pyproject.toml                 # CLI application package and entry points\napps/cli/reviewgraph/               # reviewgraph and reviewgraph-daemon commands\nmodules/code-review/pyproject.toml       # reusable core module package\nmodules/code-review/graph_engine/        # core library, MCP server, tools and eval\nmodules/code-review/skills/             # skills bundled into the core wheel\ntests/                                  # pytest suite and language fixtures\ndocs/                                   # user documentation\n```\n\n## Adding Language Support\n\nIf you only need a language for your own repository, you may not need to change this project: add a `.reviewgraph/languages.toml` that maps extensions and node types to any grammar in tree-sitter-language-pack (see [docs/CUSTOM_LANGUAGES.md](docs/CUSTOM_LANGUAGES.md)). To add built-in support:\n\n1. Add the extension mapping to `EXTENSION_TO_LANGUAGE` in `parser.py`.\n2. Add the tree-sitter node types to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`.\n3. Add a sample file in `tests/fixtures/`.\n4. Add parsing tests in `tests/test_multilang.py`.\n\n## Adding a Platform Target\n\nEvery supported AI tool is permanent maintenance surface: its config path, schema, install merge, uninstall and tests have to keep working on every release. Some existing targets were merged without evidence that they worked in a released client, and those are the ones that break. New targets are held to the bar below.\n\nStart with a platform request issue (https://github.com/borg0ai/dx-reviewgraph/issues/new/choose) so the client can be discussed before anyone writes code. A pull request that adds a platform will not be reviewed until it includes all of the following.\n\n1. A link to the platform's official MCP configuration documentation. Blog posts, forum replies and screenshots of a settings dialog are not enough.\n2. The exact config file path and the exact schema of a server entry: which top-level key holds the servers, whether that value is an object or an array, and whether a `type` field is required.\n3. The entry added through the existing `PLATFORMS` table in `modules/code-review/graph_engine/skills.py`, plus `_PLATFORM_CHOICES` in `apps/cli/reviewgraph/cli.py`. Use the fields already there: `name`, `config_path`, `key`, `detect`, `format`, `needs_type`, and where needed `legacy_keys`, `server_type`, `entry_fields`. If the client needs something the table cannot express, say so in the pull request and explain why, rather than adding a separate code path beside it.\n4. Preservation of unrelated user settings. Install must merge only the `reviewgraph` server entry and leave every other server, key and top-level setting intact. If the file cannot be parsed, install must skip it rather than rewrite it.\n5. A byte-idempotent reinstall. Running install twice must leave the config file and any generated instruction file byte for byte identical.\n6. A working uninstall in `modules/code-review/graph_engine/uninstall.py` that removes only what install added, including any legacy keys, and leaves the rest of the file untouched.\n7. Lifecycle tests matching the existing ones: an install, reinstall and uninstall test in `tests/test_cli_install.py` shaped like `test_copilot_cli_install_reinstall_uninstall_lifecycle`, and a passing run of the all-platforms sweep in `tests/test_uninstall.py` (`test_uninstall_removes_mcp_entry_for_every_current_platform_spec`), which covers every new entry automatically.\n8. Evidence from a real released client: a screenshot or transcript of a session in that client where a reviewgraph tool is invoked and returns a result. A rendered image of text, a mockup or a description of what should happen is not evidence.\n\nIf no maintainer can install and run the client, the request may be declined or left open until someone who uses it is willing to own it and respond when it breaks. An existing target may also be removed if it breaks and nobody steps up to fix it.\n\n## Reporting Issues\n\n- Open an issue through the issue forms: https://github.com/borg0ai/dx-reviewgraph/issues/new/choose (bug report, feature request or platform request; blank issues are disabled).\n- For questions and ideas, use GitHub Discussions: https://github.com/borg0ai/dx-reviewgraph/discussions\n- Include your Python version, OS, steps to reproduce and the error output.\n\n## License\n\nBy contributing, you agree that your contributions are licensed under the MIT License.",
+      "sections": [
+        {
+          "id": "source-eca12c0a30e25b4b-s1",
+          "title": "Contributing to ReviewGraph",
+          "level": 1,
+          "line": 1,
+          "endLine": 2,
+          "text": "# Contributing to ReviewGraph\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s2",
+          "title": "Development Setup",
+          "level": 2,
+          "line": 3,
+          "endLine": 11,
+          "text": "## Development Setup\n\n```bash\ngit clone https://github.com/borg0ai/dx-reviewgraph.git\ncd dx-reviewgraph\nuv sync --group dev                  # requires uv\nuv run pytest tests/ --tb=short -q   # check the setup\n```\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s3",
+          "title": "Running Tests",
+          "level": 2,
+          "line": 12,
+          "endLine": 26,
+          "text": "## Running Tests\n\n```bash\nuv run pytest tests/ --tb=short -q                                                    # all tests\nuv run pytest --cov=graph_engine --cov-report=term-missing --cov-fail-under=65   # with the CI coverage gate\nuv run pytest tests/test_parser.py -v                                                 # one file\n```\n\nCI runs the suite on Python 3.10, 3.11, 3.12 and 3.13 and fails below 65% coverage.\n\n`tests/test_parser_grammar_contract.py` checks every built-in class, function, import,\nand call dispatch name against its bundled Tree-sitter grammar. When updating a grammar\nor adding dispatch entries, use the grammar's actual named node types. This contract\nchecks configured dispatch names; language fixtures still verify extraction behavior.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s4",
+          "title": "Linting and Type Checking",
+          "level": 2,
+          "line": 27,
+          "endLine": 35,
+          "text": "## Linting and Type Checking\n\n```bash\nuv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/\nuv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional\n```\n\nCI also runs `bandit -r modules/code-review/graph_engine/ -c pyproject.toml`.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s5",
+          "title": "Code Style",
+          "level": 2,
+          "line": 36,
+          "endLine": 42,
+          "text": "## Code Style\n\n- Line length: 100 characters.\n- Target: Python 3.10+.\n- Linter: ruff with rules E, F, I, N, W. Imports are sorted by ruff.\n- SQL: parameterised queries (`?` placeholders) only.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s6",
+          "title": "Making Changes",
+          "level": 2,
+          "line": 43,
+          "endLine": 50,
+          "text": "## Making Changes\n\n1. Fork the repository and create a branch from `main`: `git switch -c feature/your-feature origin/main`.\n2. Make the change and add tests for new behaviour.\n3. Run the tests, ruff and mypy as above.\n4. Update docs where behaviour changed (README, `docs/`, docstrings).\n5. Open a pull request against `main`. The template asks for the linked issue, what changed and why, and the commands you ran.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s7",
+          "title": "Branching",
+          "level": 2,
+          "line": 51,
+          "endLine": 68,
+          "text": "## Branching\n\nCreate a short-lived feature branch from `origin/main` and send every change\nthrough a pull request directly to `main`:\n\n```bash\ngit fetch origin\ngit switch -c feature/your-change origin/main\n```\n\nRun the checks listed in Development Setup, then open a PR against `main`. CI and the\nReviewGraph PR review workflow run on the PR. Merge through GitHub. Tag releases from `main`.\n\nThe optional release gate is separate from routine PR CI. Run\n`.github/workflows/release-gate.yml` manually before a release when slow upgrade,\npackaging, determinism, E2E, corpus and browser checks are needed. It reports to the\nworkflow summary and a `release-gate` issue; it does not open or merge pull requests.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s8",
+          "title": "Project Structure",
+          "level": 2,
+          "line": 69,
+          "endLine": 82,
+          "text": "## Project Structure\n\nThe module list is in the Architecture section of `CLAUDE.md`. In outline:\n\n```\napps/cli/pyproject.toml                 # CLI application package and entry points\napps/cli/reviewgraph/               # reviewgraph and reviewgraph-daemon commands\nmodules/code-review/pyproject.toml       # reusable core module package\nmodules/code-review/graph_engine/        # core library, MCP server, tools and eval\nmodules/code-review/skills/             # skills bundled into the core wheel\ntests/                                  # pytest suite and language fixtures\ndocs/                                   # user documentation\n```\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s9",
+          "title": "Adding Language Support",
+          "level": 2,
+          "line": 83,
+          "endLine": 91,
+          "text": "## Adding Language Support\n\nIf you only need a language for your own repository, you may not need to change this project: add a `.reviewgraph/languages.toml` that maps extensions and node types to any grammar in tree-sitter-language-pack (see [docs/CUSTOM_LANGUAGES.md](docs/CUSTOM_LANGUAGES.md)). To add built-in support:\n\n1. Add the extension mapping to `EXTENSION_TO_LANGUAGE` in `parser.py`.\n2. Add the tree-sitter node types to `_CLASS_TYPES`, `_FUNCTION_TYPES`, `_IMPORT_TYPES` and `_CALL_TYPES`.\n3. Add a sample file in `tests/fixtures/`.\n4. Add parsing tests in `tests/test_multilang.py`.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s10",
+          "title": "Adding a Platform Target",
+          "level": 2,
+          "line": 92,
+          "endLine": 108,
+          "text": "## Adding a Platform Target\n\nEvery supported AI tool is permanent maintenance surface: its config path, schema, install merge, uninstall and tests have to keep working on every release. Some existing targets were merged without evidence that they worked in a released client, and those are the ones that break. New targets are held to the bar below.\n\nStart with a platform request issue (https://github.com/borg0ai/dx-reviewgraph/issues/new/choose) so the client can be discussed before anyone writes code. A pull request that adds a platform will not be reviewed until it includes all of the following.\n\n1. A link to the platform's official MCP configuration documentation. Blog posts, forum replies and screenshots of a settings dialog are not enough.\n2. The exact config file path and the exact schema of a server entry: which top-level key holds the servers, whether that value is an object or an array, and whether a `type` field is required.\n3. The entry added through the existing `PLATFORMS` table in `modules/code-review/graph_engine/skills.py`, plus `_PLATFORM_CHOICES` in `apps/cli/reviewgraph/cli.py`. Use the fields already there: `name`, `config_path`, `key`, `detect`, `format`, `needs_type`, and where needed `legacy_keys`, `server_type`, `entry_fields`. If the client needs something the table cannot express, say so in the pull request and explain why, rather than adding a separate code path beside it.\n4. Preservation of unrelated user settings. Install must merge only the `reviewgraph` server entry and leave every other server, key and top-level setting intact. If the file cannot be parsed, install must skip it rather than rewrite it.\n5. A byte-idempotent reinstall. Running install twice must leave the config file and any generated instruction file byte for byte identical.\n6. A working uninstall in `modules/code-review/graph_engine/uninstall.py` that removes only what install added, including any legacy keys, and leaves the rest of the file untouched.\n7. Lifecycle tests matching the existing ones: an install, reinstall and uninstall test in `tests/test_cli_install.py` shaped like `test_copilot_cli_install_reinstall_uninstall_lifecycle`, and a passing run of the all-platforms sweep in `tests/test_uninstall.py` (`test_uninstall_removes_mcp_entry_for_every_current_platform_spec`), which covers every new entry automatically.\n8. Evidence from a real released client: a screenshot or transcript of a session in that client where a reviewgraph tool is invoked and returns a result. A rendered image of text, a mockup or a description of what should happen is not evidence.\n\nIf no maintainer can install and run the client, the request may be declined or left open until someone who uses it is willing to own it and respond when it breaks. An existing target may also be removed if it breaks and nobody steps up to fix it.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s11",
+          "title": "Reporting Issues",
+          "level": 2,
+          "line": 109,
+          "endLine": 114,
+          "text": "## Reporting Issues\n\n- Open an issue through the issue forms: https://github.com/borg0ai/dx-reviewgraph/issues/new/choose (bug report, feature request or platform request; blank issues are disabled).\n- For questions and ideas, use GitHub Discussions: https://github.com/borg0ai/dx-reviewgraph/discussions\n- Include your Python version, OS, steps to reproduce and the error output.\n"
+        },
+        {
+          "id": "source-eca12c0a30e25b4b-s12",
+          "title": "License",
+          "level": 2,
+          "line": 115,
+          "endLine": 117,
+          "text": "## License\n\nBy contributing, you agree that your contributions are licensed under the MIT License."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 15,
+        "lastEdited": "2026-10-31T16:28:26-07:00",
+        "commit": "d8c7eb7dc62334b57536e4d95b135b17b515b5d7"
+      }
+    },
+    {
+      "id": "source-399080f41ccf73c6",
+      "path": "GEMINI.md",
+      "kind": "instruction",
+      "scope": ".",
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "# Gemini\n\nAgent rules for this repository live in [AGENTS.md](AGENTS.md). Project\ncontext (architecture, commands, conventions, tests) lives in\n[CLAUDE.md](CLAUDE.md). Both apply to Gemini CLI and Antigravity.\n\nThis file used to be a byte-identical copy of\n[.github/copilot-instructions.md](.github/copilot-instructions.md), which only\nexists because Copilot reads that exact path. Keeping a pointer here means the\ninstructions are maintained in one place.",
+      "sections": [
+        {
+          "id": "source-399080f41ccf73c6-s1",
+          "title": "Gemini",
+          "level": 1,
+          "line": 1,
+          "endLine": 10,
+          "text": "# Gemini\n\nAgent rules for this repository live in [AGENTS.md](AGENTS.md). Project\ncontext (architecture, commands, conventions, tests) lives in\n[CLAUDE.md](CLAUDE.md). Both apply to Gemini CLI and Antigravity.\n\nThis file used to be a byte-identical copy of\n[.github/copilot-instructions.md](.github/copilot-instructions.md), which only\nexists because Copilot reads that exact path. Keeping a pointer here means the\ninstructions are maintained in one place."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 4,
+        "lastEdited": "2026-09-16T21:33:23+01:00",
+        "commit": "58db1184c29f33554c371d96f4ab49840b6dda2e"
+      }
+    },
+    {
+      "id": "source-1a095b27fd77386c",
+      "path": "modules/code-review/skills/build-graph/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: build-graph\ndescription: Build or update the code review knowledge graph. Run this first to initialize, or let hooks keep it updated automatically.\nargument-hint: \"[full]\"\n---\n\n# Build Graph\n\nBuild or incrementally update the knowledge graph for this repository.\n\n## Steps\n\n1. Call `list_graph_stats_tool`. If `last_updated` is null, the graph has never been built.\n2. For a first build, or when the argument is `full`, call `build_or_update_graph_tool(full_rebuild=True)`. Otherwise call `build_or_update_graph_tool()` for an incremental update.\n3. Report the response: `status` (`ok`, `partial` or `error`) and `summary`.\n\n## When to Use\n\n- First set-up of a repository, or after a branch switch or large refactor.\n- When the graph looks stale. Hooks installed by `reviewgraph install` run an update after each edit and before each commit, so manual builds are rarely needed.\n\n## Notes\n\n- The database is `.reviewgraph/graph.db` in the repository root.\n- Binary files, dependency and build directories, and patterns in `.reviewgraphignore` are skipped.\n- For the list of supported languages call `get_docs_section_tool(section_name=\"languages\")`.",
+      "sections": [
+        {
+          "id": "source-1a095b27fd77386c-s1",
+          "title": "Build Graph",
+          "level": 1,
+          "line": 7,
+          "endLine": 10,
+          "text": "# Build Graph\n\nBuild or incrementally update the knowledge graph for this repository.\n"
+        },
+        {
+          "id": "source-1a095b27fd77386c-s2",
+          "title": "Steps",
+          "level": 2,
+          "line": 11,
+          "endLine": 16,
+          "text": "## Steps\n\n1. Call `list_graph_stats_tool`. If `last_updated` is null, the graph has never been built.\n2. For a first build, or when the argument is `full`, call `build_or_update_graph_tool(full_rebuild=True)`. Otherwise call `build_or_update_graph_tool()` for an incremental update.\n3. Report the response: `status` (`ok`, `partial` or `error`) and `summary`.\n"
+        },
+        {
+          "id": "source-1a095b27fd77386c-s3",
+          "title": "When to Use",
+          "level": 2,
+          "line": 17,
+          "endLine": 21,
+          "text": "## When to Use\n\n- First set-up of a repository, or after a branch switch or large refactor.\n- When the graph looks stale. Hooks installed by `reviewgraph install` run an update after each edit and before each commit, so manual builds are rarely needed.\n"
+        },
+        {
+          "id": "source-1a095b27fd77386c-s4",
+          "title": "Notes",
+          "level": 2,
+          "line": 22,
+          "endLine": 26,
+          "text": "## Notes\n\n- The database is `.reviewgraph/graph.db` in the repository root.\n- Binary files, dependency and build directories, and patterns in `.reviewgraphignore` are skipped.\n- For the list of supported languages call `get_docs_section_tool(section_name=\"languages\")`."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 2,
+        "lastEdited": "2026-10-31T16:28:26-07:00",
+        "commit": "d8c7eb7dc62334b57536e4d95b135b17b515b5d7"
+      }
+    },
+    {
+      "id": "source-49fb3f3266a3b9e4",
+      "path": "modules/code-review/skills/debug-issue/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: debug-issue\ndescription: Systematically debug issues using graph-powered code navigation\n---\n\n## Debug Issue\n\nTrace a bug through the knowledge graph before reading source.\n\n### Steps\n\n1. Call `semantic_search_nodes_tool` to find code related to the issue.\n2. Call `query_graph_tool` with `callers_of` and `callees_of` to trace the call chain in both directions.\n3. Call `get_flow_tool` for the execution path that reaches the suspect code. Its entry point is where the bug is triggered.\n4. Call `detect_changes_tool` to check whether a recent change caused the issue.\n5. Call `get_impact_radius_tool` on the suspect files to see what a fix would affect.\n\n## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source.",
+      "sections": [
+        {
+          "id": "source-49fb3f3266a3b9e4-s1",
+          "title": "Debug Issue",
+          "level": 2,
+          "line": 6,
+          "endLine": 9,
+          "text": "## Debug Issue\n\nTrace a bug through the knowledge graph before reading source.\n"
+        },
+        {
+          "id": "source-49fb3f3266a3b9e4-s2",
+          "title": "Steps",
+          "level": 3,
+          "line": 10,
+          "endLine": 17,
+          "text": "### Steps\n\n1. Call `semantic_search_nodes_tool` to find code related to the issue.\n2. Call `query_graph_tool` with `callers_of` and `callees_of` to trace the call chain in both directions.\n3. Call `get_flow_tool` for the execution path that reaches the suspect code. Its entry point is where the bug is triggered.\n4. Call `detect_changes_tool` to check whether a recent change caused the issue.\n5. Call `get_impact_radius_tool` on the suspect files to see what a fix would affect.\n"
+        },
+        {
+          "id": "source-49fb3f3266a3b9e4-s3",
+          "title": "Token Efficiency Rules",
+          "level": 2,
+          "line": 18,
+          "endLine": 23,
+          "text": "## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 1,
+        "lastEdited": "2026-10-24T18:26:36-07:00",
+        "commit": "1ff043c270eb82b36a95fb2e966ade4fe28a032a"
+      }
+    },
+    {
+      "id": "source-d3c598d9d2cf1d85",
+      "path": "modules/code-review/skills/explore-codebase/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: explore-codebase\ndescription: Navigate and understand codebase structure using the knowledge graph\n---\n\n## Explore Codebase\n\nUse the reviewgraph MCP tools to find your way around the codebase.\n\n### Steps\n\n1. Call `get_architecture_overview_tool` for the community structure. Call `list_communities_tool`, then `get_community_tool`, only for the modules you need.\n2. Call `semantic_search_nodes_tool` to find a function or class by name or keyword.\n3. Call `query_graph_tool` with `callers_of`, `callees_of` or `imports_of` to trace relationships. `children_of` on a file lists its functions and classes.\n4. Call `list_flows_tool`, then `get_flow_tool` for one flow, to follow an execution path.\n5. Call `find_large_functions_tool` to find oversized functions.\n6. Call `list_graph_stats_tool` only when you need node, edge and language counts.\n\n## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source.",
+      "sections": [
+        {
+          "id": "source-d3c598d9d2cf1d85-s1",
+          "title": "Explore Codebase",
+          "level": 2,
+          "line": 6,
+          "endLine": 9,
+          "text": "## Explore Codebase\n\nUse the reviewgraph MCP tools to find your way around the codebase.\n"
+        },
+        {
+          "id": "source-d3c598d9d2cf1d85-s2",
+          "title": "Steps",
+          "level": 3,
+          "line": 10,
+          "endLine": 18,
+          "text": "### Steps\n\n1. Call `get_architecture_overview_tool` for the community structure. Call `list_communities_tool`, then `get_community_tool`, only for the modules you need.\n2. Call `semantic_search_nodes_tool` to find a function or class by name or keyword.\n3. Call `query_graph_tool` with `callers_of`, `callees_of` or `imports_of` to trace relationships. `children_of` on a file lists its functions and classes.\n4. Call `list_flows_tool`, then `get_flow_tool` for one flow, to follow an execution path.\n5. Call `find_large_functions_tool` to find oversized functions.\n6. Call `list_graph_stats_tool` only when you need node, edge and language counts.\n"
+        },
+        {
+          "id": "source-d3c598d9d2cf1d85-s3",
+          "title": "Token Efficiency Rules",
+          "level": 2,
+          "line": 19,
+          "endLine": 24,
+          "text": "## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 1,
+        "lastEdited": "2026-10-24T18:26:36-07:00",
+        "commit": "1ff043c270eb82b36a95fb2e966ade4fe28a032a"
+      }
+    },
+    {
+      "id": "source-165230b321a5f7ab",
+      "path": "modules/code-review/skills/refactor-safely/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: refactor-safely\ndescription: Plan and execute safe refactoring using dependency analysis\n---\n\n## Refactor Safely\n\nPlan a refactor from the dependency graph and apply renames from a preview.\n\n### Steps\n\n1. Call `refactor_tool` with `mode=\"suggest\"` for refactoring candidates, or `mode=\"dead_code\"` for unreferenced code.\n2. For a rename, call `refactor_tool` with `mode=\"rename\"`, `old_name` and `new_name`. Check the returned edit list before applying.\n3. Call `apply_refactor_tool` with the returned `refactor_id` to apply the rename.\n4. Before a large refactor, call `get_impact_radius_tool` and `get_affected_flows_tool` to see the dependents and critical paths involved.\n5. Call `find_large_functions_tool` to find functions worth splitting.\n6. After the change, call `detect_changes_tool` to confirm the impact matches the plan.\n\n## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source.",
+      "sections": [
+        {
+          "id": "source-165230b321a5f7ab-s1",
+          "title": "Refactor Safely",
+          "level": 2,
+          "line": 6,
+          "endLine": 9,
+          "text": "## Refactor Safely\n\nPlan a refactor from the dependency graph and apply renames from a preview.\n"
+        },
+        {
+          "id": "source-165230b321a5f7ab-s2",
+          "title": "Steps",
+          "level": 3,
+          "line": 10,
+          "endLine": 18,
+          "text": "### Steps\n\n1. Call `refactor_tool` with `mode=\"suggest\"` for refactoring candidates, or `mode=\"dead_code\"` for unreferenced code.\n2. For a rename, call `refactor_tool` with `mode=\"rename\"`, `old_name` and `new_name`. Check the returned edit list before applying.\n3. Call `apply_refactor_tool` with the returned `refactor_id` to apply the rename.\n4. Before a large refactor, call `get_impact_radius_tool` and `get_affected_flows_tool` to see the dependents and critical paths involved.\n5. Call `find_large_functions_tool` to find functions worth splitting.\n6. After the change, call `detect_changes_tool` to confirm the impact matches the plan.\n"
+        },
+        {
+          "id": "source-165230b321a5f7ab-s3",
+          "title": "Token Efficiency Rules",
+          "level": 2,
+          "line": 19,
+          "endLine": 24,
+          "text": "## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 1,
+        "lastEdited": "2026-10-24T18:26:36-07:00",
+        "commit": "1ff043c270eb82b36a95fb2e966ade4fe28a032a"
+      }
+    },
+    {
+      "id": "source-263ae617603b16d1",
+      "path": "modules/code-review/skills/review-changes/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: review-changes\ndescription: Perform a structured code review using change detection and impact\n---\n\n## Review Changes\n\nReview a change set with risk scores and blast radius from the knowledge graph.\n\n### Steps\n\n1. Call `detect_changes_tool` for risk-scored changed functions, test gaps and affected flows.\n2. Call `get_affected_flows_tool` only when you need the steps of an affected flow.\n3. For each high-risk function, call `query_graph_tool` with `pattern=\"tests_for\"` to check test coverage.\n4. Call `get_impact_radius_tool` when the blast radius is not clear from step 1.\n5. Suggest specific test cases for untested changes.\n\n### Output Format\n\nGroup findings by risk level (high, medium, low). For each finding give what changed and why it matters, its test coverage, and the suggested fix. End with a merge recommendation.\n\n## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source.",
+      "sections": [
+        {
+          "id": "source-263ae617603b16d1-s1",
+          "title": "Review Changes",
+          "level": 2,
+          "line": 6,
+          "endLine": 9,
+          "text": "## Review Changes\n\nReview a change set with risk scores and blast radius from the knowledge graph.\n"
+        },
+        {
+          "id": "source-263ae617603b16d1-s2",
+          "title": "Steps",
+          "level": 3,
+          "line": 10,
+          "endLine": 17,
+          "text": "### Steps\n\n1. Call `detect_changes_tool` for risk-scored changed functions, test gaps and affected flows.\n2. Call `get_affected_flows_tool` only when you need the steps of an affected flow.\n3. For each high-risk function, call `query_graph_tool` with `pattern=\"tests_for\"` to check test coverage.\n4. Call `get_impact_radius_tool` when the blast radius is not clear from step 1.\n5. Suggest specific test cases for untested changes.\n"
+        },
+        {
+          "id": "source-263ae617603b16d1-s3",
+          "title": "Output Format",
+          "level": 3,
+          "line": 18,
+          "endLine": 21,
+          "text": "### Output Format\n\nGroup findings by risk level (high, medium, low). For each finding give what changed and why it matters, its test coverage, and the suggested fix. End with a merge recommendation.\n"
+        },
+        {
+          "id": "source-263ae617603b16d1-s4",
+          "title": "Token Efficiency Rules",
+          "level": 2,
+          "line": 22,
+          "endLine": 27,
+          "text": "## Token Efficiency Rules\n- Call `get_minimal_context_tool(task=\"<your task>\")` before any other graph tool.\n- Pass `detail_level=\"minimal\"` wherever a tool accepts it. Use \"standard\" only when minimal is not enough.\n- Prefer a targeted `query_graph_tool` call over a broad listing call.\n- Budget: about five tool calls and 800 tokens of graph output per task.\n- Read the implementation and its tests before changing code. The graph narrows scope; it does not replace the source."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 1,
+        "lastEdited": "2026-10-24T18:26:36-07:00",
+        "commit": "1ff043c270eb82b36a95fb2e966ade4fe28a032a"
+      }
+    },
+    {
+      "id": "source-4d6b9506493b50c4",
+      "path": "modules/code-review/skills/review-delta/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: review-delta\ndescription: Review only changes since last commit using impact analysis. Token-efficient delta review with automatic blast-radius detection.\nargument-hint: \"[file or function name]\"\n---\n\n# Review Delta\n\nReview only the changed code and its blast radius.\n\n## Steps\n\n1. Call `get_minimal_context_tool(task=\"review changes\")`. If it returns `status: not_ready`, call `build_or_update_graph_tool()` and continue.\n2. Call `detect_changes_tool(detail_level=\"minimal\")` for risk-scored changed functions, test gaps and affected flows. Changes come from `git diff` against `HEAD~1`; if the argument names a file, pass it in `changed_files`.\n3. Call `get_review_context_tool(detail_level=\"minimal\")` when you need source snippets for the changed areas and `review_guidance` (untested functions, wide blast radius, inheritance changes).\n4. For each untested high-risk function, confirm with `query_graph_tool(pattern=\"tests_for\", target=\"<function>\")`.\n5. Use `detail_level=\"standard\"` only for a high-risk item the minimal output leaves unclear. Do not load whole files unless a snippet is not enough.\n\n## Report\n\n- Summary: one line\n- Risk: low, medium or high, from the blast radius\n- Issues: bugs, missing tests, style\n- Blast radius: impacted files and functions\n- Recommendations",
+      "sections": [
+        {
+          "id": "source-4d6b9506493b50c4-s1",
+          "title": "Review Delta",
+          "level": 1,
+          "line": 7,
+          "endLine": 10,
+          "text": "# Review Delta\n\nReview only the changed code and its blast radius.\n"
+        },
+        {
+          "id": "source-4d6b9506493b50c4-s2",
+          "title": "Steps",
+          "level": 2,
+          "line": 11,
+          "endLine": 18,
+          "text": "## Steps\n\n1. Call `get_minimal_context_tool(task=\"review changes\")`. If it returns `status: not_ready`, call `build_or_update_graph_tool()` and continue.\n2. Call `detect_changes_tool(detail_level=\"minimal\")` for risk-scored changed functions, test gaps and affected flows. Changes come from `git diff` against `HEAD~1`; if the argument names a file, pass it in `changed_files`.\n3. Call `get_review_context_tool(detail_level=\"minimal\")` when you need source snippets for the changed areas and `review_guidance` (untested functions, wide blast radius, inheritance changes).\n4. For each untested high-risk function, confirm with `query_graph_tool(pattern=\"tests_for\", target=\"<function>\")`.\n5. Use `detail_level=\"standard\"` only for a high-risk item the minimal output leaves unclear. Do not load whole files unless a snippet is not enough.\n"
+        },
+        {
+          "id": "source-4d6b9506493b50c4-s3",
+          "title": "Report",
+          "level": 2,
+          "line": 19,
+          "endLine": 25,
+          "text": "## Report\n\n- Summary: one line\n- Risk: low, medium or high, from the blast radius\n- Issues: bugs, missing tests, style\n- Blast radius: impacted files and functions\n- Recommendations"
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 1,
+        "lastEdited": "2026-10-24T18:26:36-07:00",
+        "commit": "1ff043c270eb82b36a95fb2e966ade4fe28a032a"
+      }
+    },
+    {
+      "id": "source-9606763421912609",
+      "path": "modules/code-review/skills/review-pr/SKILL.md",
+      "kind": "skill",
+      "scope": null,
+      "discoveredFrom": null,
+      "applicability": "unreviewed",
+      "text": "---\nname: review-pr\ndescription: Review a PR or branch diff using the knowledge graph for full structural context. Outputs a structured review with blast-radius analysis.\nargument-hint: \"[PR number or branch name]\"\n---\n\n# Review PR\n\nReview all commits of a pull request or branch against its base branch.\n\n## Steps\n\n1. Identify the changes. With a branch name run `git diff --name-only main...<branch>`; otherwise diff the current branch against `main` (or `master`). Use that ref as `base` below.\n2. Call `get_minimal_context_tool(task=\"review PR\", base=\"main\")`. If it returns `status: not_ready`, call `build_or_update_graph_tool()` and continue.\n3. Call `detect_changes_tool(base=\"main\", detail_level=\"minimal\")` for risk-scored changed functions, test gaps and affected flows across the whole branch.\n4. For high-risk functions call `query_graph_tool(pattern=\"callers_of\", target=\"<function>\")` and `query_graph_tool(pattern=\"tests_for\", target=\"<function>\")`. Flag public API changes whose callers were not updated.\n5. Call `get_review_context_tool(base=\"main\")` for source snippets, or `get_impact_radius_tool(base=\"main\")` for the full dependent list, only when step 3 leaves a high-risk item unclear.\n6. Read the changed source of the highest-impact files first. Do not load whole files unless the change needs it.\n\n## Output\n\n```\n## PR Review: <title>\n\n### Summary\n<1-3 sentences>\n\n### Risk\n- Overall: Low / Medium / High\n- Blast radius: <n> files, <m> functions\n- Test coverage: <covered> of <changed> changed functions\n\n### Files\n#### <path>\n- Changes: <what>\n- Impact: <who depends on it>\n- Issues: <bugs, style, concerns>\n\n### Missing Tests\n- <function> in <file>\n\n### Recommendations\n1. <action>\n```\n\n## Tips\n\n- Use `semantic_search_nodes_tool` to find related code the PR may have missed.",
+      "sections": [
+        {
+          "id": "source-9606763421912609-s1",
+          "title": "Review PR",
+          "level": 1,
+          "line": 7,
+          "endLine": 10,
+          "text": "# Review PR\n\nReview all commits of a pull request or branch against its base branch.\n"
+        },
+        {
+          "id": "source-9606763421912609-s2",
+          "title": "Steps",
+          "level": 2,
+          "line": 11,
+          "endLine": 19,
+          "text": "## Steps\n\n1. Identify the changes. With a branch name run `git diff --name-only main...<branch>`; otherwise diff the current branch against `main` (or `master`). Use that ref as `base` below.\n2. Call `get_minimal_context_tool(task=\"review PR\", base=\"main\")`. If it returns `status: not_ready`, call `build_or_update_graph_tool()` and continue.\n3. Call `detect_changes_tool(base=\"main\", detail_level=\"minimal\")` for risk-scored changed functions, test gaps and affected flows across the whole branch.\n4. For high-risk functions call `query_graph_tool(pattern=\"callers_of\", target=\"<function>\")` and `query_graph_tool(pattern=\"tests_for\", target=\"<function>\")`. Flag public API changes whose callers were not updated.\n5. Call `get_review_context_tool(base=\"main\")` for source snippets, or `get_impact_radius_tool(base=\"main\")` for the full dependent list, only when step 3 leaves a high-risk item unclear.\n6. Read the changed source of the highest-impact files first. Do not load whole files unless the change needs it.\n"
+        },
+        {
+          "id": "source-9606763421912609-s3",
+          "title": "Output",
+          "level": 2,
+          "line": 20,
+          "endLine": 45,
+          "text": "## Output\n\n```\n## PR Review: <title>\n\n### Summary\n<1-3 sentences>\n\n### Risk\n- Overall: Low / Medium / High\n- Blast radius: <n> files, <m> functions\n- Test coverage: <covered> of <changed> changed functions\n\n### Files\n#### <path>\n- Changes: <what>\n- Impact: <who depends on it>\n- Issues: <bugs, style, concerns>\n\n### Missing Tests\n- <function> in <file>\n\n### Recommendations\n1. <action>\n```\n"
+        },
+        {
+          "id": "source-9606763421912609-s4",
+          "title": "Tips",
+          "level": 2,
+          "line": 46,
+          "endLine": 48,
+          "text": "## Tips\n\n- Use `semantic_search_nodes_tool` to find related code the PR may have missed."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 1,
+        "lastEdited": "2026-10-24T18:26:36-07:00",
+        "commit": "1ff043c270eb82b36a95fb2e966ade4fe28a032a"
+      }
+    },
+    {
+      "id": "source-6ebdb617a8104a77",
+      "path": "CLAUDE.md",
+      "kind": "reference",
+      "scope": null,
+      "discoveredFrom": "AGENTS.md",
+      "applicability": "unreviewed",
+      "text": "# CLAUDE.md - Project Context for Claude Code\n\n## Project Overview\n\nReviewGraph is a local-first knowledge graph for code review. It parses a repository with Tree-sitter (plus targeted fallbacks), stores nodes and edges in SQLite, updates the graph incrementally from Git changes, and serves compact context over MCP and the CLI to AI coding tools. Supported platforms are the entries in `PLATFORMS` in `skills.py`: Claude Code, Codex, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen Code, Kiro, Qoder, GitHub Copilot, GitHub Copilot CLI, Hermes Agent and CodeBuddy Code.\n\n## Graph Tool Usage (Token-Efficient)\n\nWhen using reviewgraph MCP tools:\n\n1. Call `get_minimal_context_tool(task=\"<description>\")` first. It costs about 100 tokens and gives the overview.\n2. Use `detail_level=\"minimal\"` on every later call unless that is not enough.\n3. Prefer `query_graph_tool` with a specific target over broad `list_*` calls.\n4. Follow the `next_tool_suggestions` field in each response.\n5. Target: at most 5 tool calls and 800 tokens of graph context per task.\n\nAll registered tool names end in `_tool`. The 30 tools are defined in `main.py`.\n\n## Architecture\n\nCore module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cli/reviewgraph/`.\n\n- `main.py`: FastMCP server entry point. Registers 30 tools and 5 prompts.\n- `tools/`: tool implementations by domain: `build.py`, `query.py`, `review.py`, `context.py`, `flows_tools.py`, `community_tools.py`, `refactor_tools.py`, `docs.py`, `registry_tools.py`, `analysis_tools.py`; shared helpers in `_common.py`.\n- `prompts.py`: 5 MCP prompts (review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check).\n- `apps/cli/reviewgraph/cli.py` owns the `reviewgraph` command. `daemon.py` is core; `apps/cli/reviewgraph/daemon_cli.py` owns the `reviewgraph-daemon` command.\n- `parser.py`: Tree-sitter multi-language parser with fallbacks for notebooks and other formats. `custom_languages.py`: languages defined in `.reviewgraph/languages.toml` (see docs/CUSTOM_LANGUAGES.md).\n- `graph.py`: SQLite graph store (nodes, edges, impact analysis). `migrations.py`: schema migrations; current schema version is 13.\n- `incremental.py`: full build, Git/SVN change detection, incremental update, stale-file reconciliation, watch mode. `postprocessing.py`: shared post-build pipeline (signatures, flows, communities, FTS).\n- Post-build resolvers: `python_resolver.py`, `jedi_resolver.py` (optional `enrichment` extra), `spring_resolver.py`, `event_resolver.py`, `temporal_resolver.py`, `config_keys.py`, `scoped_resolver.py` (PHP, Rust, C#), `rescript_resolver.py`, `hcl_resolver.py`, `tsconfig_resolver.py` (tsconfig and jsconfig path aliases).\n- `flows.py`: execution flows and criticality. `communities.py`: Leiden via igraph (optional) or file-based grouping, plus the architecture overview. `analysis.py`: hub and bridge nodes, knowledge gaps, surprise scoring, suggested questions.\n- `search.py`: FTS5 keyword search combined with optional vector search. `embeddings.py`: providers for local sentence-transformers, OpenAI-compatible endpoints, Google Gemini, MiniMax and Voyage AI.\n- `changes.py`: risk-scored change analysis. `refactor.py`: rename preview, dead code, suggestions. `hints.py`: `next_tool_suggestions`. `uncertainty.py`: `confidence` notes on empty results. `context_savings.py`: estimated context-savings metadata.\n- `visualization.py`: D3.js HTML graph (D3 is bundled in `assets/`). `exports.py`: JSON, GraphML, Neo4j Cypher, Obsidian, SVG. `wiki.py`: Markdown wiki. `graph_diff.py`: snapshot diffing. `memory.py`: stored Q&A feedback.\n- `skills.py`: `install` (platform MCP configs, hooks, skills, instruction blocks). `_legacy_instructions.py`: instruction blocks shipped by earlier releases. `jsonc.py`: comment-preserving JSONC tokenising and splices, shared by install and uninstall so neither flattens a commented config. `uninstall.py`: reverses `install`. `enrich.py`: PreToolUse hook enrichment. `forget.py`: drops files from the graph. `registry.py`: multi-repo registry. `http_origin_guard.py`: Host/Origin checks for `serve --http`. `token_benchmark.py` and `eval/`: benchmarks. `constants.py`: shared constants.\n- `modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.\n\nDatabase: `.reviewgraph/graph.db` (SQLite, WAL mode).\n\n## Key Commands\n\n```bash\n# Development\nuv run pytest tests/ --tb=short -q\nuv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/\nuv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional\n\n# Graph\nuv run reviewgraph build              # full build\nuv run reviewgraph update             # incremental update\nuv run reviewgraph status             # graph statistics\nuv run reviewgraph detect-changes     # risk-scored change analysis (read-only)\nuv run reviewgraph forget PATH        # drop files from the graph\nuv run reviewgraph serve              # MCP server (stdio; --http for localhost)\nuv run reviewgraph wiki               # Markdown wiki\nuv run reviewgraph register <path>    # add a repo to the multi-repo registry\nuv run reviewgraph eval               # benchmarks\nuv run reviewgraph --help             # full command list\n```\n\n## Code Conventions\n\n- Line length 100 (ruff). Python 3.10+.\n- SQL: parameterised queries with `?` placeholders. Never format values into SQL strings.\n- Errors: catch specific exceptions and log with `logger.warning` or `logger.error`.\n- Threads: `threading.Lock` around shared caches; SQLite opened with `check_same_thread=False`.\n- Node names: pass through `_sanitize_name()` before returning them to MCP clients.\n- File reads: read the bytes once, hash them, then parse the same bytes.\n\n## Security Invariants\n\n- No `eval()`, `exec()`, `pickle` or `yaml.unsafe_load()`.\n- No `shell=True` in subprocess calls.\n- `_validate_repo_root()` requires an existing directory containing `.git`, `.svn` or `.reviewgraph`, which blocks path traversal through `repo_root`.\n- `_sanitize_name()` strips control characters and caps names at 256 characters.\n- `escH()` in `visualization.py` escapes HTML entities including quotes and backticks; `</script>` is escaped inside embedded JSON.\n- D3.js is bundled and loaded with an SRI hash; the CDN fallback carries the same hash.\n- `http_origin_guard.py` validates Host and Origin for `serve --http`.\n- API keys come from environment variables only.\n\n## Test Structure\n\n`tests/` holds over 100 pytest modules. The main groups:\n\n- Core: `test_parser.py`, `test_graph.py`, `test_incremental.py`, `test_tools.py`, `test_main.py`, `test_cli*.py`.\n- Features: `test_flows.py`, `test_communities.py`, `test_changes.py`, `test_refactor.py`, `test_search.py`, `test_hints.py`, `test_prompts.py`, `test_wiki.py`, `test_embeddings.py`, `test_eval.py`, `test_registry.py`, `test_migrations.py`, `test_uncertainty.py`, `test_context_savings.py`, `test_token_budget.py` (per-tool token budgets).\n- Languages: `test_multilang.py`, `test_custom_languages.py`, `test_notebook.py`, plus per-language files such as `test_php_*.py`, `test_spring_*.py`, `test_kotlin_imports.py`, `test_go_embeddings.py`, `test_cpp_*.py`, `test_typescript_node_extensions.py`, `test_tsconfig_resolver.py`, `test_hcl_parser.py`, `test_dbt_parser.py`, `test_ansible_parser.py`.\n- Regression modules are named after the behaviour they pin, not the PR that produced them. The originating PR number goes in the module docstring.\n- Watch and daemon: `test_watch_*.py`, `test_daemon*.py`.\n- Install and platforms: `test_skills.py`, `test_cli_install.py`, `test_uninstall.py`, `test_git_hook_worktree.py`, `test_hermes_install.py`, `test_qoder_bundled_skills.py`, `test_installer_ownership.py` (what install may rewrite and what belongs to the user), `test_released_shapes.py` (reads the hooks and MCP entries every released tag wrote and requires them to still be recognised; needs tags, skips without them), `test_platform_lifecycle.py` (opt-in marker `platform_lifecycle`).\n- Windows: `test_windows_compat.py`, `test_windows_path_identity.py`.\n- Docs and GitHub Action: `test_documentation.py`, `test_action_render.py`.\n- Distribution gate: `test_packaging.py`, marked `packaging` and **skipped by default**. Builds a wheel and an sdist with `python -m build`, installs each into its own virtual environment, and drives the installed program with the checkout out of reach. Needs network and takes a couple of minutes. Run it before a release with `uv run --python 3.13 python -m pytest tests/test_packaging.py -m packaging`.\n- `tests/fixtures/`: sample files per supported language.\n\n## CI Pipeline\n\n`.github/workflows/ci.yml`:\n\n- lint: ruff on Python 3.10.\n- type-check: mypy.\n- security: bandit with the exemptions in `pyproject.toml`.\n- test: pytest on Python 3.10, 3.11, 3.12 and 3.13; coverage must be at least 65%.\n- google-embeddings: constructs the Google provider with the `google-embeddings` and `all` extras.\n- windows-native: a subset of the suite on windows-latest.\n\n## IssueGraph issue tracking\n\nThis project uses IssueGraph. Run `issuegraph prime` for current workflow and command guidance.\n\nUse `issuegraph ready`, `issuegraph show <id>`, `issuegraph update <id> --claim`, and\n`issuegraph close <id>` for task tracking. Use `issuegraph remember \"insight\"` for persistent\nproject knowledge. Do not create Markdown TODO lists.\n\nIssueGraph stores its local database under `.issuegraph/` and tracks `issues.jsonl` plus\n`manifest.json` in Git. Do not create branches, commit, push, merge, or sync IssueGraph remotes\nunless the user explicitly asks. When asked for a PR, target `main`.\n\nBefore handoff, run relevant quality checks and report changed files and validation results.\n\n<!-- reviewgraph MCP tools -->\n## MCP Tools: reviewgraph\n\n**This project has a knowledge graph. Start with the reviewgraph\nMCP tools to narrow scope, then read the source.** The graph is cheaper than scanning files and\ngives you structural context (callers, dependents, test coverage) that file search cannot.\n\n### When to use graph tools FIRST\n\n- **Exploring code**: `semantic_search_nodes_tool` or `query_graph_tool` instead of Grep\n- **Understanding impact**: `get_impact_radius_tool` instead of manually tracing imports\n- **Code review**: `detect_changes_tool` + `get_review_context_tool` instead of reading entire files\n- **Finding relationships**: `query_graph_tool` with callers_of/callees_of/imports_of/tests_for\n- **Architecture questions**: `get_architecture_overview_tool` + `list_communities_tool`\n\n### Verify in the source\n\n- Narrow scope with the graph, then read the source. Do not change code from graph output alone.\n- For any non-trivial change, read the implementation and the relevant tests before concluding.\n- Verify the exact source when touching behavior, database logic, migrations, retries, fallbacks,\n  recovery, or compatibility code.\n- When the graph and the source disagree, the source wins. The graph may be stale or may not\n  model that relationship.\n- An empty graph result can mean \"not indexed\" or \"not statically visible\", not \"does not exist\".\n\n### Key Tools\n\n| Tool | Use when |\n| ------ | ---------- |\n| `detect_changes_tool` | Reviewing code changes — gives risk-scored analysis |\n| `get_review_context_tool` | Need source snippets for review — token-efficient |\n| `get_impact_radius_tool` | Understanding blast radius of a change |\n| `get_affected_flows_tool` | Finding which execution paths are impacted |\n| `query_graph_tool` | Tracing callers, callees, imports, tests, dependencies |\n| `semantic_search_nodes_tool` | Finding functions/classes by name or keyword |\n| `get_architecture_overview_tool` | Understanding high-level codebase structure |\n| `refactor_tool` | Planning renames, finding dead code |\n\n### Workflow\n\n1. The graph auto-updates on file changes (via hooks).\n2. Use `detect_changes_tool` for code review.\n3. Use `get_affected_flows_tool` to understand impact.\n4. Use `query_graph_tool` pattern=\"tests_for\" to check coverage.\n<!-- /reviewgraph MCP tools -->",
+      "sections": [
+        {
+          "id": "source-6ebdb617a8104a77-s1",
+          "title": "CLAUDE.md - Project Context for Claude Code",
+          "level": 1,
+          "line": 1,
+          "endLine": 2,
+          "text": "# CLAUDE.md - Project Context for Claude Code\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s2",
+          "title": "Project Overview",
+          "level": 2,
+          "line": 3,
+          "endLine": 6,
+          "text": "## Project Overview\n\nReviewGraph is a local-first knowledge graph for code review. It parses a repository with Tree-sitter (plus targeted fallbacks), stores nodes and edges in SQLite, updates the graph incrementally from Git changes, and serves compact context over MCP and the CLI to AI coding tools. Supported platforms are the entries in `PLATFORMS` in `skills.py`: Claude Code, Codex, Cursor, Windsurf, Zed, Continue, OpenCode, Antigravity, Gemini CLI, Qwen Code, Kiro, Qoder, GitHub Copilot, GitHub Copilot CLI, Hermes Agent and CodeBuddy Code.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s3",
+          "title": "Graph Tool Usage (Token-Efficient)",
+          "level": 2,
+          "line": 7,
+          "endLine": 18,
+          "text": "## Graph Tool Usage (Token-Efficient)\n\nWhen using reviewgraph MCP tools:\n\n1. Call `get_minimal_context_tool(task=\"<description>\")` first. It costs about 100 tokens and gives the overview.\n2. Use `detail_level=\"minimal\"` on every later call unless that is not enough.\n3. Prefer `query_graph_tool` with a specific target over broad `list_*` calls.\n4. Follow the `next_tool_suggestions` field in each response.\n5. Target: at most 5 tool calls and 800 tokens of graph context per task.\n\nAll registered tool names end in `_tool`. The 30 tools are defined in `main.py`.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s4",
+          "title": "Architecture",
+          "level": 2,
+          "line": 19,
+          "endLine": 39,
+          "text": "## Architecture\n\nCore module `modules/code-review/graph_engine/` (Python 3.10+). CLI app `apps/cli/reviewgraph/`.\n\n- `main.py`: FastMCP server entry point. Registers 30 tools and 5 prompts.\n- `tools/`: tool implementations by domain: `build.py`, `query.py`, `review.py`, `context.py`, `flows_tools.py`, `community_tools.py`, `refactor_tools.py`, `docs.py`, `registry_tools.py`, `analysis_tools.py`; shared helpers in `_common.py`.\n- `prompts.py`: 5 MCP prompts (review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check).\n- `apps/cli/reviewgraph/cli.py` owns the `reviewgraph` command. `daemon.py` is core; `apps/cli/reviewgraph/daemon_cli.py` owns the `reviewgraph-daemon` command.\n- `parser.py`: Tree-sitter multi-language parser with fallbacks for notebooks and other formats. `custom_languages.py`: languages defined in `.reviewgraph/languages.toml` (see docs/CUSTOM_LANGUAGES.md).\n- `graph.py`: SQLite graph store (nodes, edges, impact analysis). `migrations.py`: schema migrations; current schema version is 13.\n- `incremental.py`: full build, Git/SVN change detection, incremental update, stale-file reconciliation, watch mode. `postprocessing.py`: shared post-build pipeline (signatures, flows, communities, FTS).\n- Post-build resolvers: `python_resolver.py`, `jedi_resolver.py` (optional `enrichment` extra), `spring_resolver.py`, `event_resolver.py`, `temporal_resolver.py`, `config_keys.py`, `scoped_resolver.py` (PHP, Rust, C#), `rescript_resolver.py`, `hcl_resolver.py`, `tsconfig_resolver.py` (tsconfig and jsconfig path aliases).\n- `flows.py`: execution flows and criticality. `communities.py`: Leiden via igraph (optional) or file-based grouping, plus the architecture overview. `analysis.py`: hub and bridge nodes, knowledge gaps, surprise scoring, suggested questions.\n- `search.py`: FTS5 keyword search combined with optional vector search. `embeddings.py`: providers for local sentence-transformers, OpenAI-compatible endpoints, Google Gemini, MiniMax and Voyage AI.\n- `changes.py`: risk-scored change analysis. `refactor.py`: rename preview, dead code, suggestions. `hints.py`: `next_tool_suggestions`. `uncertainty.py`: `confidence` notes on empty results. `context_savings.py`: estimated context-savings metadata.\n- `visualization.py`: D3.js HTML graph (D3 is bundled in `assets/`). `exports.py`: JSON, GraphML, Neo4j Cypher, Obsidian, SVG. `wiki.py`: Markdown wiki. `graph_diff.py`: snapshot diffing. `memory.py`: stored Q&A feedback.\n- `skills.py`: `install` (platform MCP configs, hooks, skills, instruction blocks). `_legacy_instructions.py`: instruction blocks shipped by earlier releases. `jsonc.py`: comment-preserving JSONC tokenising and splices, shared by install and uninstall so neither flattens a commented config. `uninstall.py`: reverses `install`. `enrich.py`: PreToolUse hook enrichment. `forget.py`: drops files from the graph. `registry.py`: multi-repo registry. `http_origin_guard.py`: Host/Origin checks for `serve --http`. `token_benchmark.py` and `eval/`: benchmarks. `constants.py`: shared constants.\n- `modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md`: the reference served by `get_docs_section_tool`.\n\nDatabase: `.reviewgraph/graph.db` (SQLite, WAL mode).\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s5",
+          "title": "Key Commands",
+          "level": 2,
+          "line": 40,
+          "endLine": 60,
+          "text": "## Key Commands\n\n```bash\n# Development\nuv run pytest tests/ --tb=short -q\nuv run ruff check modules/code-review/graph_engine/ apps/cli/reviewgraph/\nuv run mypy modules/code-review/graph_engine/ apps/cli/reviewgraph/ --ignore-missing-imports --no-strict-optional\n\n# Graph\nuv run reviewgraph build              # full build\nuv run reviewgraph update             # incremental update\nuv run reviewgraph status             # graph statistics\nuv run reviewgraph detect-changes     # risk-scored change analysis (read-only)\nuv run reviewgraph forget PATH        # drop files from the graph\nuv run reviewgraph serve              # MCP server (stdio; --http for localhost)\nuv run reviewgraph wiki               # Markdown wiki\nuv run reviewgraph register <path>    # add a repo to the multi-repo registry\nuv run reviewgraph eval               # benchmarks\nuv run reviewgraph --help             # full command list\n```\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s6",
+          "title": "Code Conventions",
+          "level": 2,
+          "line": 61,
+          "endLine": 69,
+          "text": "## Code Conventions\n\n- Line length 100 (ruff). Python 3.10+.\n- SQL: parameterised queries with `?` placeholders. Never format values into SQL strings.\n- Errors: catch specific exceptions and log with `logger.warning` or `logger.error`.\n- Threads: `threading.Lock` around shared caches; SQLite opened with `check_same_thread=False`.\n- Node names: pass through `_sanitize_name()` before returning them to MCP clients.\n- File reads: read the bytes once, hash them, then parse the same bytes.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s7",
+          "title": "Security Invariants",
+          "level": 2,
+          "line": 70,
+          "endLine": 80,
+          "text": "## Security Invariants\n\n- No `eval()`, `exec()`, `pickle` or `yaml.unsafe_load()`.\n- No `shell=True` in subprocess calls.\n- `_validate_repo_root()` requires an existing directory containing `.git`, `.svn` or `.reviewgraph`, which blocks path traversal through `repo_root`.\n- `_sanitize_name()` strips control characters and caps names at 256 characters.\n- `escH()` in `visualization.py` escapes HTML entities including quotes and backticks; `</script>` is escaped inside embedded JSON.\n- D3.js is bundled and loaded with an SRI hash; the CDN fallback carries the same hash.\n- `http_origin_guard.py` validates Host and Origin for `serve --http`.\n- API keys come from environment variables only.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s8",
+          "title": "Test Structure",
+          "level": 2,
+          "line": 81,
+          "endLine": 95,
+          "text": "## Test Structure\n\n`tests/` holds over 100 pytest modules. The main groups:\n\n- Core: `test_parser.py`, `test_graph.py`, `test_incremental.py`, `test_tools.py`, `test_main.py`, `test_cli*.py`.\n- Features: `test_flows.py`, `test_communities.py`, `test_changes.py`, `test_refactor.py`, `test_search.py`, `test_hints.py`, `test_prompts.py`, `test_wiki.py`, `test_embeddings.py`, `test_eval.py`, `test_registry.py`, `test_migrations.py`, `test_uncertainty.py`, `test_context_savings.py`, `test_token_budget.py` (per-tool token budgets).\n- Languages: `test_multilang.py`, `test_custom_languages.py`, `test_notebook.py`, plus per-language files such as `test_php_*.py`, `test_spring_*.py`, `test_kotlin_imports.py`, `test_go_embeddings.py`, `test_cpp_*.py`, `test_typescript_node_extensions.py`, `test_tsconfig_resolver.py`, `test_hcl_parser.py`, `test_dbt_parser.py`, `test_ansible_parser.py`.\n- Regression modules are named after the behaviour they pin, not the PR that produced them. The originating PR number goes in the module docstring.\n- Watch and daemon: `test_watch_*.py`, `test_daemon*.py`.\n- Install and platforms: `test_skills.py`, `test_cli_install.py`, `test_uninstall.py`, `test_git_hook_worktree.py`, `test_hermes_install.py`, `test_qoder_bundled_skills.py`, `test_installer_ownership.py` (what install may rewrite and what belongs to the user), `test_released_shapes.py` (reads the hooks and MCP entries every released tag wrote and requires them to still be recognised; needs tags, skips without them), `test_platform_lifecycle.py` (opt-in marker `platform_lifecycle`).\n- Windows: `test_windows_compat.py`, `test_windows_path_identity.py`.\n- Docs and GitHub Action: `test_documentation.py`, `test_action_render.py`.\n- Distribution gate: `test_packaging.py`, marked `packaging` and **skipped by default**. Builds a wheel and an sdist with `python -m build`, installs each into its own virtual environment, and drives the installed program with the checkout out of reach. Needs network and takes a couple of minutes. Run it before a release with `uv run --python 3.13 python -m pytest tests/test_packaging.py -m packaging`.\n- `tests/fixtures/`: sample files per supported language.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s9",
+          "title": "CI Pipeline",
+          "level": 2,
+          "line": 96,
+          "endLine": 106,
+          "text": "## CI Pipeline\n\n`.github/workflows/ci.yml`:\n\n- lint: ruff on Python 3.10.\n- type-check: mypy.\n- security: bandit with the exemptions in `pyproject.toml`.\n- test: pytest on Python 3.10, 3.11, 3.12 and 3.13; coverage must be at least 65%.\n- google-embeddings: constructs the Google provider with the `google-embeddings` and `all` extras.\n- windows-native: a subset of the suite on windows-latest.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s10",
+          "title": "IssueGraph issue tracking",
+          "level": 2,
+          "line": 107,
+          "endLine": 121,
+          "text": "## IssueGraph issue tracking\n\nThis project uses IssueGraph. Run `issuegraph prime` for current workflow and command guidance.\n\nUse `issuegraph ready`, `issuegraph show <id>`, `issuegraph update <id> --claim`, and\n`issuegraph close <id>` for task tracking. Use `issuegraph remember \"insight\"` for persistent\nproject knowledge. Do not create Markdown TODO lists.\n\nIssueGraph stores its local database under `.issuegraph/` and tracks `issues.jsonl` plus\n`manifest.json` in Git. Do not create branches, commit, push, merge, or sync IssueGraph remotes\nunless the user explicitly asks. When asked for a PR, target `main`.\n\nBefore handoff, run relevant quality checks and report changed files and validation results.\n\n<!-- reviewgraph MCP tools -->"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s11",
+          "title": "MCP Tools: reviewgraph",
+          "level": 2,
+          "line": 122,
+          "endLine": 127,
+          "text": "## MCP Tools: reviewgraph\n\n**This project has a knowledge graph. Start with the reviewgraph\nMCP tools to narrow scope, then read the source.** The graph is cheaper than scanning files and\ngives you structural context (callers, dependents, test coverage) that file search cannot.\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s12",
+          "title": "When to use graph tools FIRST",
+          "level": 3,
+          "line": 128,
+          "endLine": 135,
+          "text": "### When to use graph tools FIRST\n\n- **Exploring code**: `semantic_search_nodes_tool` or `query_graph_tool` instead of Grep\n- **Understanding impact**: `get_impact_radius_tool` instead of manually tracing imports\n- **Code review**: `detect_changes_tool` + `get_review_context_tool` instead of reading entire files\n- **Finding relationships**: `query_graph_tool` with callers_of/callees_of/imports_of/tests_for\n- **Architecture questions**: `get_architecture_overview_tool` + `list_communities_tool`\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s13",
+          "title": "Verify in the source",
+          "level": 3,
+          "line": 136,
+          "endLine": 145,
+          "text": "### Verify in the source\n\n- Narrow scope with the graph, then read the source. Do not change code from graph output alone.\n- For any non-trivial change, read the implementation and the relevant tests before concluding.\n- Verify the exact source when touching behavior, database logic, migrations, retries, fallbacks,\n  recovery, or compatibility code.\n- When the graph and the source disagree, the source wins. The graph may be stale or may not\n  model that relationship.\n- An empty graph result can mean \"not indexed\" or \"not statically visible\", not \"does not exist\".\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s14",
+          "title": "Key Tools",
+          "level": 3,
+          "line": 146,
+          "endLine": 158,
+          "text": "### Key Tools\n\n| Tool | Use when |\n| ------ | ---------- |\n| `detect_changes_tool` | Reviewing code changes — gives risk-scored analysis |\n| `get_review_context_tool` | Need source snippets for review — token-efficient |\n| `get_impact_radius_tool` | Understanding blast radius of a change |\n| `get_affected_flows_tool` | Finding which execution paths are impacted |\n| `query_graph_tool` | Tracing callers, callees, imports, tests, dependencies |\n| `semantic_search_nodes_tool` | Finding functions/classes by name or keyword |\n| `get_architecture_overview_tool` | Understanding high-level codebase structure |\n| `refactor_tool` | Planning renames, finding dead code |\n"
+        },
+        {
+          "id": "source-6ebdb617a8104a77-s15",
+          "title": "Workflow",
+          "level": 3,
+          "line": 159,
+          "endLine": 165,
+          "text": "### Workflow\n\n1. The graph auto-updates on file changes (via hooks).\n2. Use `detect_changes_tool` for code review.\n3. Use `get_affected_flows_tool` to understand impact.\n4. Use `query_graph_tool` pattern=\"tests_for\" to check coverage.\n<!-- /reviewgraph MCP tools -->"
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 33,
+        "lastEdited": "2026-10-31T16:28:26-07:00",
+        "commit": "d8c7eb7dc62334b57536e4d95b135b17b515b5d7"
+      }
+    },
+    {
+      "id": "source-f7e659f3180fbf97",
+      "path": "docs/CUSTOM_LANGUAGES.md",
+      "kind": "reference",
+      "scope": null,
+      "discoveredFrom": "CONTRIBUTING.md",
+      "applicability": "unreviewed",
+      "text": "# Custom Languages (Bring Your Own Language)\n\nreviewgraph has built-in parsers for more than 35 languages. The\n[tree-sitter-language-pack](https://github.com/Goldziher/tree-sitter-language-pack)\nit depends on bundles many more grammars. If your repository uses a language\nthe graph does not cover (Erlang, Haskell, OCaml, Fortran, Ada, Clojure, ...),\nyou can add it with a config file. No fork, no code changes.\n\n## Quick start\n\nCreate `<repo_root>/.reviewgraph/languages.toml`:\n\n```toml\n[languages.erlang]\nextensions = [\".erl\"]\ngrammar = \"erlang\"\nfunction_node_types = [\"function_clause\"]\nclass_node_types = [\"record_decl\"]\nimport_node_types = [\"import_attribute\"]\ncall_node_types = [\"call\"]\ncomment = \"Erlang via the bundled tree-sitter-erlang grammar\"\n```\n\nThen rebuild:\n\n```bash\nreviewgraph build\n```\n\nFiles with the configured extensions are parsed with the named grammar. The\nresulting `Function` and `Class` nodes and `CALLS` and `IMPORTS_FROM` edges go\nthrough every downstream feature (impact radius, search, communities, wiki,\nMCP tools) like built-in languages. Nodes carry the custom language name (here\n`erlang`) in their `language` field.\n\n## Schema reference\n\nEach custom language is one `[languages.<name>]` table.\n\n| Key | Type | Required | Meaning |\n|-----|------|----------|---------|\n| `<name>` | table key | yes | Language identifier stored on every parsed node. A lowercase letter followed by lowercase letters, digits, `_` or `-`; at most 32 characters. |\n| `extensions` | list of strings | yes | File extensions to claim. Each is a dot followed by 1 to 15 characters from `a-z`, `0-9`, `_`, `+`, `-`. Matched case-insensitively. |\n| `grammar` | string | yes | A grammar name shipped by `tree_sitter_language_pack` (see [Troubleshooting](#troubleshooting) for how to check). |\n| `function_node_types` | list of strings | no* | Node types that define functions or methods. Each becomes a `Function` node, or a `Test` node when its name or location marks it as a test. |\n| `class_node_types` | list of strings | no* | Node types that define classes, records or types. Each becomes a `Class` node. |\n| `import_node_types` | list of strings | no* | Node types for import or include statements. Each yields an `IMPORTS_FROM` edge. |\n| `call_node_types` | list of strings | no* | Node types for call expressions. Each yields a `CALLS` edge from the enclosing function. |\n| `name_field` | string or list of strings | no | Ordered candidates for finding a definition's name when it is not in a `name` field or an identifier child (see below). At most 8. |\n| `comment` | string | no | Free text for humans; ignored by the parser. |\n\n\\* At least one of the four node-type lists must be non-empty, otherwise the\nentry is skipped.\n\n### Validation rules\n\nThe loader never fails a build. An invalid entry is skipped with a `WARNING`\nlog line that says why:\n\n- Built-ins win. A custom language cannot claim a built-in extension (`.py`,\n  `.ts`, `.ex`, ...) or reuse a built-in language name (`python`, `elixir`, ...).\n- `grammar` must load from `tree_sitter_language_pack`.\n- Every extension must start with a dot.\n- Two custom languages cannot claim the same extension; the first one wins.\n- At most 20 custom languages are loaded per repository; the rest are ignored.\n- Malformed TOML disables custom languages for that build.\n- `name_field` must be a string or a list of non-empty strings, at most 8\n  entries.\n\n### Naming definitions with `name_field`\n\nWithout `name_field`, the parser reads a definition's name from the grammar's\n`name` field, then from the first child whose type is identifier-like\n(`identifier`, `name`, `type_identifier`, `property_identifier`,\n`simple_identifier`, `constant`, `field_identifier`). Many grammars keep the\nname elsewhere: in a differently named field, or nested a level or two down.\nA definition whose name cannot be found is dropped. `name_field` says where to\nlook.\n\nCandidates are tried in two passes:\n\n1. Fields. Each candidate is tried as a tree-sitter field name on the\n   definition node. All candidates are tried as fields before any type search,\n   so a precise field beats a broader match.\n2. Typed descendants. If no field matched, the first descendant (up to 4 levels\n   down) whose node type equals a candidate.\n\nThe matched node is reduced to its first text-bearing leaf of a known name type\n(`identifier`, `word`, `name`, `type_identifier`, ...) or, failing that, its own\ntext. Surrounding braces, quotes and whitespace are stripped. Text that is\nempty, spans lines or is longer than 256 characters is rejected. If no\ncandidate resolves, the `name` field fallback above applies.\n\n```toml\n[languages.bibtex]\nextensions = [\".bib\"]\ngrammar = \"bibtex\"\nclass_node_types = [\"entry\"]\nname_field = [\"key\"]            # @article{smith2020,...} -> \"smith2020\"\n\n[languages.latex]\nextensions = [\".tex\"]\ngrammar = \"latex\"\nclass_node_types = [\"section\", \"chapter\", \"subsection\"]\nfunction_node_types = [\"new_command_definition\"]\nname_field = [\"name\", \"text\", \"declaration\"]\n#   \\section{Introduction}   -> \"Introduction\" (via `text`)\n#   \\newcommand{\\foo}{bar}    -> \"\\foo\"        (via `declaration`)\n\n[languages.markdown]\nextensions = [\".md\"]\ngrammar = \"markdown\"\nclass_node_types = [\"section\"]\nname_field = [\"inline\"]         # \"# My Heading\" -> \"My Heading\" (typed descendant)\n```\n\nUse a list when node types keep their names in different places (LaTeX\n`section` uses `text`, `\\newcommand` uses `declaration`): the first candidate\nthat resolves wins.\n\n## Finding the right node type names\n\nNode type names are grammar-specific. Two ways to see them:\n\n**Tree-sitter playground.** Paste a snippet into\n<https://tree-sitter.github.io/tree-sitter/7-playground.html>, select the\ngrammar, and read the node names off the tree.\n\n**Probe locally.** The grammar version your build uses is the one in\n`tree_sitter_language_pack`, so this is the reliable source:\n\n```bash\npython - <<'EOP'\nimport tree_sitter_language_pack as tslp\n\nsource = b\"\"\"\n-module(math_utils).\nadd(A, B) -> helper(A) + B.\nhelper(X) -> X * 2.\n\"\"\"\n\ndef dump(node, depth=0):\n    print(\"  \" * depth + node.type, node.text.decode()[:40].replace(\"\\n\", \" \"))\n    for child in node.children:\n        dump(child, depth + 1)\n\ndump(tslp.get_parser(\"erlang\").parse(source).root_node)\nEOP\n```\n\nPick node types that wrap whole definitions (`function_clause`, not the inner\n`atom`) and whole call expressions (`call`, not the callee identifier).\n\n## Worked example: Erlang end to end\n\n`src/math_utils.erl`:\n\n```erlang\n-module(math_utils).\n-export([add/2, scale/2]).\n-import(lists, [map/2]).\n\n-record(point, {x, y}).\n\nadd(A, B) ->\n    helper(A) + B.\n\nhelper(X) -> X * 2.\n\nscale(Points, F) ->\n    lists:map(fun(P) -> add(P, F) end, Points).\n```\n\nWith the `[languages.erlang]` config from the quick start, a build produces:\n\n- `Function` nodes `add`, `helper`, `scale` (from `function_clause`), each\n  with `language = \"erlang\"`.\n- A `Class` node `point` (from `record_decl`).\n- `CALLS` edges `add -> helper` and `scale -> add`, resolved to their\n  same-file qualified names, plus `scale -> lists:map` for the remote call.\n- An `IMPORTS_FROM` edge targeting `lists` (from `import_attribute`).\n- `CONTAINS` edges from the file to every definition.\n\n## How extraction works (and its limits)\n\nCustom languages go through the same generic tree-sitter walker as built-in\nlanguages. There is no per-language code path, which keeps the feature simple\nand sets its limits:\n\n- Names come from `name_field`, then the grammar's `name` field, then an\n  identifier-like child (see above). Definitions with no resolvable name are\n  dropped.\n- Callees are read from the call node's `function`, `callee`, `expr` or `name`\n  field, in that order, descending through nested applications of the same\n  field (curried calls). Callee text that spans lines or exceeds 256 characters\n  is dropped. Other call shapes are missed.\n- Import targets come from the statement's `module`, `name`, `path` or `source`\n  field; otherwise the whole statement text is recorded.\n- No cross-file module resolution. Import edges keep the module name as written\n  (`lists`); they are not resolved to file paths as built-in languages with\n  dedicated resolvers are.\n- No language-specific extras: decorator-based test detection, framework\n  annotations (Spring, Temporal) and SFC handling exist only for built-in\n  languages.\n\nIf a language needs more than the generic walker gives, open an issue.\n\n## Troubleshooting\n\n- The loader logs a `WARNING` for every skipped entry, naming the config file,\n  the language and the reason. The CLI prints log lines to stderr during\n  `build` and `update`; `-q` does not hide warnings.\n- Check a grammar is bundled:\n  `python -c \"import tree_sitter_language_pack as t; t.get_language('erlang')\"`.\n  It raises `LookupError` if it is not.\n- The config is read when a parser is constructed and cached by file mtime and\n  size. `update` re-parses only changed files, so run `reviewgraph build`\n  after editing the config to apply it to every file.",
+      "sections": [
+        {
+          "id": "source-f7e659f3180fbf97-s1",
+          "title": "Custom Languages (Bring Your Own Language)",
+          "level": 1,
+          "line": 1,
+          "endLine": 8,
+          "text": "# Custom Languages (Bring Your Own Language)\n\nreviewgraph has built-in parsers for more than 35 languages. The\n[tree-sitter-language-pack](https://github.com/Goldziher/tree-sitter-language-pack)\nit depends on bundles many more grammars. If your repository uses a language\nthe graph does not cover (Erlang, Haskell, OCaml, Fortran, Ada, Clojure, ...),\nyou can add it with a config file. No fork, no code changes.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s2",
+          "title": "Quick start",
+          "level": 2,
+          "line": 9,
+          "endLine": 35,
+          "text": "## Quick start\n\nCreate `<repo_root>/.reviewgraph/languages.toml`:\n\n```toml\n[languages.erlang]\nextensions = [\".erl\"]\ngrammar = \"erlang\"\nfunction_node_types = [\"function_clause\"]\nclass_node_types = [\"record_decl\"]\nimport_node_types = [\"import_attribute\"]\ncall_node_types = [\"call\"]\ncomment = \"Erlang via the bundled tree-sitter-erlang grammar\"\n```\n\nThen rebuild:\n\n```bash\nreviewgraph build\n```\n\nFiles with the configured extensions are parsed with the named grammar. The\nresulting `Function` and `Class` nodes and `CALLS` and `IMPORTS_FROM` edges go\nthrough every downstream feature (impact radius, search, communities, wiki,\nMCP tools) like built-in languages. Nodes carry the custom language name (here\n`erlang`) in their `language` field.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s3",
+          "title": "Schema reference",
+          "level": 2,
+          "line": 36,
+          "endLine": 54,
+          "text": "## Schema reference\n\nEach custom language is one `[languages.<name>]` table.\n\n| Key | Type | Required | Meaning |\n|-----|------|----------|---------|\n| `<name>` | table key | yes | Language identifier stored on every parsed node. A lowercase letter followed by lowercase letters, digits, `_` or `-`; at most 32 characters. |\n| `extensions` | list of strings | yes | File extensions to claim. Each is a dot followed by 1 to 15 characters from `a-z`, `0-9`, `_`, `+`, `-`. Matched case-insensitively. |\n| `grammar` | string | yes | A grammar name shipped by `tree_sitter_language_pack` (see [Troubleshooting](#troubleshooting) for how to check). |\n| `function_node_types` | list of strings | no* | Node types that define functions or methods. Each becomes a `Function` node, or a `Test` node when its name or location marks it as a test. |\n| `class_node_types` | list of strings | no* | Node types that define classes, records or types. Each becomes a `Class` node. |\n| `import_node_types` | list of strings | no* | Node types for import or include statements. Each yields an `IMPORTS_FROM` edge. |\n| `call_node_types` | list of strings | no* | Node types for call expressions. Each yields a `CALLS` edge from the enclosing function. |\n| `name_field` | string or list of strings | no | Ordered candidates for finding a definition's name when it is not in a `name` field or an identifier child (see below). At most 8. |\n| `comment` | string | no | Free text for humans; ignored by the parser. |\n\n\\* At least one of the four node-type lists must be non-empty, otherwise the\nentry is skipped.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s4",
+          "title": "Validation rules",
+          "level": 3,
+          "line": 55,
+          "endLine": 69,
+          "text": "### Validation rules\n\nThe loader never fails a build. An invalid entry is skipped with a `WARNING`\nlog line that says why:\n\n- Built-ins win. A custom language cannot claim a built-in extension (`.py`,\n  `.ts`, `.ex`, ...) or reuse a built-in language name (`python`, `elixir`, ...).\n- `grammar` must load from `tree_sitter_language_pack`.\n- Every extension must start with a dot.\n- Two custom languages cannot claim the same extension; the first one wins.\n- At most 20 custom languages are loaded per repository; the rest are ignored.\n- Malformed TOML disables custom languages for that build.\n- `name_field` must be a string or a list of non-empty strings, at most 8\n  entries.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s5",
+          "title": "Naming definitions with `name_field`",
+          "level": 3,
+          "line": 70,
+          "endLine": 120,
+          "text": "### Naming definitions with `name_field`\n\nWithout `name_field`, the parser reads a definition's name from the grammar's\n`name` field, then from the first child whose type is identifier-like\n(`identifier`, `name`, `type_identifier`, `property_identifier`,\n`simple_identifier`, `constant`, `field_identifier`). Many grammars keep the\nname elsewhere: in a differently named field, or nested a level or two down.\nA definition whose name cannot be found is dropped. `name_field` says where to\nlook.\n\nCandidates are tried in two passes:\n\n1. Fields. Each candidate is tried as a tree-sitter field name on the\n   definition node. All candidates are tried as fields before any type search,\n   so a precise field beats a broader match.\n2. Typed descendants. If no field matched, the first descendant (up to 4 levels\n   down) whose node type equals a candidate.\n\nThe matched node is reduced to its first text-bearing leaf of a known name type\n(`identifier`, `word`, `name`, `type_identifier`, ...) or, failing that, its own\ntext. Surrounding braces, quotes and whitespace are stripped. Text that is\nempty, spans lines or is longer than 256 characters is rejected. If no\ncandidate resolves, the `name` field fallback above applies.\n\n```toml\n[languages.bibtex]\nextensions = [\".bib\"]\ngrammar = \"bibtex\"\nclass_node_types = [\"entry\"]\nname_field = [\"key\"]            # @article{smith2020,...} -> \"smith2020\"\n\n[languages.latex]\nextensions = [\".tex\"]\ngrammar = \"latex\"\nclass_node_types = [\"section\", \"chapter\", \"subsection\"]\nfunction_node_types = [\"new_command_definition\"]\nname_field = [\"name\", \"text\", \"declaration\"]\n#   \\section{Introduction}   -> \"Introduction\" (via `text`)\n#   \\newcommand{\\foo}{bar}    -> \"\\foo\"        (via `declaration`)\n\n[languages.markdown]\nextensions = [\".md\"]\ngrammar = \"markdown\"\nclass_node_types = [\"section\"]\nname_field = [\"inline\"]         # \"# My Heading\" -> \"My Heading\" (typed descendant)\n```\n\nUse a list when node types keep their names in different places (LaTeX\n`section` uses `text`, `\\newcommand` uses `declaration`): the first candidate\nthat resolves wins.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s6",
+          "title": "Finding the right node type names",
+          "level": 2,
+          "line": 121,
+          "endLine": 153,
+          "text": "## Finding the right node type names\n\nNode type names are grammar-specific. Two ways to see them:\n\n**Tree-sitter playground.** Paste a snippet into\n<https://tree-sitter.github.io/tree-sitter/7-playground.html>, select the\ngrammar, and read the node names off the tree.\n\n**Probe locally.** The grammar version your build uses is the one in\n`tree_sitter_language_pack`, so this is the reliable source:\n\n```bash\npython - <<'EOP'\nimport tree_sitter_language_pack as tslp\n\nsource = b\"\"\"\n-module(math_utils).\nadd(A, B) -> helper(A) + B.\nhelper(X) -> X * 2.\n\"\"\"\n\ndef dump(node, depth=0):\n    print(\"  \" * depth + node.type, node.text.decode()[:40].replace(\"\\n\", \" \"))\n    for child in node.children:\n        dump(child, depth + 1)\n\ndump(tslp.get_parser(\"erlang\").parse(source).root_node)\nEOP\n```\n\nPick node types that wrap whole definitions (`function_clause`, not the inner\n`atom`) and whole call expressions (`call`, not the callee identifier).\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s7",
+          "title": "Worked example: Erlang end to end",
+          "level": 2,
+          "line": 154,
+          "endLine": 183,
+          "text": "## Worked example: Erlang end to end\n\n`src/math_utils.erl`:\n\n```erlang\n-module(math_utils).\n-export([add/2, scale/2]).\n-import(lists, [map/2]).\n\n-record(point, {x, y}).\n\nadd(A, B) ->\n    helper(A) + B.\n\nhelper(X) -> X * 2.\n\nscale(Points, F) ->\n    lists:map(fun(P) -> add(P, F) end, Points).\n```\n\nWith the `[languages.erlang]` config from the quick start, a build produces:\n\n- `Function` nodes `add`, `helper`, `scale` (from `function_clause`), each\n  with `language = \"erlang\"`.\n- A `Class` node `point` (from `record_decl`).\n- `CALLS` edges `add -> helper` and `scale -> add`, resolved to their\n  same-file qualified names, plus `scale -> lists:map` for the remote call.\n- An `IMPORTS_FROM` edge targeting `lists` (from `import_attribute`).\n- `CONTAINS` edges from the file to every definition.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s8",
+          "title": "How extraction works (and its limits)",
+          "level": 2,
+          "line": 184,
+          "endLine": 207,
+          "text": "## How extraction works (and its limits)\n\nCustom languages go through the same generic tree-sitter walker as built-in\nlanguages. There is no per-language code path, which keeps the feature simple\nand sets its limits:\n\n- Names come from `name_field`, then the grammar's `name` field, then an\n  identifier-like child (see above). Definitions with no resolvable name are\n  dropped.\n- Callees are read from the call node's `function`, `callee`, `expr` or `name`\n  field, in that order, descending through nested applications of the same\n  field (curried calls). Callee text that spans lines or exceeds 256 characters\n  is dropped. Other call shapes are missed.\n- Import targets come from the statement's `module`, `name`, `path` or `source`\n  field; otherwise the whole statement text is recorded.\n- No cross-file module resolution. Import edges keep the module name as written\n  (`lists`); they are not resolved to file paths as built-in languages with\n  dedicated resolvers are.\n- No language-specific extras: decorator-based test detection, framework\n  annotations (Spring, Temporal) and SFC handling exist only for built-in\n  languages.\n\nIf a language needs more than the generic walker gives, open an issue.\n"
+        },
+        {
+          "id": "source-f7e659f3180fbf97-s9",
+          "title": "Troubleshooting",
+          "level": 2,
+          "line": 208,
+          "endLine": 218,
+          "text": "## Troubleshooting\n\n- The loader logs a `WARNING` for every skipped entry, naming the config file,\n  the language and the reason. The CLI prints log lines to stderr during\n  `build` and `update`; `-q` does not hide warnings.\n- Check a grammar is bundled:\n  `python -c \"import tree_sitter_language_pack as t; t.get_language('erlang')\"`.\n  It raises `LookupError` if it is not.\n- The config is read when a parser is constructed and cached by file mtime and\n  size. `update` re-parses only changed files, so run `reviewgraph build`\n  after editing the config to apply it to every file."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 6,
+        "lastEdited": "2026-10-31T16:28:26-07:00",
+        "commit": "d8c7eb7dc62334b57536e4d95b135b17b515b5d7"
+      }
+    },
+    {
+      "id": "source-b3de1829c6b387d4",
+      "path": "modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md",
+      "kind": "reference",
+      "scope": null,
+      "discoveredFrom": "CLAUDE.md",
+      "applicability": "unreviewed",
+      "text": "# LLM-OPTIMIZED REFERENCE: reviewgraph\n\nAgents: fetch one section at a time with get_docs_section_tool(section_name=\"...\"). Do not load the whole file.\n\n<section name=\"usage\">\nInstall: pip install reviewgraph, then reviewgraph install && reviewgraph build.\nFirst call in any task: get_minimal_context_tool(task=\"<task>\"). About 100 tokens: summary, risk, communities, flows_affected, next_tool_suggestions. status: not_ready means call build_or_update_graph_tool first.\nPass detail_level=\"minimal\" wherever a tool accepts it; use \"standard\" only when minimal is not enough.\nPrefer a targeted query_graph_tool call over a broad listing tool.\nBudget: about five tool calls and 800 tokens of graph output per task.\ncontext_savings, when present, is an estimate, not an exact token count.\n</section>\n\n<section name=\"review-delta\">\n1. get_minimal_context_tool(task=\"review changes\"); build_or_update_graph_tool() if not_ready.\n2. detect_changes_tool(detail_level=\"minimal\") for risk-scored changed functions, test gaps and affected flows.\n3. get_review_context_tool(detail_level=\"minimal\") when you need source snippets and review_guidance.\n4. query_graph_tool(pattern=\"tests_for\", target=\"<function>\") for each untested high-risk function.\nUse detail_level=\"standard\" only for high-risk items. Report summary, risk, issues, blast radius, recommendations.\n</section>\n\n<section name=\"review-pr\">\n1. get_minimal_context_tool(task=\"review PR\", base=\"main\"); build_or_update_graph_tool() if not_ready.\n2. detect_changes_tool(base=\"main\", detail_level=\"minimal\"); get_affected_flows_tool(base=\"main\", detail_level=\"minimal\") when you need flow steps.\n3. query_graph_tool with callers_of and tests_for for high-risk functions.\nReport a structured review with a blast-radius table and risk scores. Do not include whole files unless asked.\n</section>\n\n<section name=\"reviewgraph\">\nMCP tools (30): build_or_update_graph_tool, run_postprocess_tool, get_minimal_context_tool, get_impact_radius_tool, query_graph_tool, get_review_context_tool, semantic_search_nodes_tool, embed_graph_tool, list_graph_stats_tool, get_docs_section_tool, find_large_functions_tool, list_flows_tool, get_flow_tool, get_affected_flows_tool, list_communities_tool, get_community_tool, get_architecture_overview_tool, detect_changes_tool, refactor_tool, apply_refactor_tool, generate_wiki_tool, get_wiki_page_tool, get_hub_nodes_tool, get_bridge_nodes_tool, get_knowledge_gaps_tool, get_surprising_connections_tool, get_suggested_questions_tool, traverse_graph_tool, list_repos_tool, cross_repo_search_tool.\nquery_graph_tool patterns: callers_of, references_to, callees_of, imports_of, importers_of, children_of, tests_for, inheritors_of, triggers_of, triggered_by, publishers_of, listeners_of, handlers_of, endpoints_for, consumers_of, file_summary.\nrefactor_tool modes: rename (old_name, new_name; apply with apply_refactor_tool(refactor_id)), dead_code, suggest.\nMCP prompts (5): review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check.\nSkills: build-graph, debug-issue, explore-codebase, refactor-safely, review-changes, review-delta, review-pr.\nCLI: reviewgraph {install, init, uninstall, build, update, postprocess, embed, watch, status, forget, visualize, wiki, register, unregister, repos, eval, detect-changes, enrich, dead-code, query, impact, search, flows, flow, communities, community, architecture, large-functions, refactor, serve, mcp, daemon}. Run reviewgraph <command> --help for flags.\nResult bounds: lists are capped. Defaults are small; pass the tool's cap parameter to widen up to its hard ceiling. Truncation is reported: total (or a *_total field per list) gives the full count, truncated is true, and the summary says how many of how many are shown.\nCap parameters: max_results (query_graph, get_review_context, detect_changes, list_communities, get_architecture_overview, refactor, cross_repo_search); max_flows (get_affected_flows, detect_changes); max_members (list_communities, get_community, get_architecture_overview); max_steps and max_source_lines (get_flow); max_per_category (get_knowledge_gaps); top_n (get_hub_nodes, get_bridge_nodes, get_surprising_connections); limit (list_flows, semantic_search_nodes, find_large_functions, cross_repo_search); max_files (get_review_context); max_chars (get_wiki_page); max_diff_files (apply_refactor).\nCaps reject values below 1 and booleans. get_affected_flows treats max_flows=0 as no caller limit, still capped at 25 flows in standard mode or 500 in minimal, with a shared 400-step budget (#849).\n</section>\n\n<section name=\"legal\">\nMIT licence. Graph build and review run locally; no telemetry. Database: .reviewgraph/graph.db. Cloud embedding providers (openai, google, minimax, voyage) send node names, docstrings and file paths to that provider only when you select them; a stderr warning is printed unless CRG_ACCEPT_CLOUD_EMBEDDINGS=1.\n</section>\n\n<section name=\"watch\">\nreviewgraph watch updates the graph on file save (watchdog).\nreviewgraph install adds hooks instead: PostToolUse on Edit|Write runs update (event names vary by platform), SessionStart runs status, and a git pre-commit hook runs update.\n</section>\n\n<section name=\"embeddings\">\nLocal provider: pip install \"reviewgraph[embeddings]\"; default model all-MiniLM-L6-v2, override with CRG_EMBEDDING_MODEL.\nCloud providers, selected with embed_graph_tool(provider=...): openai needs CRG_OPENAI_BASE_URL, CRG_OPENAI_API_KEY and CRG_OPENAI_MODEL (any OpenAI-compatible endpoint); google needs GOOGLE_API_KEY and pip install \"reviewgraph[google-embeddings]\"; minimax needs MINIMAX_API_KEY; voyage needs VOYAGE_API_KEY, model from CRG_VOYAGE_MODEL or voyage-code-3.\nRun embed_graph_tool once; changing model or provider re-embeds every node. semantic_search_nodes_tool uses vectors when they exist for the chosen provider, otherwise FTS5 keyword search.\n</section>\n\n<section name=\"languages\">\nTree-sitter (tree-sitter-language-pack): Python, JavaScript, TypeScript, TSX, Go, Rust, Java, C, C++, C#, VB.NET, Ruby, Kotlin, Swift, PHP, Scala, Solidity, Dart, R, Perl, Lua, Luau, Objective-C, Bash and Zsh, Elixir, Zig, PowerShell, Julia, ReScript, GDScript, Nix, Verilog and SystemVerilog, SQL, HCL (Terraform .tf and .hcl).\nTargeted parsers: Vue and Svelte single-file components, Astro (through the TypeScript parser), Jupyter and Databricks notebooks, Perl XS (parsed as C), Ansible playbooks, roles and tasks, Spring configuration (.properties and YAML). Other YAML is not parsed.\nCustom languages: .reviewgraph/languages.toml (extensions and node types per grammar), see docs/CUSTOM_LANGUAGES.md. Built-in extensions and language names cannot be overridden.\n</section>\n\n<section name=\"troubleshooting\">\nLocked database: SQLite runs in WAL mode with a 5 s busy timeout and recovers on its own. Run one build at a time.\nLarge repos: a cold build of about 3,000 files takes about 40 s; an incremental update on the hook path about 2.5 s (docs/REPRODUCING.md). Add patterns to .reviewgraphignore to skip generated code.\nStale graph: reviewgraph update, or build_or_update_graph_tool(full_rebuild=True) when nodes are missing.\nMissing nodes: check the languages section and your ignore patterns.\nWindows and WSL: use forward slashes in repo_root; in WSL install uv inside WSL and use WSL2 for file watching.\n</section>\n\nAgents: for any question about reviewgraph usage, commands or workflows, call get_docs_section_tool with the section name and answer from that section plus the current graph state only.",
+      "sections": [
+        {
+          "id": "source-b3de1829c6b387d4-s1",
+          "title": "LLM-OPTIMIZED REFERENCE: reviewgraph",
+          "level": 1,
+          "line": 1,
+          "endLine": 70,
+          "text": "# LLM-OPTIMIZED REFERENCE: reviewgraph\n\nAgents: fetch one section at a time with get_docs_section_tool(section_name=\"...\"). Do not load the whole file.\n\n<section name=\"usage\">\nInstall: pip install reviewgraph, then reviewgraph install && reviewgraph build.\nFirst call in any task: get_minimal_context_tool(task=\"<task>\"). About 100 tokens: summary, risk, communities, flows_affected, next_tool_suggestions. status: not_ready means call build_or_update_graph_tool first.\nPass detail_level=\"minimal\" wherever a tool accepts it; use \"standard\" only when minimal is not enough.\nPrefer a targeted query_graph_tool call over a broad listing tool.\nBudget: about five tool calls and 800 tokens of graph output per task.\ncontext_savings, when present, is an estimate, not an exact token count.\n</section>\n\n<section name=\"review-delta\">\n1. get_minimal_context_tool(task=\"review changes\"); build_or_update_graph_tool() if not_ready.\n2. detect_changes_tool(detail_level=\"minimal\") for risk-scored changed functions, test gaps and affected flows.\n3. get_review_context_tool(detail_level=\"minimal\") when you need source snippets and review_guidance.\n4. query_graph_tool(pattern=\"tests_for\", target=\"<function>\") for each untested high-risk function.\nUse detail_level=\"standard\" only for high-risk items. Report summary, risk, issues, blast radius, recommendations.\n</section>\n\n<section name=\"review-pr\">\n1. get_minimal_context_tool(task=\"review PR\", base=\"main\"); build_or_update_graph_tool() if not_ready.\n2. detect_changes_tool(base=\"main\", detail_level=\"minimal\"); get_affected_flows_tool(base=\"main\", detail_level=\"minimal\") when you need flow steps.\n3. query_graph_tool with callers_of and tests_for for high-risk functions.\nReport a structured review with a blast-radius table and risk scores. Do not include whole files unless asked.\n</section>\n\n<section name=\"reviewgraph\">\nMCP tools (30): build_or_update_graph_tool, run_postprocess_tool, get_minimal_context_tool, get_impact_radius_tool, query_graph_tool, get_review_context_tool, semantic_search_nodes_tool, embed_graph_tool, list_graph_stats_tool, get_docs_section_tool, find_large_functions_tool, list_flows_tool, get_flow_tool, get_affected_flows_tool, list_communities_tool, get_community_tool, get_architecture_overview_tool, detect_changes_tool, refactor_tool, apply_refactor_tool, generate_wiki_tool, get_wiki_page_tool, get_hub_nodes_tool, get_bridge_nodes_tool, get_knowledge_gaps_tool, get_surprising_connections_tool, get_suggested_questions_tool, traverse_graph_tool, list_repos_tool, cross_repo_search_tool.\nquery_graph_tool patterns: callers_of, references_to, callees_of, imports_of, importers_of, children_of, tests_for, inheritors_of, triggers_of, triggered_by, publishers_of, listeners_of, handlers_of, endpoints_for, consumers_of, file_summary.\nrefactor_tool modes: rename (old_name, new_name; apply with apply_refactor_tool(refactor_id)), dead_code, suggest.\nMCP prompts (5): review_changes, architecture_map, debug_issue, onboard_developer, pre_merge_check.\nSkills: build-graph, debug-issue, explore-codebase, refactor-safely, review-changes, review-delta, review-pr.\nCLI: reviewgraph {install, init, uninstall, build, update, postprocess, embed, watch, status, forget, visualize, wiki, register, unregister, repos, eval, detect-changes, enrich, dead-code, query, impact, search, flows, flow, communities, community, architecture, large-functions, refactor, serve, mcp, daemon}. Run reviewgraph <command> --help for flags.\nResult bounds: lists are capped. Defaults are small; pass the tool's cap parameter to widen up to its hard ceiling. Truncation is reported: total (or a *_total field per list) gives the full count, truncated is true, and the summary says how many of how many are shown.\nCap parameters: max_results (query_graph, get_review_context, detect_changes, list_communities, get_architecture_overview, refactor, cross_repo_search); max_flows (get_affected_flows, detect_changes); max_members (list_communities, get_community, get_architecture_overview); max_steps and max_source_lines (get_flow); max_per_category (get_knowledge_gaps); top_n (get_hub_nodes, get_bridge_nodes, get_surprising_connections); limit (list_flows, semantic_search_nodes, find_large_functions, cross_repo_search); max_files (get_review_context); max_chars (get_wiki_page); max_diff_files (apply_refactor).\nCaps reject values below 1 and booleans. get_affected_flows treats max_flows=0 as no caller limit, still capped at 25 flows in standard mode or 500 in minimal, with a shared 400-step budget (#849).\n</section>\n\n<section name=\"legal\">\nMIT licence. Graph build and review run locally; no telemetry. Database: .reviewgraph/graph.db. Cloud embedding providers (openai, google, minimax, voyage) send node names, docstrings and file paths to that provider only when you select them; a stderr warning is printed unless CRG_ACCEPT_CLOUD_EMBEDDINGS=1.\n</section>\n\n<section name=\"watch\">\nreviewgraph watch updates the graph on file save (watchdog).\nreviewgraph install adds hooks instead: PostToolUse on Edit|Write runs update (event names vary by platform), SessionStart runs status, and a git pre-commit hook runs update.\n</section>\n\n<section name=\"embeddings\">\nLocal provider: pip install \"reviewgraph[embeddings]\"; default model all-MiniLM-L6-v2, override with CRG_EMBEDDING_MODEL.\nCloud providers, selected with embed_graph_tool(provider=...): openai needs CRG_OPENAI_BASE_URL, CRG_OPENAI_API_KEY and CRG_OPENAI_MODEL (any OpenAI-compatible endpoint); google needs GOOGLE_API_KEY and pip install \"reviewgraph[google-embeddings]\"; minimax needs MINIMAX_API_KEY; voyage needs VOYAGE_API_KEY, model from CRG_VOYAGE_MODEL or voyage-code-3.\nRun embed_graph_tool once; changing model or provider re-embeds every node. semantic_search_nodes_tool uses vectors when they exist for the chosen provider, otherwise FTS5 keyword search.\n</section>\n\n<section name=\"languages\">\nTree-sitter (tree-sitter-language-pack): Python, JavaScript, TypeScript, TSX, Go, Rust, Java, C, C++, C#, VB.NET, Ruby, Kotlin, Swift, PHP, Scala, Solidity, Dart, R, Perl, Lua, Luau, Objective-C, Bash and Zsh, Elixir, Zig, PowerShell, Julia, ReScript, GDScript, Nix, Verilog and SystemVerilog, SQL, HCL (Terraform .tf and .hcl).\nTargeted parsers: Vue and Svelte single-file components, Astro (through the TypeScript parser), Jupyter and Databricks notebooks, Perl XS (parsed as C), Ansible playbooks, roles and tasks, Spring configuration (.properties and YAML). Other YAML is not parsed.\nCustom languages: .reviewgraph/languages.toml (extensions and node types per grammar), see docs/CUSTOM_LANGUAGES.md. Built-in extensions and language names cannot be overridden.\n</section>\n\n<section name=\"troubleshooting\">\nLocked database: SQLite runs in WAL mode with a 5 s busy timeout and recovers on its own. Run one build at a time.\nLarge repos: a cold build of about 3,000 files takes about 40 s; an incremental update on the hook path about 2.5 s (docs/REPRODUCING.md). Add patterns to .reviewgraphignore to skip generated code.\nStale graph: reviewgraph update, or build_or_update_graph_tool(full_rebuild=True) when nodes are missing.\nMissing nodes: check the languages section and your ignore patterns.\nWindows and WSL: use forward slashes in repo_root; in WSL install uv inside WSL and use WSL2 for file watching.\n</section>\n\nAgents: for any question about reviewgraph usage, commands or workflows, call get_docs_section_tool with the section name and answer from that section plus the current graph state only."
+        }
+      ],
+      "history": {
+        "complete": true,
+        "version": 2,
+        "lastEdited": "2026-10-31T16:28:26-07:00",
+        "commit": "d8c7eb7dc62334b57536e4d95b135b17b515b5d7"
+      }
+    }
+  ]
+}

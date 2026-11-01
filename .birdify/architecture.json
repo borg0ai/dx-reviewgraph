@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "mapId": "removed-workflow-cleanup",
+  "revision": 1,
+  "project": {
+    "id": "dx-reviewgraph",
+    "name": "ReviewGraph",
+    "revision": "f0d769d003442e3bf8eed44057112230eb4609f5"
+  },
+  "constraintDiscovery": {
+    "checkedAt": "2026-10-31T23:51:11.871Z",
+    "checkedPaths": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "CONTRIBUTING.md",
+      "GEMINI.md",
+      "docs/CUSTOM_LANGUAGES.md",
+      "modules/code-review/graph_engine/docs/LLM-OPTIMIZED-REFERENCE.md",
+      "modules/code-review/skills/build-graph/SKILL.md",
+      "modules/code-review/skills/debug-issue/SKILL.md",
+      "modules/code-review/skills/explore-codebase/SKILL.md",
+      "modules/code-review/skills/refactor-safely/SKILL.md",
+      "modules/code-review/skills/review-changes/SKILL.md",
+      "modules/code-review/skills/review-delta/SKILL.md",
+      "modules/code-review/skills/review-pr/SKILL.md"
+    ],
+    "uninspectedPaths": []
+  },
+  "constraints": [
+    {
+      "id": "report-checks-and-files",
+      "name": "Report changed files and checks",
+      "note": "State files changed and checks actually run before handoff.",
+      "origin": "local",
+      "strength": "required",
+      "applicability": "applicable",
+      "scope": "project",
+      "modules": [],
+      "relationships": [],
+      "evidence": [
+        {
+          "path": "AGENTS.md",
+          "line": 34,
+          "endLine": 34,
+          "quote": "- Before handoff, run relevant quality checks and report changed files and validation results.",
+          "note": "Repository handoff requirement."
+        }
+      ],
+      "verification": "Inspect final diff and report actual command results; mark unrun checks explicitly."
+    },
+    {
+      "id": "preserve-git-state",
+      "name": "Preserve Git state unless authorized",
+      "note": "Workflow-reference cleanup does not alter branches, commits or remote state.",
+      "origin": "local",
+      "strength": "required",
+      "applicability": "applicable",
+      "scope": "project",
+      "modules": [],
+      "relationships": [],
+      "evidence": [
+        {
+          "path": "AGENTS.md",
+          "line": 33,
+          "endLine": 33,
+          "quote": "- Do not create branches, commit, push, merge, or sync IssueGraph remotes unless the user explicitly asks. When asked for a PR, target `main`.",
+          "note": "Repository Git-state rule."
+        }
+      ],
+      "verification": "Check Git status and keep this task limited to local reference cleanup."
+    }
+  ],
+  "modules": [
+    {
+      "id": "reusable-action",
+      "role": "generic",
+      "roleAssessment": {
+        "basis": "out-of-taxonomy",
+        "note": "A composite GitHub Action and its report renderer do not fit frontend, backend, cache, database, queue or security responsibility."
+      },
+      "name": "Reusable GitHub Action",
+      "kind": "local",
+      "responsibility": "Expose ReviewGraph PR analysis as a reusable composite action and render review comments.",
+      "ownership": [
+        { "kind": "file", "path": "action.yml" },
+        { "kind": "file", "path": "scripts/render_pr_comment.py" },
+        { "kind": "file", "path": "docs/GITHUB_ACTION.md" }
+      ],
+      "evidence": [
+        { "path": "action.yml", "line": 1, "note": "Composite action entry point and metadata." },
+        { "path": "scripts/render_pr_comment.py", "line": 2, "note": "ReviewGraph report renderer." }
+      ],
+      "status": "supported",
+      "openQuestions": [],
+      "layout": { "row": 0, "column": 0 }
+    },
+    {
+      "id": "project-guidance",
+      "role": "generic",
+      "roleAssessment": {
+        "basis": "out-of-taxonomy",
+        "note": "Repository guides and product documentation do not fit the runtime responsibility roles."
+      },
+      "name": "Project Guidance and Documentation",
+      "kind": "local",
+      "responsibility": "Explain repository setup, contribution checks, product capabilities, action usage and benchmark reproduction.",
+      "ownership": [
+        { "kind": "file", "path": "README.md" },
+        { "kind": "file", "path": "README.hi-IN.md" },
+        { "kind": "file", "path": "README.ja-JP.md" },
+        { "kind": "file", "path": "README.ko-KR.md" },
+        { "kind": "file", "path": "README.zh-CN.md" },
+        { "kind": "file", "path": "AGENTS.md" },
+        { "kind": "file", "path": "CLAUDE.md" },
+        { "kind": "file", "path": "CONTRIBUTING.md" },
+        { "kind": "file", "path": "GEMINI.md" },
+        { "kind": "file", "path": "docs/FEATURES.md" },
+        { "kind": "file", "path": "docs/ROADMAP.md" },
+        { "kind": "file", "path": "docs/REPRODUCING.md" },
+        { "kind": "file", "path": "docs/GITHUB_ACTION.md" }
+      ],
+      "evidence": [
+        { "path": "README.md", "line": 176, "note": "Documents action setup and currently links the removed self-hosted workflow." },
+        { "path": "CONTRIBUTING.md", "line": 65, "note": "Currently documents the removed release-gate workflow." },
+        { "path": "GEMINI.md", "line": 8, "note": "Currently points to the removed Copilot instructions file." }
+      ],
+      "status": "supported",
+      "openQuestions": [],
+      "layout": { "row": 0, "column": 1 }
+    },
+    {
+      "id": "workflow-dependent-tests",
+      "role": "generic",
+      "roleAssessment": {
+        "basis": "out-of-taxonomy",
+        "note": "Tests that exercise GitHub workflow files do not fit runtime responsibility roles."
+      },
+      "name": "Workflow-Dependent Tests",
+      "kind": "local",
+      "responsibility": "Verify the reusable action, its workflow integration and the workflow-backed release gate.",
+      "ownership": [
+        { "kind": "file", "path": "tests/test_pr_review_workflows.py" },
+        { "kind": "file", "path": "tests/test_action_e2e.py" },
+        { "kind": "file", "path": "tests/test_action_render.py" },
+        { "kind": "file", "path": "tests/test_release_gate.py" },
+        { "kind": "file", "path": "tests/test_documentation.py" }
+      ],
+      "evidence": [
+        { "path": "tests/test_pr_review_workflows.py", "line": 6, "note": "Loads the removed PR workflow files." },
+        { "path": "tests/test_release_gate.py", "line": 27, "note": "Loads the removed release-gate workflow." }
+      ],
+      "status": "supported",
+      "openQuestions": [],
+      "layout": { "row": 1, "column": 0 }
+    },
+    {
+      "id": "release-gate-runner",
+      "role": "generic",
+      "roleAssessment": {
+        "basis": "out-of-taxonomy",
+        "note": "The release-gate Python helper is workflow orchestration rather than an application runtime role."
+      },
+      "name": "Workflow Release-Gate Runner",
+      "kind": "local",
+      "responsibility": "Run selected slow checks and summarize their results for the removed GitHub Actions release-gate workflow.",
+      "ownership": [
+        { "kind": "file", "path": "scripts/release_gate.py" }
+      ],
+      "evidence": [
+        { "path": "scripts/release_gate.py", "line": 2, "note": "The script documents its workflow-backed run and summarize commands." }
+      ],
+      "status": "supported",
+      "openQuestions": [],
+      "layout": { "row": 1, "column": 1 }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "docs-action",
+      "from": "project-guidance",
+      "to": "reusable-action",
+      "label": "documents action usage",
+      "evidence": [{ "path": "docs/GITHUB_ACTION.md", "line": 28, "note": "Action setup and use are documented here." }],
+      "status": "supported",
+      "openQuestions": [],
+      "kind": "dependency",
+      "visibility": "overview"
+    },
+    {
+      "id": "tests-action",
+      "from": "workflow-dependent-tests",
+      "to": "reusable-action",
+      "label": "tests action behavior",
+      "evidence": [{ "path": "tests/test_action_e2e.py", "line": 1328, "note": "Action output contract is exercised end to end." }],
+      "status": "supported",
+      "openQuestions": [],
+      "kind": "dependency",
+      "visibility": "overview"
+    },
+    {
+      "id": "tests-release-gate",
+      "from": "workflow-dependent-tests",
+      "to": "release-gate-runner",
+      "label": "tests release-gate checks",
+      "evidence": [{ "path": "tests/test_release_gate.py", "line": 26, "note": "Tests import the release-gate helper." }],
+      "status": "supported",
+      "openQuestions": [],
+      "kind": "dependency",
+      "visibility": "overview"
+    }
+  ]
+}
