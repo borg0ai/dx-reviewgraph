@@ -49,7 +49,9 @@ runs:
 
     - name: Install reviewgraph
       shell: bash
-      run: python -m pip install --quiet reviewgraph
+      run: |
+        python -m pip install --quiet "$GITHUB_ACTION_PATH/modules/reviewgraph"
+        python -m pip install --quiet --no-deps "$GITHUB_ACTION_PATH/apps/cli"
 
     # Cache the SQLite knowledge graph between runs. The "schema13" segment
     # tracks LATEST_VERSION in reviewgraph/migrations.py — bump it when

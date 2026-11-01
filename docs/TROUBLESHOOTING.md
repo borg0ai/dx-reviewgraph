@@ -14,7 +14,7 @@ generator.
 **Fix.**
 
 ```bash
-pip install --upgrade reviewgraph
+brew upgrade reviewgraph
 cd /path/to/your/project
 reviewgraph install
 ```
@@ -379,7 +379,7 @@ off for the whole repository.
 
 ## Embeddings not working
 
-- Install the local provider: `pip install "reviewgraph[embeddings]"`.
+- The Luban Homebrew formula does not include the optional local embedding dependencies.
 - Run `reviewgraph embed`, or the `embed_graph_tool` MCP tool.
 - The first local run downloads the `all-MiniLM-L6-v2` model.
 - Cloud providers (`--provider openai|google|minimax|voyage`) read their key
@@ -394,7 +394,7 @@ off for the whole repository.
 - `install` writes one of `uvx reviewgraph serve`,
   `uv run reviewgraph serve`, `poetry run reviewgraph serve` or
   `<python> -m reviewgraph serve`, depending on what it detects. If the
-  launcher it chose is missing, install it (`pip install uv` or `brew install uv`)
+  launcher it chose is missing, install it with Homebrew (`brew install uv`)
   or re-run `reviewgraph install` from the environment you want to use.
 - You can edit the entry yourself, for example
   `uv run --project /path/to/checkout reviewgraph serve` when the server
@@ -417,25 +417,22 @@ off for the whole repository.
 
 ## Community detection requires igraph
 
-- Install with `pip install "reviewgraph[communities]"`.
+- Community detection's optional Python dependency is not included in the Luban Homebrew formula.
 - Without igraph, community detection falls back to file-based grouping, which
   is coarser.
 
 ## Optional dependency groups
 
-If a tool returns an ImportError, install the relevant group:
+The Luban Homebrew formula ships the core runtime, not optional Python groups:
 
-- `pip install "reviewgraph[embeddings]"`: local semantic search
-  (sentence-transformers).
-- `pip install "reviewgraph[google-embeddings]"`: Google Gemini embeddings.
+- Local semantic search needs `sentence-transformers`, which is not included in the Luban Homebrew formula.
+- Google Gemini embeddings use the configured cloud provider and API key.
   OpenAI-compatible, MiniMax and Voyage AI embeddings use the standard library
   HTTP client and need only their environment variables.
-- `pip install "reviewgraph[communities]"`: igraph-based community
-  detection.
-- `pip install "reviewgraph[enrichment]"`: Python call-resolution
-  enrichment through Jedi.
-- `pip install "reviewgraph[eval]"`: evaluation benchmarks (matplotlib,
+- Community detection needs `igraph`, which is not included in the Luban Homebrew formula.
+- Python call-resolution enrichment needs Jedi, which is not included in the Luban Homebrew formula.
+- Evaluation benchmarks (matplotlib,
   PyYAML).
-- `pip install "reviewgraph[wiki]"`: installs the `ollama` client. The
+- The `wiki` extra installs the `ollama` client. The
   current wiki generator is structural only and does not call it.
-- `pip install "reviewgraph[all]"`: everything above.
+- No optional dependency bundle is shipped by the Luban Homebrew formula.

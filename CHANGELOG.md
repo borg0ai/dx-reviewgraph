@@ -722,7 +722,7 @@ breaking changes.
 
 ### Security
 
-- Closed all three open high-severity CodeQL alerts: the PyPI diagnostic now
+- Closed all three open high-severity CodeQL alerts: the package-index diagnostic now
   uses the default secure TLS context, URL checks compare parsed hostnames, and
   visualization tests use structural HTML parsing instead of unsafe regular
   expressions (PR #657).
@@ -1099,7 +1099,7 @@ Large additive release accumulated since v2.3.2 — 141 non-merge commits, 8 new
 - **MCP tools documentation** (PR #306): catalog of all MCP tools with usage examples.
 - **venv usage guide** (PR #307).
 - **Windows setup guide** for Claude Code MCP integration.
-- **pipx / PyPI failure troubleshooting** with a `diagnose_pypi_connectivity.py` diagnostic script.
+- **Package-index connectivity troubleshooting** with a dedicated diagnostic script.
 - **MseeP.ai badge** added to README (PR #399).
 
 ### Maintenance
@@ -1201,7 +1201,7 @@ Nothing.
 
 - Nothing to do beyond `uvx --reinstall code-review-graph` or `pip install -U code-review-graph`. If you're coming from v2.2.2 or earlier, re-run `code-review-graph install` once to pick up the v2.2.3 hook schema rewrite.
 - `CRG_DATA_DIR` is optional — if you don't set it, graphs continue to live at `<repo>/.code-review-graph` as before.
-- VS Code extension v0.2.2 (from v2.2.4) still needs to be **repackaged and republished** separately; the PyPI `publish.yml` workflow does not cover it.
+- VS Code extension v0.2.2 (from v2.2.4) still needs to be **repackaged and republished** separately; the Python package workflow does not cover it.
 
 ### Superseded PRs
 
@@ -1231,7 +1231,7 @@ Ships the 11 bugs from PR #222 plus the `v2.2.3.1` smoke-test hotfixes, for user
 - **`eval` command crashes on `yaml.safe_load`** (PR #222, fixes #212): `eval.runner.load_all_configs()` now calls `_require_yaml()` before reading YAML, so users without `code-review-graph[eval]` installed get `ImportError: pyyaml is required: pip install code-review-graph[eval]` instead of `AttributeError: 'NoneType' object has no attribute 'safe_load'`.
 
 ### VS Code extension (0.2.2)
-- **`better-sqlite3` bumped 11.x → 12.x** (PR #222, fixes #218): VS Code 1.115 ships Electron 39 / V8 14.2 which removed `v8::Context::GetIsolate()`, the C++ API used by `better-sqlite3@11`. The extension couldn't activate at all — every command was undefined. `better-sqlite3@12.4.1+` (installs 12.8.0) uses the new V8 API and ships Electron 39 prebuilds. `@types/better-sqlite3: ^7.6.8 → ^7.6.13`, plus type-import adjustments in `src/backend/sqlite.ts` for the `Node16` module resolution and the new CJS `export =` types. Extension version bumped to 0.2.2. **Remember to repackage and republish the `.vsix`** — the existing `publish.yml` workflow only covers PyPI.
+- **`better-sqlite3` bumped 11.x → 12.x** (PR #222, fixes #218): VS Code 1.115 ships Electron 39 / V8 14.2 which removed `v8::Context::GetIsolate()`, the C++ API used by `better-sqlite3@11`. The extension couldn't activate at all — every command was undefined. `better-sqlite3@12.4.1+` (installs 12.8.0) uses the new V8 API and ships Electron 39 prebuilds. `@types/better-sqlite3: ^7.6.8 → ^7.6.13`, plus type-import adjustments in `src/backend/sqlite.ts` for the `Node16` module resolution and the new CJS `export =` types. Extension version bumped to 0.2.2. **Remember to repackage and republish the `.vsix`** — the existing Python package workflow does not cover it.
 
 ### Carried forward from 2.2.3.1
 - `serve --repo <X>` is now honored by all 24 MCP tools (was only read by `get_docs_section_tool`). See #223.
@@ -1442,7 +1442,6 @@ Hotfix on top of 2.2.3 for two bugs surfaced by a full first-time-user smoke tes
 ### Added
 - **`install` command** — primary entry point for new users (`code-review-graph install`). `init` remains as an alias for backwards compatibility.
 - **`--dry-run` flag** on `install`/`init` — shows what would be written without modifying files
-- **PyPI publish workflow** — GitHub releases now automatically publish to PyPI via API token
 - **Professional README** — complete rewrite with real benchmark data:
   - Code reviews: 6.8x average token reduction (tested on httpx, FastAPI, Next.js)
   - Live coding tasks: 14.1x average, up to 49.1x on large repos

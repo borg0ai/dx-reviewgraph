@@ -73,7 +73,6 @@ Releases after v2.3.6 are listed in [CHANGELOG.md](../CHANGELOG.md).
 ### v1.7.0
 - `install` command as the primary entry point (`init` kept as an alias)
 - `--dry-run` for install/init
-- PyPI publishing via GitHub Actions on release
 - README rewrite with benchmark data from httpx, FastAPI and Next.js
 
 ### v1.6.x

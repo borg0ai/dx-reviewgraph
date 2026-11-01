@@ -32,9 +32,8 @@ def embed_graph(
 ) -> dict[str, Any]:
     """Compute vector embeddings for all graph nodes to enable semantic search.
 
-    Requires: ``pip install reviewgraph[embeddings]`` (local provider only;
-    cloud providers like ``openai`` / ``google`` / ``minimax`` / ``voyage`` use
-    stdlib ``urllib``).
+    Local embeddings require optional Python dependencies not included in the
+    Luban Homebrew formula; cloud providers use stdlib ``urllib``.
     Default model: all-MiniLM-L6-v2. Override via ``model`` param or
     provider-specific env vars such as CRG_EMBEDDING_MODEL, CRG_OPENAI_MODEL, or
     CRG_VOYAGE_MODEL.
@@ -83,8 +82,8 @@ def embed_graph(
                     )
                 else:
                     err = (
-                        "The local embedding provider needs sentence-transformers. "
-                        "Install with: pip install reviewgraph[embeddings] — "
+                        "The local embedding provider needs optional Python dependencies "
+                        "not included in the Luban Homebrew formula. "
                         "or switch provider to 'openai' / 'google' / 'minimax' "
                         "/ 'voyage'."
                     )

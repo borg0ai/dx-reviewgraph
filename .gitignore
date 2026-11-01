@@ -94,3 +94,11 @@ scratch/
 .codex/
 .serena/
 graphify-out
+
+# ReasonGraph local state (per-machine)
+.reasongraph/state/
+
+# IssueGraph / Dolt files (added by issuegraph init)
+.dolt/
+.issuegraph/proxieddb/
+*.gate.lock*

@@ -62,8 +62,8 @@ Run the checks listed in Development Setup, then open a PR against `main`. CI an
 ReviewGraph PR review workflow run on the PR. Merge through GitHub. Tag releases from `main`.
 
 The optional release gate is separate from routine PR CI. Run
-`.github/workflows/release-gate.yml` manually before a release when slow upgrade,
-packaging, determinism, E2E, corpus and browser checks are needed. It reports to the
+`.github/workflows/release-gate.yml` manually before a release when slow packaging,
+determinism, E2E, corpus and browser checks are needed. It reports to the
 workflow summary and a `release-gate` issue; it does not open or merge pull requests.
 
 ## Project Structure

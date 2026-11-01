@@ -357,7 +357,7 @@ This is a selection. `reviewgraph --help` lists every command, and [docs/COMMAND
 
 When `detect-changes --base` names a branch, the diff runs against the merge base of that branch and HEAD. Commit hashes and other revisions are used as given.
 
-`visualize --format svg` needs matplotlib, which ships in the `eval` extra (`pip install "reviewgraph[eval]"`). The other export formats need no extra install.
+`visualize --format svg` needs matplotlib, which ships in the `eval` extra (the evaluation dependency group, which is not included in Luban Homebrew). The other export formats need no extra install.
 
 JSON exports are written inside the local graph data directory, which Git ignores by default. They can contain absolute paths and code-structure metadata, so inspect an export before publishing it.
 
@@ -383,7 +383,7 @@ Both commands print the same panel showing how many tokens the graph saved compa
 | `detect-changes --brief` | Read-only. Queries the existing graph for the current changes and prints the panel. | Most of the time; hooks or `reviewgraph-daemon` keep the graph fresh. |
 | `update --brief` | Re-parses the changed files into the graph first, then prints the same panel. | After a rebase, a large change set, or whenever the graph may be stale. |
 
-Add `--verify` to either command to compare the figures with OpenAI's `cl100k_base` tokenizer (needs `pip install tiktoken`). The estimate is within about 1% of real tokens in aggregate; see [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table).
+Add `--verify` to either command to compare the figures with OpenAI's `cl100k_base` tokenizer (needs the optional `tiktoken` development dependency). The estimate is within about 1% of real tokens in aggregate; see [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table).
 
 The same `context_savings` metadata is attached to the JSON responses of the `get_impact_radius`, `get_review_context`, `detect_changes` and `get_architecture_overview` MCP tools.
 
@@ -488,17 +488,7 @@ node_modules/**
 
 In git repositories only tracked files are indexed (`git ls-files`), so gitignored files are skipped. Use `.reviewgraphignore` to exclude tracked files or when git is not available. The default ignore list is in [docs/USAGE.md](docs/USAGE.md#ignore-patterns).
 
-Optional dependency groups:
-
-```bash
-pip install "reviewgraph[embeddings]"          # Local vector embeddings (sentence-transformers)
-pip install "reviewgraph[google-embeddings]"   # Google Gemini embeddings
-pip install "reviewgraph[communities]"         # Community detection (igraph)
-pip install "reviewgraph[enrichment]"          # Python call-resolution enrichment (Jedi)
-pip install "reviewgraph[eval]"                # Evaluation benchmarks and SVG export (matplotlib)
-pip install "reviewgraph[wiki]"                # ollama client (not used by the current wiki generator)
-pip install "reviewgraph[all]"                 # All optional dependencies
-```
+Optional Python integrations are not included in the Luban Homebrew formula.
 
 ### Environment Variables
 
@@ -610,22 +600,6 @@ Answers in [docs/FAQ.md](docs/FAQ.md):
 ## Troubleshooting
 
 More cases, including Windows/WSL, are in [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
-
-### `pip` / `pipx` cannot download `hatchling` (or `Errno 9` / `Bad file descriptor` to PyPI)
-
-Installing from a source tree (for example `pipx install .`) needs build dependencies from PyPI. If you see `Could not find a version that satisfies the requirement hatchling` after connection warnings, the Python in that terminal may not be able to open an HTTPS connection to `pypi.org`. This is seen most often in an editor's integrated terminal, and sometimes with a VPN, firewall or proxy.
-
-1. Run the same command from Terminal.app or iTerm instead of the editor's terminal.
-2. Install from a checkout with [uv](https://docs.astral.sh/uv/), which uses different download machinery:
-
-   ```bash
-   cd /path/to/reviewgraph
-   uv tool install . --force
-   ```
-
-3. For development in a clone, use `uv sync` and `uv run reviewgraph ...`.
-
-To diagnose: `python3 scripts/diagnose_pypi_connectivity.py`. If it prints `FAILED`, the problem is the network environment, not the package name.
 
 ### Windows: `Invalid JSON: EOF while parsing` or `MCP error -32000: Connection closed`
 

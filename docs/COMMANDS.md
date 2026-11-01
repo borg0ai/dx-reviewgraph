@@ -152,7 +152,7 @@ repo_root: str | None
 model: str | None    # Embedding model name
 provider: str | None # local, openai, google, minimax, voyage
 ```
-Local embeddings need `pip install "reviewgraph[embeddings]"`. Cloud
+Local embeddings require optional Python dependencies, which are not included in the Luban Homebrew formula. Cloud
 providers use the standard library HTTP client and read their keys from
 environment variables (see the README).
 

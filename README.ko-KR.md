@@ -357,7 +357,7 @@ reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 
 `detect-changes --base`에 브랜치 이름을 주면 diff는 그 브랜치와 HEAD의 머지 베이스를 기준으로 실행됩니다. 커밋 해시와 그 밖의 리비전은 준 그대로 쓰입니다.
 
-`visualize --format svg`에는 matplotlib이 필요하며, `eval` 엑스트라에 들어 있습니다(`pip install "reviewgraph[eval]"`). 다른 내보내기 형식에는 추가 설치가 필요 없습니다.
+`visualize --format svg`에는 matplotlib이 필요하며, `eval` 엑스트라에 들어 있습니다(the evaluation dependency group, which is not included in Luban Homebrew). 다른 내보내기 형식에는 추가 설치가 필요 없습니다.
 
 JSON 내보내기는 로컬 그래프 데이터 디렉터리에 기록되며, 이 디렉터리는 기본으로 Git이 무시합니다. 절대 경로와 코드 구조 메타데이터가 들어갈 수 있으니 공개하기 전에 내용을 확인하세요.
 
@@ -383,7 +383,7 @@ JSON 내보내기는 로컬 그래프 데이터 디렉터리에 기록되며, �
 | `detect-changes --brief` | 읽기 전용. 현재 변경에 대해 기존 그래프에 질의하고 패널을 출력합니다. | 대부분의 경우. 훅이나 `reviewgraph-daemon`이 그래프를 최신으로 유지합니다. |
 | `update --brief` | 변경 파일을 먼저 그래프에 다시 파싱한 다음 같은 패널을 출력합니다. | 리베이스 뒤, 변경 폭이 클 때, 그래프가 오래됐을 수 있을 때. |
 
-두 명령 중 아무 쪽에나 `--verify`를 붙이면 숫자를 OpenAI의 `cl100k_base` 토크나이저와 비교합니다(`pip install tiktoken` 필요). 합산 기준 추정값은 실제 토큰과 약 1% 이내로 일치합니다. [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)를 보세요.
+두 명령 중 아무 쪽에나 `--verify`를 붙이면 숫자를 OpenAI의 `cl100k_base` 토크나이저와 비교합니다(the optional `tiktoken` development dependency 필요). 합산 기준 추정값은 실제 토큰과 약 1% 이내로 일치합니다. [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)를 보세요.
 
 같은 `context_savings` 메타데이터가 `get_impact_radius`, `get_review_context`, `detect_changes`, `get_architecture_overview` MCP 도구의 JSON 응답에도 붙습니다.
 
@@ -610,22 +610,6 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ## 문제 해결
 
 Windows/WSL을 포함한 더 많은 사례는 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)에 있습니다.
-
-### `pip` / `pipx`가 `hatchling`을 내려받지 못함(또는 PyPI에 대한 `Errno 9` / `Bad file descriptor`)
-
-소스 트리에서 설치할 때(예: `pipx install .`)는 PyPI에서 빌드 의존성을 받아야 합니다. 연결 경고 뒤에 `Could not find a version that satisfies the requirement hatchling`이 보인다면, 그 터미널의 Python이 `pypi.org`로 HTTPS 연결을 열지 못하는 것일 수 있습니다. 편집기의 통합 터미널에서 가장 자주 보이며, VPN, 방화벽, 프록시가 원인일 때도 있습니다.
-
-1. 편집기 터미널 대신 Terminal.app이나 iTerm에서 같은 명령을 실행하세요.
-2. 내려받는 방식이 다른 [uv](https://docs.astral.sh/uv/)로 체크아웃에서 설치하세요.
-
-   ```bash
-   cd /path/to/reviewgraph
-   uv tool install . --force
-   ```
-
-3. 클론에서 개발할 때는 `uv sync`와 `uv run reviewgraph ...`를 쓰세요.
-
-원인을 가리려면 `python3 scripts/diagnose_pypi_connectivity.py`를 실행하세요. `FAILED`가 나오면 문제는 패키지 이름이 아니라 네트워크 환경입니다.
 
 ### Windows: `Invalid JSON: EOF while parsing` 또는 `MCP error -32000: Connection closed`
 

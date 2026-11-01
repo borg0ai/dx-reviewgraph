@@ -364,7 +364,7 @@ def _make_shims(shim_dir: Path) -> None:
     """Shim every binary the Action's steps invoke.
 
     ``reviewgraph`` and ``python`` are pointed at this checkout so the
-    test can never accidentally exercise a PyPI-installed copy. ``git`` and
+    test can never accidentally exercise a registry-installed copy. ``git`` and
     ``gh`` delegate to the real binary when one exists; ``gh`` is
     deliberately left as a recording stub that fails loudly, because a test
     run must never reach the GitHub API.

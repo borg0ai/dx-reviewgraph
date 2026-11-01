@@ -5,9 +5,8 @@ every node it emits from a test file with ``is_test``, and ``analyze_changes``
 must keep test-file nodes out of ``test_gaps`` even when the stored row says
 ``is_test = 0`` (a graph built before that parser fix).
 
-Originating PR: #1014, whose review comment listed
-``tests/test_upgrade_path.py::_check``, ``_base_env``, ``_venv_python`` and
-``_venv_script`` as test gaps.
+Regression reported after review flagged helper functions inside a test module
+as test gaps.
 """
 
 import tempfile
@@ -29,7 +28,7 @@ TEST_PATHS = [
     # Python
     "/repo/tests/helpers.py",
     "/repo/tests/unit/support.py",
-    "/repo/test_upgrade_path.py",
+    "/repo/test_helpers.py",
     "/repo/pkg/test_thing.py",
     "/repo/pkg/thing_test.py",
     "/repo/conftest.py",
@@ -258,7 +257,7 @@ def _check(value):
     return value
 
 
-class TestUpgradePath:
+class TestHelpers:
     def test_one(self):
         assert _check(1) == 1
 
@@ -270,7 +269,7 @@ class TestUpgradePath:
 @pytest.fixture
 def parsed_python_test_file():
     with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "tests" / "test_upgrade_path.py"
+        path = Path(tmp) / "tests" / "test_helpers.py"
         path.parent.mkdir(parents=True)
         path.write_text(_PY_TEST_SOURCE, encoding="utf-8")
         nodes, _edges = CodeParser(Path(tmp)).parse_file(path)
@@ -279,7 +278,7 @@ def parsed_python_test_file():
 
 def test_class_in_test_file_is_marked_as_test(parsed_python_test_file):
     """Class nodes from a test file carry is_test (the #1014 regression)."""
-    assert parsed_python_test_file["TestUpgradePath"].is_test is True
+    assert parsed_python_test_file["TestHelpers"].is_test is True
 
 
 def test_private_helper_in_test_file_is_marked_as_test(parsed_python_test_file):
@@ -365,19 +364,19 @@ class TestGapsExcludeTestFiles:
     def test_stale_graph_test_file_rows_are_not_reported(self):
         """A graph built before the parser fix stores is_test = 0 on test
         classes and helpers. The report must still exclude them."""
-        self._add("Class", "TestUpgradePath", "tests/test_upgrade_path.py",
+        self._add("Class", "TestHelpers", "tests/test_helpers.py",
                   line_start=1, line_end=20)
-        self._add("Function", "_check", "tests/test_upgrade_path.py",
+        self._add("Function", "_check", "tests/test_helpers.py",
                   line_start=21, line_end=30)
-        self._add("Function", "_base_env", "tests/test_upgrade_path.py",
+        self._add("Function", "_base_env", "tests/test_helpers.py",
                   line_start=31, line_end=40)
-        self._add("Function", "_venv_python", "tests/test_upgrade_path.py",
+        self._add("Function", "_venv_python", "tests/test_helpers.py",
                   line_start=41, line_end=50)
 
         result = analyze_changes(
             self.store,
-            changed_files=["tests/test_upgrade_path.py"],
-            changed_ranges={"tests/test_upgrade_path.py": [(1, 50)]},
+            changed_files=["tests/test_helpers.py"],
+            changed_ranges={"tests/test_helpers.py": [(1, 50)]},
         )
         assert result["test_gaps"] == []
 
@@ -457,8 +456,8 @@ def test_review_guidance_ignores_test_file_helpers():
     impact = {
         "changed_nodes": [
             _graph_node(1, "Function", "_check",
-                        "tests/test_upgrade_path.py::_check",
-                        "tests/test_upgrade_path.py"),
+                        "tests/test_helpers.py::_check",
+                        "tests/test_helpers.py"),
             _graph_node(2, "Function", "analyze_changes",
                         "modules/reviewgraph/graph_engine/changes.py::analyze_changes",
                         "modules/reviewgraph/graph_engine/changes.py"),
@@ -467,7 +466,7 @@ def test_review_guidance_ignores_test_file_helpers():
         "impacted_nodes": [],
         "impacted_files": [],
     }
-    guidance = _generate_review_guidance(impact, ["tests/test_upgrade_path.py"])
+    guidance = _generate_review_guidance(impact, ["tests/test_helpers.py"])
     assert "_check" not in guidance
     assert "analyze_changes" in guidance
     assert "1 changed function(s) have no direct test" in guidance
@@ -481,8 +480,8 @@ def test_review_guidance_under_a_test_named_checkout_still_warns():
     impact = {
         "changed_nodes": [
             _graph_node(1, "Function", "_check",
-                        f"{root}/tests/test_upgrade_path.py::_check",
-                        f"{root}/tests/test_upgrade_path.py"),
+                        f"{root}/tests/test_helpers.py::_check",
+                        f"{root}/tests/test_helpers.py"),
             _graph_node(2, "Function", "analyze_changes",
                         f"{root}/modules/reviewgraph/graph_engine/changes.py::analyze_changes",
                         f"{root}/modules/reviewgraph/graph_engine/changes.py"),
@@ -548,11 +547,11 @@ class TestCheckoutUnderATestDirectory:
 
     def test_production_gaps_survive(self):
         self._add("Function", "analyze_changes", "modules/reviewgraph/graph_engine/changes.py")
-        self._add("Function", "_check", "tests/test_upgrade_path.py")
+        self._add("Function", "_check", "tests/test_helpers.py")
         result = analyze_changes(
             self.store,
             changed_files=["modules/reviewgraph/graph_engine/changes.py",
-                           "tests/test_upgrade_path.py"],
+                           "tests/test_helpers.py"],
             repo_root=str(self.root),
         )
         assert {g["name"] for g in result["test_gaps"]} == {"analyze_changes"}

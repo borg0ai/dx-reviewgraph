@@ -357,7 +357,7 @@ reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 
 当 `detect-changes --base` 指定的是一个分支时，diff 会针对该分支与 HEAD 的合并基做。提交哈希和其他 revision 按原样使用。
 
-`visualize --format svg` 需要 matplotlib，它随 `eval` 附加依赖提供（`pip install "reviewgraph[eval]"`）。其他导出格式无需额外安装。
+`visualize --format svg` 需要 matplotlib，但 Luban Homebrew 公式不包含该可选依赖。其他导出格式无需额外安装。
 
 JSON 导出写在本地图谱数据目录中，该目录默认被 Git 忽略。导出内容可能包含绝对路径和代码结构元数据，发布前请先检查。
 
@@ -383,7 +383,7 @@ JSON 导出写在本地图谱数据目录中，该目录默认被 Git 忽略。�
 | `detect-changes --brief` | 只读。针对当前改动查询已有图谱并打印面板。 | 大多数时候；钩子或 `reviewgraph-daemon` 会保持图谱新鲜。 |
 | `update --brief` | 先把变更文件重新解析进图谱，再打印同样的面板。 | rebase 之后、改动集很大时，或图谱可能已过期时。 |
 
-给任一命令加上 `--verify`，可以把数字与 OpenAI 的 `cl100k_base` 分词器做对比（需要 `pip install tiktoken`）。总体估算与真实 token 的偏差约在 1% 以内；见 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)。
+给任一命令加上 `--verify`，可以把数字与 OpenAI 的 `cl100k_base` 分词器做对比（开发环境需要可选依赖 `tiktoken`）。总体估算与真实 token 的偏差约在 1% 以内；见 [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)。
 
 同样的 `context_savings` 元数据也附在 `get_impact_radius`、`get_review_context`、`detect_changes` 和 `get_architecture_overview` 这几个 MCP 工具的 JSON 响应上。
 
@@ -610,22 +610,6 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ## 故障排查
 
 更多情况，包括 Windows/WSL，见 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)。
-
-### `pip` / `pipx` 无法下载 `hatchling`（或出现 `Errno 9` / `Bad file descriptor` 连 PyPI 的错误）
-
-从源码树安装（例如 `pipx install .`）需要从 PyPI 取构建依赖。如果在一堆连接警告之后看到 `Could not find a version that satisfies the requirement hatchling`，那么该终端里的 Python 可能无法与 `pypi.org` 建立 HTTPS 连接。这在编辑器的集成终端里最常见，有时也与 VPN、防火墙或代理有关。
-
-1. 改用 Terminal.app 或 iTerm 运行同一条命令，而不是编辑器的终端。
-2. 用 [uv](https://docs.astral.sh/uv/) 从 checkout 安装，它使用不同的下载机制：
-
-   ```bash
-   cd /path/to/reviewgraph
-   uv tool install . --force
-   ```
-
-3. 在克隆中做开发时，使用 `uv sync` 和 `uv run reviewgraph ...`。
-
-诊断方法：`python3 scripts/diagnose_pypi_connectivity.py`。如果它打印 `FAILED`，问题出在网络环境，而不是包名。
 
 ### Windows：`Invalid JSON: EOF while parsing` 或 `MCP error -32000: Connection closed`
 

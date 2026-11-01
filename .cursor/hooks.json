@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": "issuegraph cursor-hook postToolUse"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "issuegraph cursor-hook preCompact"
+      }
+    ],
+    "sessionStart": [
+      {
+        "command": "issuegraph cursor-hook sessionStart"
+      }
+    ]
+  },
+  "version": 1
+}

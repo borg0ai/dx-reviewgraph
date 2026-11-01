@@ -357,7 +357,7 @@ reviewgraph serve --http     # MCP over Streamable HTTP on localhost:5555
 
 जब `detect-changes --base` किसी ब्रांच का नाम देता है, तो diff उस ब्रांच और HEAD के मर्ज बेस के मुकाबले चलता है। कमिट हैश और अन्य रिवीज़न जैसे दिए जाते हैं वैसे ही इस्तेमाल होते हैं।
 
-`visualize --format svg` के लिए matplotlib चाहिए, जो `eval` एक्स्ट्रा में आता है (`pip install "reviewgraph[eval]"`)। बाकी निर्यात प्रारूपों के लिए कोई अतिरिक्त इंस्टॉल नहीं चाहिए।
+`visualize --format svg` के लिए matplotlib चाहिए, जो `eval` एक्स्ट्रा में आता है (the evaluation dependency group, which is not included in Luban Homebrew)। बाकी निर्यात प्रारूपों के लिए कोई अतिरिक्त इंस्टॉल नहीं चाहिए।
 
 JSON निर्यात स्थानीय ग्राफ़ डेटा डायरेक्टरी में लिखे जाते हैं, जिसे Git डिफ़ॉल्ट रूप से अनदेखा करता है। इनमें निरपेक्ष पथ और कोड संरचना का मेटाडेटा हो सकता है, इसलिए प्रकाशित करने से पहले निर्यात की जाँच करें।
 
@@ -383,7 +383,7 @@ JSON निर्यात स्थानीय ग्राफ़ डेटा
 | `detect-changes --brief` | केवल पढ़ता है। मौजूदा बदलावों के लिए मौजूदा ग्राफ़ से पूछता है और पैनल छापता है। | ज़्यादातर मौकों पर; हुक या `reviewgraph-daemon` ग्राफ़ को ताज़ा रखते हैं। |
 | `update --brief` | पहले बदली हुई फ़ाइलों को ग्राफ़ में दोबारा पार्स करता है, फिर वही पैनल छापता है। | रीबेस के बाद, बड़े बदलाव समूह पर, या जब ग्राफ़ पुराना हो सकता हो। |
 
-किसी भी कमांड में `--verify` जोड़कर आँकड़ों की तुलना OpenAI के `cl100k_base` टोकनाइज़र से करें (`pip install tiktoken` चाहिए)। कुल मिलाकर अनुमान असली टोकन से लगभग 1% के भीतर रहता है; देखें [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)।
+किसी भी कमांड में `--verify` जोड़कर आँकड़ों की तुलना OpenAI के `cl100k_base` टोकनाइज़र से करें (the optional `tiktoken` development dependency चाहिए)। कुल मिलाकर अनुमान असली टोकन से लगभग 1% के भीतर रहता है; देखें [`docs/REPRODUCING.md`](docs/REPRODUCING.md#calibration-table)।
 
 यही `context_savings` मेटाडेटा `get_impact_radius`, `get_review_context`, `detect_changes` और `get_architecture_overview` MCP टूल के JSON उत्तरों के साथ भी जुड़ता है।
 
@@ -610,22 +610,6 @@ CRG_TOOLS=query_graph_tool,semantic_search_nodes_tool reviewgraph serve
 ## समस्या निवारण
 
 Windows/WSL सहित और भी मामले [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) में हैं।
-
-### `pip` / `pipx` `hatchling` डाउनलोड नहीं कर पाता (या PyPI के लिए `Errno 9` / `Bad file descriptor`)
-
-स्रोत ट्री से इंस्टॉल करने पर (जैसे `pipx install .`) PyPI से बिल्ड निर्भरताएँ चाहिए होती हैं। अगर कनेक्शन चेतावनियों के बाद `Could not find a version that satisfies the requirement hatchling` दिखे, तो हो सकता है उस टर्मिनल का Python `pypi.org` से HTTPS कनेक्शन न खोल पा रहा हो। यह एडिटर के अंदरूनी टर्मिनल में सबसे अधिक दिखता है, और कभी-कभी VPN, फ़ायरवॉल या प्रॉक्सी के साथ।
-
-1. वही कमांड एडिटर के टर्मिनल के बजाय Terminal.app या iTerm से चलाएँ।
-2. [uv](https://docs.astral.sh/uv/) से चेकआउट से इंस्टॉल करें, जो अलग डाउनलोड तंत्र इस्तेमाल करता है:
-
-   ```bash
-   cd /path/to/reviewgraph
-   uv tool install . --force
-   ```
-
-3. क्लोन में विकास के लिए `uv sync` और `uv run reviewgraph ...` का उपयोग करें।
-
-जाँच के लिए: `python3 scripts/diagnose_pypi_connectivity.py`। अगर यह `FAILED` छापे, तो समस्या नेटवर्क परिवेश की है, पैकेज के नाम की नहीं।
 
 ### Windows: `Invalid JSON: EOF while parsing` या `MCP error -32000: Connection closed`
 

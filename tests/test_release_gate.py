@@ -83,7 +83,7 @@ def all_green() -> list[dict]:
 
 def test_the_blocking_set_is_exactly_what_contributing_documents():
     blocking = {key for key, check in gate.CHECKS.items() if check.blocking}
-    assert blocking == {"upgrade-path", "packaging", "determinism", "suite", "e2e"}
+    assert blocking == {"packaging", "determinism", "suite", "e2e"}
     reporting = {key for key, check in gate.CHECKS.items() if not check.blocking}
     assert reporting == {"corpus", "browser"}
 
@@ -92,11 +92,6 @@ def test_the_network_cloning_check_never_blocks():
     # A failed clone of somebody else's repository must not stop a release.
     assert gate.is_blocking("corpus") is False
     assert gate.is_blocking("corpus", "") is False
-
-
-def test_the_upgrade_check_always_blocks():
-    # A graph a user already has is not ours to lose.
-    assert gate.is_blocking("upgrade-path") is True
 
 
 def test_only_the_windows_leg_of_e2e_reports():
@@ -171,9 +166,9 @@ def test_a_report_carrying_a_dtd_is_refused(tmp_path: Path):
 
 def test_a_check_whose_module_is_absent_fails(tmp_path: Path):
     totals = gate.Totals(tests=40, passed=40)
-    problems = gate.apply_canaries(gate.CHECKS["upgrade-path"], totals, [], tmp_path)
+    problems = gate.apply_canaries(gate.CHECKS["packaging"], totals, [], tmp_path)
     assert problems
-    assert "tests/test_upgrade_path.py is not in this checkout" in problems[0]
+    assert "tests/test_packaging.py is not in this checkout" in problems[0]
 
 
 def test_a_check_that_collected_almost_nothing_fails():
@@ -228,9 +223,9 @@ def test_a_real_run_clears_every_canary(tmp_path: Path):
     # The canary of the canaries: the rules must not fail a check that did
     # run, or the gate would be permanently red and get switched off.
     (tmp_path / "tests").mkdir()
-    (tmp_path / "tests" / "test_upgrade_path.py").write_text("", encoding="utf-8")
+    (tmp_path / "tests" / "test_packaging.py").write_text("", encoding="utf-8")
     totals = gate.Totals(tests=46, passed=40, xfailed=6)
-    assert gate.apply_canaries(gate.CHECKS["upgrade-path"], totals, [], tmp_path) == []
+    assert gate.apply_canaries(gate.CHECKS["packaging"], totals, [], tmp_path) == []
 
 
 # ---------------------------------------------------------------------------
@@ -251,11 +246,11 @@ def test_a_failing_report_only_check_does_not_block():
 def test_a_failing_blocking_check_blocks():
     results = all_green()
     for entry in results:
-        if entry["check"] == "upgrade-path":
+        if entry["check"] == "packaging":
             entry["status"] = gate.FAILED
     ok, reasons = gate.gate_verdict(results)
     assert ok is False
-    assert reasons == ["upgrade-path failed"]
+    assert reasons == ["packaging failed"]
 
 
 def test_one_dead_matrix_leg_does_not_hide_behind_its_siblings():

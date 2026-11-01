@@ -15,7 +15,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 - **Partial builds are reported**: `update` and `build_or_update_graph_tool` report files that failed to parse — status `partial`, the files named in the summary, a warning on stderr — and a failed file keeps its previous graph rows instead of disappearing.
 - **Faster builds**: per-file node and edge writes, bare-endpoint resolution and signature computation run as batched statements in a single transaction each, instead of one autocommitted row at a time.
 - **Registry-scoped cross-repo search**: `cross_repo_search_tool` takes `repos`, a list of registry aliases or folder names, and reports names that matched nothing in `unknown` and ambiguous ones in `ambiguous`.
-- **Manual release gate**: `.github/workflows/release-gate.yml` runs the slower upgrade, packaging, determinism, E2E, corpus and browser checks before a release.
+- **Manual release gate**: `.github/workflows/release-gate.yml` runs packaging, determinism, E2E, corpus and browser checks before a release.
 
 ## v2.3.8
 - **Bounded MCP responses**: #849 found `get_affected_flows` returning ~247k tokens inside a workflow documented as "5 tool calls, 800 tokens total". A sweep of the other 29 tools found the same bug in ten more places: `list_communities` returned 206k tokens with default arguments, `get_community` 134k, `get_architecture_overview` 625k in standard mode. All are now capped under one contract: `total` (or a per-list `*_total`) reports the untruncated count, `truncated` marks a cut, and the summary says how many of how many are shown. Cap parameters reject values below 1 and reject booleans. `detail_level="minimal"` was added to the analysis and refactor tools. `tests/test_token_budget.py` pins the per-tool budget table so a removed cap fails CI. Four query tools (`get_impact_radius`, `find_large_functions`, `traverse_graph`, `semantic_search_nodes`) are still unbounded in the worst case and are tracked in #888. See [COMMANDS.md](COMMANDS.md#result-bounds).
@@ -102,7 +102,6 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 ## v1.7.0
 - **`install` command**: primary entry point for setup. `init` remains as an alias.
 - **`--dry-run` flag**: preview what `install`/`init` would write.
-- **PyPI auto-publish**: GitHub releases publish to PyPI.
 
 ## v1.6.4
 - **Portable MCP config**: `init` generates a `uvx`-based `.mcp.json` with no absolute paths.
@@ -131,7 +130,7 @@ Release highlights by version. The full changelog is in [CHANGELOG.md](../CHANGE
 
 ## v1.3.0
 - **Python version check with Docker fallback**: detects Python 3.10+ and suggests Docker if unavailable.
-- **`pip install reviewgraph`**: no git clone needed; `reviewgraph` command available after install.
+- **Luban Homebrew**: install the supported macOS CLI with `brew install systembugtj/luban-homebrew/reviewgraph`.
 
 ## v1.2.0
 - **Structured logging** throughout the codebase.

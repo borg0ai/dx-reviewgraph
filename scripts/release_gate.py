@@ -88,21 +88,6 @@ class Check:
 _OPT_IN_SKIPS = ("run it with", "run with", "gate: run with")
 
 CHECKS: dict[str, Check] = {
-    "upgrade-path": Check(
-        key="upgrade-path",
-        title="Upgrade from released versions",
-        blocking=True,
-        policy=(
-            "Blocks. It is the only check that proves a graph built by a released "
-            "version survives being opened by this code. A migration that corrupts "
-            "an existing .reviewgraph/graph.db cannot be undone by a later "
-            "patch release, and the user's database is not ours to lose."
-        ),
-        modules=("tests/test_upgrade_path.py",),
-        min_tests=30,
-        min_passed=25,
-        forbidden_skips=("crg_upgrade_test", *_OPT_IN_SKIPS),
-    ),
     "packaging": Check(
         key="packaging",
         title="Wheel and sdist from a clean install",
@@ -111,9 +96,9 @@ CHECKS: dict[str, Check] = {
             "Blocks. It drives the artefact users actually receive, installed into "
             "a clean environment with the checkout out of reach. A wheel missing a "
             "data file is broken for every user at once and is only fixable by "
-            "cutting another release. It installs from PyPI, but so does every "
-            "other job in this workflow, so it adds no network dependency the gate "
-            "does not already carry."
+            "cutting another release. It installs the built artefact directly, "
+            "so the check covers the files users receive without relying on an "
+            "external ReviewGraph package registry."
         ),
         modules=("tests/test_packaging.py",),
         min_tests=12,
@@ -207,7 +192,6 @@ CHECKS: dict[str, Check] = {
 
 # The order the report renders in: blocking checks first, then reporting.
 REPORT_ORDER = (
-    "upgrade-path",
     "packaging",
     "determinism",
     "suite",

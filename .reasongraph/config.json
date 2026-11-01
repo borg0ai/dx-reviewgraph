@@ -1,0 +1,14 @@
+{
+  "distiller": {
+    "backend": "codex",
+    "models": {
+      "claude": "haiku",
+      "agent": "auto",
+      "codex": "gpt-6-luna",
+      "antigravity": "gemini-3.8-flash-medium"
+    }
+  },
+  "redaction": [],
+  "timeBudgetMs": 60000,
+  "sync": "auto"
+}

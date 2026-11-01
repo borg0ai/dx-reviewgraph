@@ -59,7 +59,6 @@ markers = [
     "platform_lifecycle: drives install/reinstall/uninstall for every supported platform",
     "packaging: builds the distributions and smoke-tests clean installs",
     "determinism: rebuilds one corpus many ways and compares every table (minutes)",
-    "upgrade: installs released versions from PyPI and upgrades graph data",
     "surface: drives every registered MCP tool and prompt through a real client over stdio",
     "corpus: builds the graph over pinned real repositories and compares recorded baselines",
     "exports: slow conformance checks for every artifact the tool writes",

@@ -7,7 +7,7 @@ runner, and no source code is sent to an external service.
 
 On each run the action:
 
-1. Installs `reviewgraph` from PyPI.
+1. Installs ReviewGraph from the action's checked-out source tree.
 2. Restores the cached `.reviewgraph/` SQLite graph and re-parses the
    files changed by the PR, or builds the graph from scratch on a cache miss.
 3. Runs `reviewgraph detect-changes --base origin/<base-branch>` to get

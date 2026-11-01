@@ -150,7 +150,7 @@ class LocalEmbeddingProvider(EmbeddingProvider):
             except ImportError:
                 raise ImportError(
                     "sentence-transformers not installed. "
-                    "Run: pip install reviewgraph[embeddings]"
+                    "Local embeddings are not included in the Luban Homebrew formula."
                 )
 
             # Publish only a fully constructed model. Failed attempts leave
