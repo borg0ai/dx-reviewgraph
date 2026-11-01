@@ -23,9 +23,9 @@ The module directory and its path references were renamed to align repository st
 
 ### Publish the renamed distribution as version 2.3.11
 Status: discussed
-Touches: `pyproject.toml`, `docs/USAGE.md`, `modules/reviewgraph/pyproject.toml`, `modules/reviewgraph/graph_engine/__init__.py`, `apps/cli/pyproject.toml`, `README*`, `CHANGELOG.md`
+Touches: `pyproject.toml`, `*/pyproject.toml`
 
-Version 2.3.10 was already published with the old wheel name, so the renamed package was released as 2.3.11 rather than replacing the published version. The release included updated package references and checksums; the full suite reported 4,956 passed, 879 skipped, 3 xfailed, and 2 xpassed.
+The release preflight found version `2.3.11` in the latest tag and all three package manifests, so a new release requires a version bump. The proposed `2.4.0` and alternative `2.3.12` were not selected; no release changes were made.
 
 ### Install Homebrew wheel dependencies and test graph construction
 Status: discussed
@@ -142,3 +142,17 @@ Touches: `Formula/reviewgraph.rb`
 The formula installs both wheels with plain `pip install` so pip resolves and installs their declared dependencies. Homebrew’s `venv.pip_install` uses `--no-deps`, which left packages such as `networkx` unavailable when `reviewgraph init` ran.
 
 Considered/rejected: Using `venv.pip_install` was rejected because it omits wheel dependencies.
+
+### Commit all pending changes on main
+Status: directed
+Touches: `CHANGELOG.md`, `*/README*`, `action.yml`, `pyproject.toml`, `scripts/release_gate.py`, `diagnose_pypi_connectivity.py`, `test_upgrade_path.py`
+
+The pending 37-file change set was committed on `main` and pushed as `abb440c` after its diff was inspected. This brought the requested working-tree changes into the shared branch.
+
+### Commit all pending changes on main
+Status: discussed — release handling proposed, not confirmed
+Touches: `.reasongraph/why/main.md`
+
+The generated why-pack file and its local commit leave the working tree ahead of `origin/main`, blocking the release preflight. Including the generated file in a release commit was proposed because the pre-push hook regenerates it, but this handling remains undecided.
+
+Risk: Release remains blocked while local and remote branch state differ.
